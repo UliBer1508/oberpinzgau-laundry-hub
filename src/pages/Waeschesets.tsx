@@ -7,12 +7,13 @@ import { useToast } from "@/hooks/use-toast";
 import {
   useWaeschesets,
   useCreateWaescheset,
-  useUpdateWaescheset,
+  useUpdateWaeschesetWithArtikel,
   useToggleWaeschesetAktiv,
   useKundenForWaeschesets,
   type Waescheset,
   type WaeschesetInsert,
 } from "@/hooks/useWaeschesets";
+import type { TempArtikel } from "@/components/waeschesets/WaeschesetFormDialog";
 import { WaeschesetsStats } from "@/components/waeschesets/WaeschesetsStats";
 import { WaeschesetsFilter } from "@/components/waeschesets/WaeschesetsFilter";
 import { WaeschesetsTable } from "@/components/waeschesets/WaeschesetsTable";
@@ -31,7 +32,7 @@ export default function Waeschesets() {
   const { data: sets = [], isLoading, error } = useWaeschesets();
   const { data: kunden = [] } = useKundenForWaeschesets();
   const createSet = useCreateWaescheset();
-  const updateSet = useUpdateWaescheset();
+  const updateSet = useUpdateWaeschesetWithArtikel();
   const toggleAktiv = useToggleWaeschesetAktiv();
 
   // Filter sets
@@ -95,13 +96,26 @@ export default function Waeschesets() {
     }
   };
 
-  const handleSaveSet = async (data: WaeschesetInsert) => {
+  const handleSaveSet = async (data: WaeschesetInsert, artikel: TempArtikel[]) => {
     try {
+      const artikelData = artikel.map(a => ({
+        artikel_id: a.artikel_id,
+        menge: a.menge,
+        berechnungsart: a.berechnungsart,
+      }));
+
       if (selectedSet) {
-        await updateSet.mutateAsync({ id: selectedSet.id, ...data });
+        await updateSet.mutateAsync({ 
+          id: selectedSet.id, 
+          waescheset: data,
+          artikel: artikelData,
+        });
         toast({ title: "Wäscheset aktualisiert" });
       } else {
-        await createSet.mutateAsync(data);
+        await createSet.mutateAsync({ 
+          waescheset: data, 
+          artikel: artikelData,
+        });
         toast({ title: "Wäscheset erstellt" });
       }
       setFormDialogOpen(false);
