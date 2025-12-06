@@ -187,14 +187,17 @@ export function LiefertourFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Wäschekraft</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select 
+                      value={field.value || "none"} 
+                      onValueChange={(val) => field.onChange(val === "none" ? "" : val)}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Wäschekraft wählen" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Keine Zuweisung</SelectItem>
+                        <SelectItem value="none">Keine Zuweisung</SelectItem>
                         {waeschekraefte.map((wk) => (
                           <SelectItem key={wk.id} value={wk.id}>
                             {wk.name}
