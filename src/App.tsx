@@ -10,6 +10,7 @@ import Objekte from "./pages/Objekte";
 import Waescheartikel from "./pages/Waescheartikel";
 import Waeschesets from "./pages/Waeschesets";
 import Bestellungen from "./pages/Bestellungen";
+import BestellungsManagement from "./pages/BestellungsManagement";
 import Liefertouren from "./pages/Liefertouren";
 import Waeschekraefte from "./pages/Waeschekraefte";
 import Buchungen from "./pages/Buchungen";
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/waescheartikel" element={<Waescheartikel />} />
             <Route path="/waeschesets" element={<Waeschesets />} />
             <Route path="/bestellungen" element={<Bestellungen />} />
+            <Route path="/bestellungen/management" element={<BestellungsManagement />} />
             <Route path="/liefertouren" element={<Liefertouren />} />
             <Route path="/waeschekraefte" element={<Waeschekraefte />} />
             <Route path="/buchungen" element={<Buchungen />} />
