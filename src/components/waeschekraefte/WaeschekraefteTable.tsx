@@ -52,6 +52,7 @@ export function WaeschekraefteTable({
           <TableRow className="hover:bg-transparent">
             <TableHead className="w-[100px]">Personal-Nr.</TableHead>
             <TableHead>Name</TableHead>
+            <TableHead>Typ</TableHead>
             <TableHead>Kontakt</TableHead>
             <TableHead>Adresse</TableHead>
             <TableHead>Status</TableHead>
@@ -62,15 +63,28 @@ export function WaeschekraefteTable({
         <TableBody>
           {waeschekraefte.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
-                Keine Wäschekräfte gefunden
+              <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">
+                Kein Personal gefunden
               </TableCell>
             </TableRow>
           ) : (
-            waeschekraefte.map((worker) => (
+            waeschekraefte.map((worker) => {
+              const typLabel = worker.typ === "fahrer" ? "Fahrer" : worker.typ === "beides" ? "Beides" : "Wäschekraft";
+              const typColor = worker.typ === "fahrer" 
+                ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400"
+                : worker.typ === "beides"
+                ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400"
+                : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+              
+              return (
               <TableRow key={worker.id} className={cn(!worker.aktiv && "opacity-60")}>
                 <TableCell className="font-mono font-medium">{worker.personalnummer}</TableCell>
                 <TableCell className="font-medium">{worker.name}</TableCell>
+                <TableCell>
+                  <Badge variant="outline" className={cn("font-medium", typColor)}>
+                    {typLabel}
+                  </Badge>
+                </TableCell>
                 <TableCell>
                   <div className="space-y-1">
                     {worker.telefon && (
@@ -162,7 +176,7 @@ export function WaeschekraefteTable({
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Wäschekraft löschen?</AlertDialogTitle>
+                            <AlertDialogTitle>Personal löschen?</AlertDialogTitle>
                             <AlertDialogDescription>
                               Möchten Sie "{worker.name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
                             </AlertDialogDescription>
@@ -182,7 +196,8 @@ export function WaeschekraefteTable({
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))
+              );
+            })
           )}
         </TableBody>
       </Table>

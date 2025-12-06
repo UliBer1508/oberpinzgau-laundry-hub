@@ -20,12 +20,26 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useGeneratePersonalnummer } from "@/hooks/useWaeschekraefte";
 import type { Waeschekraft } from "@/hooks/useWaeschekraefte";
+
+const MITARBEITER_TYP_OPTIONS = [
+  { value: "waeschekraft", label: "Wäschekraft" },
+  { value: "fahrer", label: "Fahrer" },
+  { value: "beides", label: "Beides" },
+] as const;
 
 const formSchema = z.object({
   personalnummer: z.string().min(1, "Personalnummer ist erforderlich"),
   name: z.string().min(1, "Name ist erforderlich"),
+  typ: z.enum(["waeschekraft", "fahrer", "beides"]),
   strasse: z.string().optional(),
   plz: z.string().optional(),
   ort: z.string().optional(),
@@ -58,6 +72,7 @@ export function WaeschekraftFormDialog({
     defaultValues: {
       personalnummer: "",
       name: "",
+      typ: "waeschekraft",
       strasse: "",
       plz: "",
       ort: "",
@@ -74,6 +89,7 @@ export function WaeschekraftFormDialog({
       form.reset({
         personalnummer: worker.personalnummer,
         name: worker.name,
+        typ: (worker.typ as "waeschekraft" | "fahrer" | "beides") || "waeschekraft",
         strasse: worker.strasse || "",
         plz: worker.plz || "",
         ort: worker.ort || "",
@@ -87,6 +103,7 @@ export function WaeschekraftFormDialog({
       form.reset({
         personalnummer: nextPersonalnummer || "",
         name: "",
+        typ: "waeschekraft",
         strasse: "",
         plz: "",
         ort: "",
@@ -109,7 +126,7 @@ export function WaeschekraftFormDialog({
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {worker ? "Wäschekraft bearbeiten" : "Neue Wäschekraft"}
+            {worker ? "Personal bearbeiten" : "Neues Personal"}
           </DialogTitle>
         </DialogHeader>
 
@@ -144,6 +161,31 @@ export function WaeschekraftFormDialog({
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="typ"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Typ</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Typ wählen" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {MITARBEITER_TYP_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

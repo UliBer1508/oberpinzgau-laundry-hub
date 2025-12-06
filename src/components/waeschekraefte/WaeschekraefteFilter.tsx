@@ -15,6 +15,8 @@ interface WaeschekraefteFilterProps {
   onStatusChange: (value: string) => void;
   portalFilter: string;
   onPortalChange: (value: string) => void;
+  typFilter: string;
+  onTypChange: (value: string) => void;
 }
 
 export function WaeschekraefteFilter({
@@ -24,6 +26,8 @@ export function WaeschekraefteFilter({
   onStatusChange,
   portalFilter,
   onPortalChange,
+  typFilter,
+  onTypChange,
 }: WaeschekraefteFilterProps) {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center">
@@ -36,6 +40,18 @@ export function WaeschekraefteFilter({
           className="pl-9"
         />
       </div>
+
+      <Select value={typFilter} onValueChange={onTypChange}>
+        <SelectTrigger className="w-full md:w-[150px]">
+          <SelectValue placeholder="Typ" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Alle Typen</SelectItem>
+          <SelectItem value="waeschekraft">Wäschekraft</SelectItem>
+          <SelectItem value="fahrer">Fahrer</SelectItem>
+          <SelectItem value="beides">Beides</SelectItem>
+        </SelectContent>
+      </Select>
 
       <Select value={statusFilter} onValueChange={onStatusChange}>
         <SelectTrigger className="w-full md:w-[150px]">

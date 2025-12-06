@@ -21,6 +21,7 @@ export default function Waeschekraefte() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [portalFilter, setPortalFilter] = useState("all");
+  const [typFilter, setTypFilter] = useState("all");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<Waeschekraft | null>(null);
 
@@ -49,9 +50,12 @@ export default function Waeschekraefte() {
         (portalFilter === "mit" && worker.portalzugang) ||
         (portalFilter === "ohne" && !worker.portalzugang);
 
-      return matchesSearch && matchesStatus && matchesPortal;
+      const matchesTyp =
+        typFilter === "all" || worker.typ === typFilter;
+
+      return matchesSearch && matchesStatus && matchesPortal && matchesTyp;
     });
-  }, [waeschekraefte, searchTerm, statusFilter, portalFilter]);
+  }, [waeschekraefte, searchTerm, statusFilter, portalFilter, typFilter]);
 
   const handleEdit = (worker: Waeschekraft) => {
     setSelectedWorker(worker);
@@ -73,6 +77,7 @@ export default function Waeschekraefte() {
   const handleFormSubmit = (data: {
     personalnummer: string;
     name: string;
+    typ: "waeschekraft" | "fahrer" | "beides";
     strasse?: string;
     plz?: string;
     ort?: string;
@@ -85,6 +90,7 @@ export default function Waeschekraefte() {
     const payload = {
       personalnummer: data.personalnummer,
       name: data.name,
+      typ: data.typ,
       strasse: data.strasse || null,
       plz: data.plz || null,
       ort: data.ort || null,
@@ -116,15 +122,15 @@ export default function Waeschekraefte() {
             <div className="flex items-center gap-4">
               <SidebarTrigger className="-ml-2" />
               <div>
-                <h1 className="text-xl font-semibold text-foreground">Wäschekräfte</h1>
+                <h1 className="text-xl font-semibold text-foreground">Personal</h1>
                 <p className="text-sm text-muted-foreground">
-                  Personalverwaltung und Portalzugang
+                  Wäschekräfte und Fahrer verwalten
                 </p>
               </div>
             </div>
             <Button onClick={handleNewWorker}>
               <Plus className="mr-2 h-4 w-4" />
-              Neue Wäschekraft
+              Neues Personal
             </Button>
           </header>
 
@@ -138,6 +144,8 @@ export default function Waeschekraefte() {
               onStatusChange={setStatusFilter}
               portalFilter={portalFilter}
               onPortalChange={setPortalFilter}
+              typFilter={typFilter}
+              onTypChange={setTypFilter}
             />
 
             {isLoading ? (
