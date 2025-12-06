@@ -17,11 +17,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -29,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import type { Kunde } from "@/hooks/useKunden";
 
 const kundeFormSchema = z.object({
@@ -41,6 +44,7 @@ const kundeFormSchema = z.object({
   email: z.string().email("Ungültige E-Mail").optional().nullable().or(z.literal("")),
   telefon: z.string().optional().nullable(),
   bestellart: z.enum(["lieferung", "abholung", "beides"]).optional().nullable(),
+  bestellmodus: z.enum(["mit_buchung", "nur_sets"]),
   anlieferadresse: z.string().optional().nullable(),
   notizen: z.string().optional().nullable(),
   aktiv: z.boolean().optional().nullable(),
@@ -70,6 +74,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
       email: "",
       telefon: "",
       bestellart: "beides",
+      bestellmodus: "mit_buchung",
       anlieferadresse: "",
       notizen: "",
       aktiv: true,
@@ -88,6 +93,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
         email: kunde.email || "",
         telefon: kunde.telefon || "",
         bestellart: kunde.bestellart || "beides",
+        bestellmodus: kunde.bestellmodus || "mit_buchung",
         anlieferadresse: kunde.anlieferadresse || "",
         notizen: kunde.notizen || "",
         aktiv: kunde.aktiv ?? true,
@@ -103,6 +109,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
         email: "",
         telefon: "",
         bestellart: "beides",
+        bestellmodus: "mit_buchung",
         anlieferadresse: "",
         notizen: "",
         aktiv: true,
@@ -180,6 +187,51 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                 )}
               />
             </div>
+
+            {/* Bestellmodus */}
+            <FormField
+              control={form.control}
+              name="bestellmodus"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Bestellmodus *</FormLabel>
+                  <FormDescription>
+                    Bestimmt, welches Bestellformular der Kunde im Portal sieht
+                  </FormDescription>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-start space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                        <RadioGroupItem value="mit_buchung" id="mit_buchung" className="mt-1" />
+                        <div className="space-y-1">
+                          <Label htmlFor="mit_buchung" className="font-medium cursor-pointer">
+                            Mit Buchungsdaten
+                          </Label>
+                          <p className="text-sm text-muted-foreground">
+                            Kunde gibt Check-in, Check-out und Gästeanzahl an. Die Wäschemenge wird automatisch berechnet.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                        <RadioGroupItem value="nur_sets" id="nur_sets" className="mt-1" />
+                        <div className="space-y-1">
+                          <Label htmlFor="nur_sets" className="font-medium cursor-pointer">
+                            Nur Wäscheset-Anzahl
+                          </Label>
+                          <p className="text-sm text-muted-foreground">
+                            Kunde bestellt direkt eine Anzahl von Wäschesets ohne Buchungsinformationen.
+                          </p>
+                        </div>
+                      </div>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField
