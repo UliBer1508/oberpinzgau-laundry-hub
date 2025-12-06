@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Package, ArrowRight, XCircle, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Package, ArrowRight, XCircle, Trash2, User } from "lucide-react";
 import { BestellungStatusBadge } from "./BestellungStatusBadge";
 import type { Bestellung, BestellungStatus } from "@/hooks/useBestellungen";
 import { format } from "date-fns";
@@ -51,6 +51,8 @@ export function BestellungenTable({
             <TableHead>Kunde</TableHead>
             <TableHead>Objekt</TableHead>
             <TableHead>Lieferdatum</TableHead>
+            <TableHead>Abholdatum</TableHead>
+            <TableHead>Wäschekraft</TableHead>
             <TableHead>Positionen</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="w-[70px]"></TableHead>
@@ -59,7 +61,7 @@ export function BestellungenTable({
         <TableBody>
           {bestellungen.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
                 Keine Bestellungen gefunden.
               </TableCell>
             </TableRow>
@@ -73,6 +75,21 @@ export function BestellungenTable({
                   {bestellung.lieferdatum
                     ? format(new Date(bestellung.lieferdatum), "dd.MM.yyyy", { locale: de })
                     : "-"}
+                </TableCell>
+                <TableCell>
+                  {bestellung.abholdatum
+                    ? format(new Date(bestellung.abholdatum), "dd.MM.yyyy", { locale: de })
+                    : "-"}
+                </TableCell>
+                <TableCell>
+                  {bestellung.waeschekraftName ? (
+                    <span className="inline-flex items-center gap-1.5 text-sm">
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                      {bestellung.waeschekraftName}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
                 </TableCell>
                 <TableCell>{bestellung.positionenCount}</TableCell>
                 <TableCell>
