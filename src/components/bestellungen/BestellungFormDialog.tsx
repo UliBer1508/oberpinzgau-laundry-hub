@@ -17,12 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarDays, Package } from "lucide-react";
+import { CalendarDays, Package, User } from "lucide-react";
 import type { Bestellung, BestellungInsert } from "@/hooks/useBestellungen";
 import {
   useKundenForSelect,
   useObjekteByKunde,
   useGenerateBestellnummer,
+  useWaeschekraefteForSelect,
 } from "@/hooks/useBestellungen";
 import { useWaeschesetsByObjekt } from "@/hooks/useWaeschesets";
 
@@ -30,7 +31,7 @@ interface BestellungFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bestellung: Bestellung | null;
-  onSave: (data: BestellungInsert, buchungData?: BuchungData) => void;
+  onSave: (data: BestellungInsert, buchungData?: BuchungData, formData?: BestellungFormData) => void;
 }
 
 export interface BuchungData {
@@ -39,6 +40,11 @@ export interface BuchungData {
   check_out: string;
   anzahl_personen: number;
   objekt_id: string;
+}
+
+export interface BestellungFormData {
+  waescheset_id: string;
+  anzahl_personen: number;
 }
 
 export function BestellungFormDialog({
@@ -50,12 +56,14 @@ export function BestellungFormDialog({
   const isEdit = !!bestellung;
   const { data: kunden = [] } = useKundenForSelect();
   const { data: nextBestellnummer } = useGenerateBestellnummer();
+  const { data: waeschekraefte = [] } = useWaeschekraefteForSelect();
 
   const [formData, setFormData] = useState({
     bestellnummer: "",
     kunde_id: "",
     objekt_id: "",
     waescheset_id: "",
+    waeschekraft_id: "",
     lieferdatum: "",
     lieferzeit: "",
     abholdatum: "",
@@ -85,6 +93,7 @@ export function BestellungFormDialog({
         kunde_id: bestellung.kunde_id,
         objekt_id: bestellung.objekt_id || "",
         waescheset_id: "",
+        waeschekraft_id: bestellung.waeschekraft_id || "",
         lieferdatum: bestellung.lieferdatum || "",
         lieferzeit: bestellung.lieferzeit || "",
         abholdatum: bestellung.abholdatum || "",
@@ -101,6 +110,7 @@ export function BestellungFormDialog({
         kunde_id: "",
         objekt_id: "",
         waescheset_id: "",
+        waeschekraft_id: "",
         lieferdatum: "",
         lieferzeit: "",
         abholdatum: "",
@@ -137,11 +147,17 @@ export function BestellungFormDialog({
       bestellnummer: formData.bestellnummer,
       kunde_id: formData.kunde_id,
       objekt_id: formData.objekt_id || null,
+      waeschekraft_id: formData.waeschekraft_id || null,
       lieferdatum: formData.lieferdatum || null,
       lieferzeit: formData.lieferzeit || null,
       abholdatum: formData.abholdatum || null,
       abholzeit: formData.abholzeit || null,
       notizen: formData.notizen || null,
+    };
+
+    const additionalFormData: BestellungFormData = {
+      waescheset_id: formData.waescheset_id,
+      anzahl_personen: formData.anzahl_personen,
     };
 
     // Bei 'mit_buchung' Buchungsdaten mitsenden
@@ -153,9 +169,9 @@ export function BestellungFormDialog({
         anzahl_personen: formData.anzahl_personen,
         objekt_id: formData.objekt_id,
       };
-      onSave(bestellungData, buchungData);
+      onSave(bestellungData, buchungData, additionalFormData);
     } else {
-      onSave(bestellungData);
+      onSave(bestellungData, undefined, additionalFormData);
     }
   };
 
@@ -272,6 +288,31 @@ export function BestellungFormDialog({
               </Select>
             </div>
           )}
+
+          {/* Wäschekraft-Zuweisung */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="waeschekraft">Wäschekraft</Label>
+            </div>
+            <Select
+              value={formData.waeschekraft_id}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, waeschekraft_id: value }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Wäschekraft zuweisen (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {waeschekraefte.map((wk) => (
+                  <SelectItem key={wk.id} value={wk.id}>
+                    {wk.name} ({wk.personalnummer})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Buchungsfelder - nur bei bestellmodus 'mit_buchung' und Neuerstellung */}
           {bestellmodus === "mit_buchung" && !isEdit && (

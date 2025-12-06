@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { BestellungenStats } from "@/components/bestellungen/BestellungenStats";
 import { BestellungenFilter } from "@/components/bestellungen/BestellungenFilter";
 import { BestellungenTable } from "@/components/bestellungen/BestellungenTable";
-import { BestellungFormDialog, type BuchungData } from "@/components/bestellungen/BestellungFormDialog";
+import { BestellungFormDialog, type BuchungData, type BestellungFormData } from "@/components/bestellungen/BestellungFormDialog";
 import { BestellungPositionenDialog } from "@/components/bestellungen/BestellungPositionenDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -116,8 +116,14 @@ export default function Bestellungen() {
     }
   };
 
-  const handleSaveBestellung = async (data: BestellungInsert, buchungData?: BuchungData) => {
+  const handleSaveBestellung = async (
+    data: BestellungInsert, 
+    buchungData?: BuchungData,
+    formData?: BestellungFormData
+  ) => {
     try {
+      let createdBestellungId: string | null = null;
+
       if (selectedBestellung) {
         await updateBestellung.mutateAsync({ id: selectedBestellung.id, ...data });
         toast.success("Bestellung aktualisiert");
@@ -157,17 +163,43 @@ export default function Bestellungen() {
           if (buchungError) throw buchungError;
 
           // Bestellung mit buchung_id erstellen
-          await createBestellung.mutateAsync({
+          const result = await createBestellung.mutateAsync({
             ...data,
             buchung_id: newBuchung.id,
-            lieferdatum: buchungData.check_in,
-            abholdatum: buchungData.check_out,
+            lieferdatum: data.lieferdatum || buchungData.check_in,
+            abholdatum: data.abholdatum || buchungData.check_out,
           });
           
+          createdBestellungId = result.id;
           queryClient.invalidateQueries({ queryKey: ["buchungen"] });
         } else {
-          await createBestellung.mutateAsync(data);
+          const result = await createBestellung.mutateAsync(data);
+          createdBestellungId = result.id;
         }
+
+        // Wäscheset-Positionen automatisch hinzufügen
+        if (createdBestellungId && formData?.waescheset_id) {
+          const { data: setArtikel, error: fetchError } = await supabase
+            .from("waescheset_artikel")
+            .select("artikel_id, menge, berechnungsart")
+            .eq("set_id", formData.waescheset_id);
+
+          if (!fetchError && setArtikel && setArtikel.length > 0) {
+            const anzahlPersonen = formData.anzahl_personen || 1;
+            
+            const positions = setArtikel.map((artikel) => ({
+              bestellung_id: createdBestellungId!,
+              artikel_id: artikel.artikel_id,
+              menge: artikel.berechnungsart === "pro_gast" 
+                ? artikel.menge * anzahlPersonen 
+                : artikel.menge,
+            }));
+
+            await supabase.from("bestellpositionen").insert(positions);
+            queryClient.invalidateQueries({ queryKey: ["bestellungen"] });
+          }
+        }
+
         toast.success("Bestellung erstellt");
       }
       setFormDialogOpen(false);
