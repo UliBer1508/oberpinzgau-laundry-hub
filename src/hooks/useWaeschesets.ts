@@ -4,30 +4,75 @@ import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase
 
 export type Waescheset = Tables<"waeschesets"> & {
   objektName: string;
+  kundeName: string;
+  kundeId: string;
   artikelCount: number;
 };
 
 export type WaeschesetInsert = TablesInsert<"waeschesets">;
 export type WaeschesetUpdate = TablesUpdate<"waeschesets">;
 
+export type Berechnungsart = "pro_buchung" | "pro_gast";
+
 export type WaeschesetArtikel = Tables<"waescheset_artikel"> & {
   artikelName: string;
   artikelNummer: string;
   kategorie: string | null;
   farbe: string | null;
+  berechnungsart: Berechnungsart;
 };
 
-// Fetch all Wäschesets with Objekt name and article count
+// Fetch all Kunden for Wäscheset selection
+export function useKundenForWaeschesets() {
+  return useQuery({
+    queryKey: ["kunden-for-waeschesets"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("kunden")
+        .select("id, name, firma, kundennummer")
+        .eq("aktiv", true)
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+// Fetch Objekte by Kunde
+export function useObjekteByKunde(kundeId: string | null) {
+  return useQuery({
+    queryKey: ["objekte-by-kunde", kundeId],
+    enabled: !!kundeId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("objekte")
+        .select("id, name, objektnummer")
+        .eq("kunde_id", kundeId!)
+        .eq("aktiv", true)
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+// Fetch all Wäschesets with Objekt name, Kunde name, and article count
 export function useWaeschesets() {
   return useQuery({
     queryKey: ["waeschesets"],
     queryFn: async () => {
-      // First get sets with objekt info
+      // First get sets with objekt and kunde info
       const { data: sets, error: setsError } = await supabase
         .from("waeschesets")
         .select(`
           *,
-          objekte!objekt_id (name)
+          objekte!objekt_id (
+            name,
+            kunde_id,
+            kunden!kunde_id (name, firma)
+          )
         `)
         .order("created_at", { ascending: false });
 
@@ -46,11 +91,18 @@ export function useWaeschesets() {
         countMap.set(item.set_id, (countMap.get(item.set_id) || 0) + 1);
       });
 
-      return sets?.map((set) => ({
-        ...set,
-        objektName: (set.objekte as { name: string } | null)?.name || "Unbekannt",
-        artikelCount: countMap.get(set.id) || 0,
-      })) as Waescheset[];
+      return sets?.map((set) => {
+        const objekt = set.objekte as { name: string; kunde_id: string; kunden: { name: string; firma: string | null } | null } | null;
+        const kunde = objekt?.kunden;
+        
+        return {
+          ...set,
+          objektName: objekt?.name || "Unbekannt",
+          kundeId: objekt?.kunde_id || "",
+          kundeName: kunde?.firma || kunde?.name || "Unbekannt",
+          artikelCount: countMap.get(set.id) || 0,
+        };
+      }) as Waescheset[];
     },
   });
 }
@@ -73,7 +125,7 @@ export function useWaeschesetsByObjekt(objektId: string | null) {
   });
 }
 
-// Fetch articles for a specific set
+// Fetch articles for a specific set (with berechnungsart)
 export function useWaeschesetArtikel(setId: string | null) {
   return useQuery({
     queryKey: ["waescheset-artikel", setId],
@@ -100,6 +152,7 @@ export function useWaeschesetArtikel(setId: string | null) {
         artikelNummer: (item.waescheartikel as { artikelnummer: string } | null)?.artikelnummer || "",
         kategorie: (item.waescheartikel as { kategorie: string | null } | null)?.kategorie || null,
         farbe: (item.waescheartikel as { farbe: string | null } | null)?.farbe || null,
+        berechnungsart: (item.berechnungsart as Berechnungsart) || "pro_buchung",
       })) as WaeschesetArtikel[];
     },
   });
@@ -204,15 +257,25 @@ export function useToggleWaeschesetAktiv() {
   });
 }
 
-// Add article to set
+// Add article to set (with berechnungsart)
 export function useAddArtikelToSet() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ set_id, artikel_id, menge }: { set_id: string; artikel_id: string; menge: number }) => {
+    mutationFn: async ({ 
+      set_id, 
+      artikel_id, 
+      menge, 
+      berechnungsart = "pro_buchung" 
+    }: { 
+      set_id: string; 
+      artikel_id: string; 
+      menge: number; 
+      berechnungsart?: Berechnungsart;
+    }) => {
       const { data, error } = await supabase
         .from("waescheset_artikel")
-        .insert({ set_id, artikel_id, menge })
+        .insert({ set_id, artikel_id, menge, berechnungsart })
         .select()
         .single();
 
@@ -256,6 +319,28 @@ export function useUpdateArtikelMenge() {
       const { data, error } = await supabase
         .from("waescheset_artikel")
         .update({ menge })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { ...data, set_id };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["waescheset-artikel", result.set_id] });
+    },
+  });
+}
+
+// Update article berechnungsart in set
+export function useUpdateArtikelBerechnungsart() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, berechnungsart, set_id }: { id: string; berechnungsart: Berechnungsart; set_id: string }) => {
+      const { data, error } = await supabase
+        .from("waescheset_artikel")
+        .update({ berechnungsart })
         .eq("id", id)
         .select()
         .single();

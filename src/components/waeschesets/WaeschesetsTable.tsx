@@ -48,6 +48,7 @@ export function WaeschesetsTable({
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
+            <TableHead>Kunde</TableHead>
             <TableHead>Objekt</TableHead>
             <TableHead>Beschreibung</TableHead>
             <TableHead className="text-center">Artikel</TableHead>
@@ -59,6 +60,9 @@ export function WaeschesetsTable({
           {sets.map((set) => (
             <TableRow key={set.id}>
               <TableCell className="font-medium">{set.name}</TableCell>
+              <TableCell>
+                <span className="text-sm">{set.kundeName}</span>
+              </TableCell>
               <TableCell>
                 <Badge variant="outline">{set.objektName}</Badge>
               </TableCell>

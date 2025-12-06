@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
   useWaeschesets,
-  useObjekteForSelect,
   useCreateWaescheset,
   useUpdateWaescheset,
   useToggleWaeschesetAktiv,
+  useKundenForWaeschesets,
   type Waescheset,
   type WaeschesetInsert,
 } from "@/hooks/useWaeschesets";
@@ -22,14 +22,14 @@ import { WaeschesetArtikelDialog } from "@/components/waeschesets/WaeschesetArti
 export default function Waeschesets() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedObjekt, setSelectedObjekt] = useState("all");
+  const [selectedKunde, setSelectedKunde] = useState("all");
   const [showOnlyAktiv, setShowOnlyAktiv] = useState(false);
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [artikelDialogOpen, setArtikelDialogOpen] = useState(false);
   const [selectedSet, setSelectedSet] = useState<Waescheset | null>(null);
 
   const { data: sets = [], isLoading, error } = useWaeschesets();
-  const { data: objekte = [] } = useObjekteForSelect();
+  const { data: kunden = [] } = useKundenForWaeschesets();
   const createSet = useCreateWaescheset();
   const updateSet = useUpdateWaescheset();
   const toggleAktiv = useToggleWaeschesetAktiv();
@@ -41,16 +41,17 @@ export default function Waeschesets() {
         searchTerm === "" ||
         set.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         set.beschreibung?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        set.objektName.toLowerCase().includes(searchTerm.toLowerCase());
+        set.objektName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        set.kundeName.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesObjekt =
-        selectedObjekt === "all" || set.objekt_id === selectedObjekt;
+      const matchesKunde =
+        selectedKunde === "all" || set.kundeId === selectedKunde;
 
       const matchesAktiv = !showOnlyAktiv || set.aktiv;
 
-      return matchesSearch && matchesObjekt && matchesAktiv;
+      return matchesSearch && matchesKunde && matchesAktiv;
     });
-  }, [sets, searchTerm, selectedObjekt, showOnlyAktiv]);
+  }, [sets, searchTerm, selectedKunde, showOnlyAktiv]);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -162,9 +163,12 @@ export default function Waeschesets() {
               <WaeschesetsFilter
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
-                selectedObjekt={selectedObjekt}
-                onObjektChange={setSelectedObjekt}
-                objekte={objekte}
+                selectedKunde={selectedKunde}
+                onKundeChange={setSelectedKunde}
+                kunden={kunden.map(k => ({ 
+                  id: k.id, 
+                  name: k.firma || k.name 
+                }))}
                 showOnlyAktiv={showOnlyAktiv}
                 onShowOnlyAktivChange={setShowOnlyAktiv}
               />
@@ -189,7 +193,7 @@ export default function Waeschesets() {
               open={formDialogOpen}
               onOpenChange={setFormDialogOpen}
               set={selectedSet}
-              objekte={objekte}
+              objekte={[]}
               onSubmit={handleSaveSet}
               isLoading={createSet.isPending || updateSet.isPending}
             />

@@ -523,18 +523,21 @@ export type Database = {
       waescheset_artikel: {
         Row: {
           artikel_id: string
+          berechnungsart: Database["public"]["Enums"]["berechnungsart"]
           id: string
           menge: number
           set_id: string
         }
         Insert: {
           artikel_id: string
+          berechnungsart?: Database["public"]["Enums"]["berechnungsart"]
           id?: string
           menge?: number
           set_id: string
         }
         Update: {
           artikel_id?: string
+          berechnungsart?: Database["public"]["Enums"]["berechnungsart"]
           id?: string
           menge?: number
           set_id?: string
@@ -603,6 +606,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "waeschekraft" | "kunde"
+      berechnungsart: "pro_buchung" | "pro_gast"
       bestellart: "lieferung" | "abholung" | "beides"
       bestellung_status:
         | "neu"
@@ -740,6 +744,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "waeschekraft", "kunde"],
+      berechnungsart: ["pro_buchung", "pro_gast"],
       bestellart: ["lieferung", "abholung", "beides"],
       bestellung_status: [
         "neu",
