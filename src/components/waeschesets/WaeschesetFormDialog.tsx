@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Minus, Trash2, Package, User, Calendar, Lock } from "lucide-react";
+import { Plus, Minus, Trash2, Package, User, Calendar, Lock, ChevronsUpDown, Check, ImageIcon, Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +47,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import type { Waescheset, WaeschesetInsert, Berechnungsart } from "@/hooks/useWaeschesets";
 import {
@@ -54,6 +68,7 @@ import {
   useObjekteByKunde,
   useWaeschesetArtikel,
   useWaescheartikelForSelect,
+  useWaeschesetsByObjekt,
   useAddArtikelToSet,
   useRemoveArtikelFromSet,
   useUpdateArtikelMenge,
@@ -85,6 +100,8 @@ interface PendingArtikel {
   artikelName: string;
   kategorie: string | null;
   farbe: string | null;
+  bild_url: string | null;
+  bezeichnung: string | null;
   menge: number;
   berechnungsart: Berechnungsart;
 }
@@ -121,6 +138,7 @@ export function WaeschesetFormDialog({
   const [selectedArtikel, setSelectedArtikel] = useState<string>("");
   const [menge, setMenge] = useState<number>(1);
   const [berechnungsart, setBerechnungsart] = useState<Berechnungsart>("pro_buchung");
+  const [artikelPopoverOpen, setArtikelPopoverOpen] = useState(false);
 
   const selectedKundeId = form.watch("kunde_id");
   const selectedObjektId = form.watch("objekt_id");
@@ -130,6 +148,7 @@ export function WaeschesetFormDialog({
   const { data: kundeObjekte = [] } = useObjekteByKunde(selectedKundeId || null);
   const { data: alleArtikel = [] } = useWaescheartikelForSelect();
   const { data: existingArtikel = [] } = useWaeschesetArtikel(set?.id ?? null);
+  const { data: existingSetsForObjekt = [] } = useWaeschesetsByObjekt(selectedObjektId || null);
 
   // Mutations for existing sets
   const addArtikelMutation = useAddArtikelToSet();
@@ -148,12 +167,22 @@ export function WaeschesetFormDialog({
     [kundeObjekte, selectedObjektId]
   );
 
-  // Auto-generated name
+  // Auto-generated name with numbering for multiple sets
   const autoName = useMemo(() => {
     if (!selectedKunde || !selectedObjekt) return "";
     const kundeName = selectedKunde.firma || selectedKunde.name;
-    return `${kundeName} - ${selectedObjekt.name}`;
-  }, [selectedKunde, selectedObjekt]);
+    const baseName = `${kundeName} - ${selectedObjekt.name}`;
+    
+    // Count existing sets (exclude current set if editing)
+    const otherSets = set 
+      ? existingSetsForObjekt.filter(s => s.id !== set.id)
+      : existingSetsForObjekt;
+    
+    const count = otherSets.length + 1;
+    
+    if (count <= 1) return baseName;
+    return `${baseName} ${count}`;
+  }, [selectedKunde, selectedObjekt, existingSetsForObjekt, set]);
 
   // Available articles (filter out already added)
   const verfuegbareArtikel = useMemo(() => {
@@ -162,6 +191,12 @@ export function WaeschesetFormDialog({
       : pendingArtikel.map(a => a.artikel_id);
     return alleArtikel.filter(a => !usedIds.includes(a.id));
   }, [alleArtikel, set, existingArtikel, pendingArtikel]);
+
+  // Selected artikel details for display
+  const selectedArtikelDetails = useMemo(() => 
+    alleArtikel.find(a => a.id === selectedArtikel),
+    [alleArtikel, selectedArtikel]
+  );
 
   // Reset objekt when kunde changes
   useEffect(() => {
@@ -192,6 +227,7 @@ export function WaeschesetFormDialog({
       setSelectedArtikel("");
       setMenge(1);
       setBerechnungsart("pro_buchung");
+      setArtikelPopoverOpen(false);
     }
   }, [open, set, form]);
 
@@ -225,6 +261,8 @@ export function WaeschesetFormDialog({
         artikelName: artikel.name,
         kategorie: artikel.kategorie,
         farbe: artikel.farbe,
+        bild_url: artikel.bild_url,
+        bezeichnung: artikel.bezeichnung,
         menge,
         berechnungsart,
       };
@@ -461,6 +499,7 @@ export function WaeschesetFormDialog({
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-[50px]">Bild</TableHead>
                         <TableHead className="w-[100px]">Art.-Nr.</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead className="hidden sm:table-cell">Kategorie</TableHead>
@@ -479,11 +518,25 @@ export function WaeschesetFormDialog({
                         const artikelName = isExisting ? (artikel as any).artikelName : (artikel as PendingArtikel).artikelName;
                         const kategorie = isExisting ? (artikel as any).kategorie : (artikel as PendingArtikel).kategorie;
                         const farbe = isExisting ? (artikel as any).farbe : (artikel as PendingArtikel).farbe;
+                        const bildUrl = isExisting ? (artikel as any).bild_url : (artikel as PendingArtikel).bild_url;
                         const artikelMenge = isExisting ? (artikel as any).menge : (artikel as PendingArtikel).menge;
                         const artikelBerechnungsart = isExisting ? (artikel as any).berechnungsart : (artikel as PendingArtikel).berechnungsart;
 
                         return (
                           <TableRow key={isExisting ? artikelId : tempId}>
+                            <TableCell>
+                              {bildUrl ? (
+                                <img 
+                                  src={bildUrl} 
+                                  alt={artikelName}
+                                  className="h-10 w-10 rounded object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
+                                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                              )}
+                            </TableCell>
                             <TableCell className="font-mono text-xs">
                               {artikelNummer}
                             </TableCell>
@@ -589,26 +642,112 @@ export function WaeschesetFormDialog({
               {/* Add article section */}
               <div className="rounded-lg border bg-muted/50 p-3">
                 <div className="flex flex-wrap items-end gap-2">
-                  <div className="flex-1 min-w-[180px]">
+                  <div className="flex-1 min-w-[250px]">
                     <Label className="text-xs text-muted-foreground mb-1 block">Artikel</Label>
-                    <Select value={selectedArtikel} onValueChange={setSelectedArtikel}>
-                      <SelectTrigger className="bg-background h-9">
-                        <SelectValue placeholder="Artikel auswählen..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {verfuegbareArtikel.length === 0 ? (
-                          <SelectItem value="none" disabled>
-                            Keine weiteren Artikel
-                          </SelectItem>
-                        ) : (
-                          verfuegbareArtikel.map((artikel) => (
-                            <SelectItem key={artikel.id} value={artikel.id}>
-                              {artikel.artikelnummer} - {artikel.name}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={artikelPopoverOpen} onOpenChange={setArtikelPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={artikelPopoverOpen}
+                          className="w-full justify-between bg-background h-auto min-h-9 py-1.5"
+                        >
+                          {selectedArtikelDetails ? (
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              {selectedArtikelDetails.bild_url ? (
+                                <img 
+                                  src={selectedArtikelDetails.bild_url} 
+                                  alt={selectedArtikelDetails.name}
+                                  className="h-7 w-7 rounded object-cover flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="flex h-7 w-7 items-center justify-center rounded bg-muted flex-shrink-0">
+                                  <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex flex-col items-start overflow-hidden">
+                                <span className="truncate text-sm font-medium">
+                                  {selectedArtikelDetails.artikelnummer} - {selectedArtikelDetails.name}
+                                </span>
+                                {selectedArtikelDetails.bezeichnung && (
+                                  <span className="truncate text-xs text-muted-foreground">
+                                    {selectedArtikelDetails.bezeichnung}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">Artikel auswählen...</span>
+                          )}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Artikel suchen..." />
+                          <CommandList className="max-h-[300px]">
+                            <CommandEmpty>Keine Artikel gefunden.</CommandEmpty>
+                            <CommandGroup>
+                              {verfuegbareArtikel.map((artikel) => (
+                                <CommandItem
+                                  key={artikel.id}
+                                  value={`${artikel.artikelnummer} ${artikel.name} ${artikel.kategorie || ''} ${artikel.farbe || ''}`}
+                                  onSelect={() => {
+                                    setSelectedArtikel(artikel.id);
+                                    setArtikelPopoverOpen(false);
+                                  }}
+                                  className="flex items-start gap-3 p-2"
+                                >
+                                  {artikel.bild_url ? (
+                                    <img 
+                                      src={artikel.bild_url} 
+                                      alt={artikel.name}
+                                      className="h-12 w-12 rounded object-cover flex-shrink-0"
+                                    />
+                                  ) : (
+                                    <div className="flex h-12 w-12 items-center justify-center rounded bg-muted flex-shrink-0">
+                                      <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                  <div className="flex flex-col flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-mono text-xs text-muted-foreground">
+                                        {artikel.artikelnummer}
+                                      </span>
+                                      {artikel.kategorie && (
+                                        <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                                          {artikel.kategorie}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <span className="font-medium truncate">
+                                      {artikel.name}
+                                    </span>
+                                    {artikel.bezeichnung && (
+                                      <span className="text-xs text-muted-foreground truncate">
+                                        {artikel.bezeichnung}
+                                      </span>
+                                    )}
+                                    {artikel.farbe && (
+                                      <div className="flex items-center gap-1 mt-0.5">
+                                        <span className={`h-2.5 w-2.5 rounded-full ${getFarbStyle(artikel.farbe)}`} />
+                                        <span className="text-xs text-muted-foreground">{artikel.farbe}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <Check
+                                    className={cn(
+                                      "h-4 w-4 shrink-0",
+                                      selectedArtikel === artikel.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   
                   <div className="w-16">

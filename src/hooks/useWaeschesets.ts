@@ -19,6 +19,8 @@ export type WaeschesetArtikel = Tables<"waescheset_artikel"> & {
   artikelNummer: string;
   kategorie: string | null;
   farbe: string | null;
+  bild_url: string | null;
+  bezeichnung: string | null;
   berechnungsart: Berechnungsart;
 };
 
@@ -139,21 +141,36 @@ export function useWaeschesetArtikel(setId: string | null) {
             name,
             artikelnummer,
             kategorie,
-            farbe
+            farbe,
+            bild_url,
+            bezeichnung
           )
         `)
         .eq("set_id", setId!);
 
       if (error) throw error;
 
-      return data?.map((item) => ({
-        ...item,
-        artikelName: (item.waescheartikel as { name: string } | null)?.name || "",
-        artikelNummer: (item.waescheartikel as { artikelnummer: string } | null)?.artikelnummer || "",
-        kategorie: (item.waescheartikel as { kategorie: string | null } | null)?.kategorie || null,
-        farbe: (item.waescheartikel as { farbe: string | null } | null)?.farbe || null,
-        berechnungsart: (item.berechnungsart as Berechnungsart) || "pro_buchung",
-      })) as WaeschesetArtikel[];
+      return data?.map((item) => {
+        const artikel = item.waescheartikel as { 
+          name: string; 
+          artikelnummer: string; 
+          kategorie: string | null; 
+          farbe: string | null;
+          bild_url: string | null;
+          bezeichnung: string | null;
+        } | null;
+        
+        return {
+          ...item,
+          artikelName: artikel?.name || "",
+          artikelNummer: artikel?.artikelnummer || "",
+          kategorie: artikel?.kategorie || null,
+          farbe: artikel?.farbe || null,
+          bild_url: artikel?.bild_url || null,
+          bezeichnung: artikel?.bezeichnung || null,
+          berechnungsart: (item.berechnungsart as Berechnungsart) || "pro_buchung",
+        };
+      }) as WaeschesetArtikel[];
     },
   });
 }
@@ -175,14 +192,14 @@ export function useObjekteForSelect() {
   });
 }
 
-// Fetch all active Wäscheartikel for adding to sets
+// Fetch all active Wäscheartikel for adding to sets (with image and description)
 export function useWaescheartikelForSelect() {
   return useQuery({
     queryKey: ["waescheartikel-for-select"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("waescheartikel")
-        .select("id, name, artikelnummer, kategorie, farbe")
+        .select("id, name, artikelnummer, kategorie, farbe, bild_url, bezeichnung")
         .eq("aktiv", true)
         .order("name");
 
