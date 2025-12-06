@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react";
 
 export default function BestellungsManagement() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [dateRange, setDateRange] = useState<"today" | "week" | "all">("today");
+  const [dateRange, setDateRange] = useState<"today" | "week" | "all">("week");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [waeschekraftFilter, setWaeschekraftFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
@@ -34,7 +34,7 @@ export default function BestellungsManagement() {
       } else if (dateRange === "week") {
         const today = new Date();
         const weekEnd = new Date(today);
-        weekEnd.setDate(today.getDate() + 7);
+        weekEnd.setDate(today.getDate() + 14);
         const lieferdatum = b.lieferdatum ? new Date(b.lieferdatum) : null;
         if (!lieferdatum || lieferdatum < today || lieferdatum > weekEnd) {
           return false;
