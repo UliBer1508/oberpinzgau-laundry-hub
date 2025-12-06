@@ -1,0 +1,270 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+
+export type Waescheset = Tables<"waeschesets"> & {
+  objektName: string;
+  artikelCount: number;
+};
+
+export type WaeschesetInsert = TablesInsert<"waeschesets">;
+export type WaeschesetUpdate = TablesUpdate<"waeschesets">;
+
+export type WaeschesetArtikel = Tables<"waescheset_artikel"> & {
+  artikelName: string;
+  artikelNummer: string;
+  kategorie: string | null;
+  farbe: string | null;
+};
+
+// Fetch all Wäschesets with Objekt name and article count
+export function useWaeschesets() {
+  return useQuery({
+    queryKey: ["waeschesets"],
+    queryFn: async () => {
+      // First get sets with objekt info
+      const { data: sets, error: setsError } = await supabase
+        .from("waeschesets")
+        .select(`
+          *,
+          objekte!objekt_id (name)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (setsError) throw setsError;
+
+      // Get article counts for each set
+      const { data: artikelCounts, error: countsError } = await supabase
+        .from("waescheset_artikel")
+        .select("set_id");
+
+      if (countsError) throw countsError;
+
+      // Count articles per set
+      const countMap = new Map<string, number>();
+      artikelCounts?.forEach((item) => {
+        countMap.set(item.set_id, (countMap.get(item.set_id) || 0) + 1);
+      });
+
+      return sets?.map((set) => ({
+        ...set,
+        objektName: (set.objekte as { name: string } | null)?.name || "Unbekannt",
+        artikelCount: countMap.get(set.id) || 0,
+      })) as Waescheset[];
+    },
+  });
+}
+
+// Fetch sets for a specific objekt
+export function useWaeschesetsByObjekt(objektId: string | null) {
+  return useQuery({
+    queryKey: ["waeschesets", "objekt", objektId],
+    enabled: !!objektId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("waeschesets")
+        .select("*")
+        .eq("objekt_id", objektId!)
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+// Fetch articles for a specific set
+export function useWaeschesetArtikel(setId: string | null) {
+  return useQuery({
+    queryKey: ["waescheset-artikel", setId],
+    enabled: !!setId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("waescheset_artikel")
+        .select(`
+          *,
+          waescheartikel!artikel_id (
+            name,
+            artikelnummer,
+            kategorie,
+            farbe
+          )
+        `)
+        .eq("set_id", setId!);
+
+      if (error) throw error;
+
+      return data?.map((item) => ({
+        ...item,
+        artikelName: (item.waescheartikel as { name: string } | null)?.name || "",
+        artikelNummer: (item.waescheartikel as { artikelnummer: string } | null)?.artikelnummer || "",
+        kategorie: (item.waescheartikel as { kategorie: string | null } | null)?.kategorie || null,
+        farbe: (item.waescheartikel as { farbe: string | null } | null)?.farbe || null,
+      })) as WaeschesetArtikel[];
+    },
+  });
+}
+
+// Fetch all Objekte for select dropdown
+export function useObjekteForSelect() {
+  return useQuery({
+    queryKey: ["objekte-for-select"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("objekte")
+        .select("id, name, objektnummer")
+        .eq("aktiv", true)
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+// Fetch all active Wäscheartikel for adding to sets
+export function useWaescheartikelForSelect() {
+  return useQuery({
+    queryKey: ["waescheartikel-for-select"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("waescheartikel")
+        .select("id, name, artikelnummer, kategorie, farbe")
+        .eq("aktiv", true)
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+// Create a new Wäscheset
+export function useCreateWaescheset() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (waescheset: WaeschesetInsert) => {
+      const { data, error } = await supabase
+        .from("waeschesets")
+        .insert(waescheset)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["waeschesets"] });
+    },
+  });
+}
+
+// Update an existing Wäscheset
+export function useUpdateWaescheset() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: WaeschesetUpdate & { id: string }) => {
+      const { data, error } = await supabase
+        .from("waeschesets")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["waeschesets"] });
+    },
+  });
+}
+
+// Toggle aktiv status
+export function useToggleWaeschesetAktiv() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, aktiv }: { id: string; aktiv: boolean }) => {
+      const { data, error } = await supabase
+        .from("waeschesets")
+        .update({ aktiv })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["waeschesets"] });
+    },
+  });
+}
+
+// Add article to set
+export function useAddArtikelToSet() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ set_id, artikel_id, menge }: { set_id: string; artikel_id: string; menge: number }) => {
+      const { data, error } = await supabase
+        .from("waescheset_artikel")
+        .insert({ set_id, artikel_id, menge })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["waescheset-artikel", variables.set_id] });
+      queryClient.invalidateQueries({ queryKey: ["waeschesets"] });
+    },
+  });
+}
+
+// Remove article from set
+export function useRemoveArtikelFromSet() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, set_id }: { id: string; set_id: string }) => {
+      const { error } = await supabase
+        .from("waescheset_artikel")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      return { id, set_id };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["waescheset-artikel", result.set_id] });
+      queryClient.invalidateQueries({ queryKey: ["waeschesets"] });
+    },
+  });
+}
+
+// Update article quantity in set
+export function useUpdateArtikelMenge() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, menge, set_id }: { id: string; menge: number; set_id: string }) => {
+      const { data, error } = await supabase
+        .from("waescheset_artikel")
+        .update({ menge })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { ...data, set_id };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["waescheset-artikel", result.set_id] });
+    },
+  });
+}
