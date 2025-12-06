@@ -17,13 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Package } from "lucide-react";
 import type { Bestellung, BestellungInsert } from "@/hooks/useBestellungen";
 import {
   useKundenForSelect,
   useObjekteByKunde,
   useGenerateBestellnummer,
 } from "@/hooks/useBestellungen";
+import { useWaeschesetsByObjekt } from "@/hooks/useWaeschesets";
 
 interface BestellungFormDialogProps {
   open: boolean;
@@ -54,6 +55,7 @@ export function BestellungFormDialog({
     bestellnummer: "",
     kunde_id: "",
     objekt_id: "",
+    waescheset_id: "",
     lieferdatum: "",
     lieferzeit: "",
     abholdatum: "",
@@ -67,6 +69,7 @@ export function BestellungFormDialog({
   });
 
   const { data: objekte = [] } = useObjekteByKunde(formData.kunde_id || null);
+  const { data: waeschesets = [] } = useWaeschesetsByObjekt(formData.objekt_id || null);
 
   // Ermitteln des Bestellmodus für den ausgewählten Kunden
   const selectedKunde = useMemo(() => {
@@ -81,6 +84,7 @@ export function BestellungFormDialog({
         bestellnummer: bestellung.bestellnummer,
         kunde_id: bestellung.kunde_id,
         objekt_id: bestellung.objekt_id || "",
+        waescheset_id: "",
         lieferdatum: bestellung.lieferdatum || "",
         lieferzeit: bestellung.lieferzeit || "",
         abholdatum: bestellung.abholdatum || "",
@@ -96,6 +100,7 @@ export function BestellungFormDialog({
         bestellnummer: nextBestellnummer || "",
         kunde_id: "",
         objekt_id: "",
+        waescheset_id: "",
         lieferdatum: "",
         lieferzeit: "",
         abholdatum: "",
@@ -218,7 +223,7 @@ export function BestellungFormDialog({
             <Select
               value={formData.objekt_id}
               onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, objekt_id: value }))
+                setFormData((prev) => ({ ...prev, objekt_id: value, waescheset_id: "" }))
               }
               disabled={!formData.kunde_id}
             >
@@ -234,6 +239,39 @@ export function BestellungFormDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Wäscheset-Auswahl */}
+          {formData.objekt_id && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="waescheset">Wäscheset</Label>
+              </div>
+              <Select
+                value={formData.waescheset_id}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, waescheset_id: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Wäscheset auswählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  {waeschesets.length === 0 ? (
+                    <SelectItem value="_none" disabled>
+                      Keine Wäschesets für dieses Objekt
+                    </SelectItem>
+                  ) : (
+                    waeschesets.map((set) => (
+                      <SelectItem key={set.id} value={set.id}>
+                        {set.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Buchungsfelder - nur bei bestellmodus 'mit_buchung' und Neuerstellung */}
           {bestellmodus === "mit_buchung" && !isEdit && (
@@ -299,60 +337,66 @@ export function BestellungFormDialog({
             </div>
           )}
 
-          {/* Liefer-/Abholdaten - bei 'nur_sets' oder beim Bearbeiten */}
-          {(bestellmodus === "nur_sets" || isEdit) && (
-            <>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="lieferdatum">Lieferdatum</Label>
-                  <Input
-                    id="lieferdatum"
-                    type="date"
-                    value={formData.lieferdatum}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, lieferdatum: e.target.value }))
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lieferzeit">Lieferzeit</Label>
-                  <Input
-                    id="lieferzeit"
-                    type="time"
-                    value={formData.lieferzeit}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, lieferzeit: e.target.value }))
-                    }
-                  />
-                </div>
-              </div>
+          {/* Liefer-/Abholdaten - immer anzeigen */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="lieferdatum">
+                Lieferdatum
+                {bestellmodus === "mit_buchung" && formData.check_in && (
+                  <span className="ml-1 text-xs text-muted-foreground">(Check-in - 1 Tag)</span>
+                )}
+              </Label>
+              <Input
+                id="lieferdatum"
+                type="date"
+                value={formData.lieferdatum}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, lieferdatum: e.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lieferzeit">Lieferzeit</Label>
+              <Input
+                id="lieferzeit"
+                type="time"
+                value={formData.lieferzeit}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, lieferzeit: e.target.value }))
+                }
+              />
+            </div>
+          </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="abholdatum">Abholdatum</Label>
-                  <Input
-                    id="abholdatum"
-                    type="date"
-                    value={formData.abholdatum}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, abholdatum: e.target.value }))
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="abholzeit">Abholzeit</Label>
-                  <Input
-                    id="abholzeit"
-                    type="time"
-                    value={formData.abholzeit}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, abholzeit: e.target.value }))
-                    }
-                  />
-                </div>
-              </div>
-            </>
-          )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="abholdatum">
+                Abholdatum
+                {bestellmodus === "mit_buchung" && formData.check_out && (
+                  <span className="ml-1 text-xs text-muted-foreground">(= Check-out)</span>
+                )}
+              </Label>
+              <Input
+                id="abholdatum"
+                type="date"
+                value={formData.abholdatum}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, abholdatum: e.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="abholzeit">Abholzeit</Label>
+              <Input
+                id="abholzeit"
+                type="time"
+                value={formData.abholzeit}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, abholzeit: e.target.value }))
+                }
+              />
+            </div>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="notizen">Notizen</Label>
