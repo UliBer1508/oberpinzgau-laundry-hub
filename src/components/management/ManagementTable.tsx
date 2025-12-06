@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DndContext,
   closestCenter,
@@ -28,9 +28,9 @@ export function ManagementTable({ bestellungen }: ManagementTableProps) {
   const updateReihenfolge = useUpdateReihenfolge();
 
   // Sync items with bestellungen when they change
-  if (bestellungen !== items && bestellungen.length !== items.length) {
+  useEffect(() => {
     setItems(bestellungen);
-  }
+  }, [bestellungen]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
