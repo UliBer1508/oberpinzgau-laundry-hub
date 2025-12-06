@@ -1,4 +1,4 @@
-import { Plus, FileText, Truck, Calendar, ShoppingCart, Building2 } from "lucide-react";
+import { ShoppingCart, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -11,28 +11,10 @@ const actions = [
     href: "/bestellungen",
   },
   {
-    label: "Neue Buchung",
-    icon: Calendar,
-    variant: "outline" as const,
-    href: "/buchungen",
-  },
-  {
     label: "Tour planen",
     icon: Truck,
     variant: "outline" as const,
     href: "/liefertouren",
-  },
-  {
-    label: "Neuer Kunde",
-    icon: Plus,
-    variant: "outline" as const,
-    href: "/kunden",
-  },
-  {
-    label: "Neues Objekt",
-    icon: Building2,
-    variant: "outline" as const,
-    href: "/objekte",
   },
 ];
 

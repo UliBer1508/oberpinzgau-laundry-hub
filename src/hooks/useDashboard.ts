@@ -2,36 +2,21 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface DashboardStats {
-  kunden: { total: number; aktiv: number };
-  objekte: { total: number; aktiv: number };
-  bestellungen: { total: number; neu: number; inBearbeitung: number; ausgeliefert: number };
-  buchungen: { total: number; eingecheckt: number; checkInHeute: number; checkOutHeute: number };
-  liefertouren: { total: number; aktiv: number; heute: number };
-  waeschekraefte: { total: number; aktiv: number };
-  waescheartikel: { total: number; aktiv: number };
+  bestellungen: {
+    total: number;
+    neu: number;
+    inBearbeitung: number;
+    versandbereit: number;
+    heuteAuszuliefern: number;
+  };
+  liefertouren: {
+    total: number;
+    aktiv: number;
+    heute: number;
+  };
 }
 
-export interface UpcomingCheckIn {
-  id: string;
-  buchungsnummer: string;
-  gastname: string | null;
-  objektName: string;
-  kundeName: string;
-  check_in: string;
-  anzahl_personen: number | null;
-}
-
-export interface UpcomingCheckOut {
-  id: string;
-  buchungsnummer: string;
-  gastname: string | null;
-  objektName: string;
-  kundeName: string;
-  check_out: string;
-  anzahl_personen: number | null;
-}
-
-export interface RecentBestellung {
+export interface DashboardBestellung {
   id: string;
   bestellnummer: string;
   kundeName: string;
@@ -39,6 +24,22 @@ export interface RecentBestellung {
   status: string | null;
   lieferdatum: string | null;
   created_at: string;
+  prioritaet: number | null;
+  positionen: Array<{
+    id: string;
+    menge: number;
+    artikelName: string;
+    artikelFarbe: string | null;
+  }>;
+}
+
+export interface TodayLiefertour {
+  id: string;
+  tournummer: string;
+  name: string;
+  status: string | null;
+  waeschekraftName: string | null;
+  stoppCount: number;
 }
 
 export function useDashboardStats() {
@@ -47,177 +48,72 @@ export function useDashboardStats() {
     queryFn: async (): Promise<DashboardStats> => {
       const today = new Date().toISOString().split("T")[0];
 
-      // Parallel queries for all stats
-      const [
-        kundenResult,
-        objekteResult,
-        bestellungenResult,
-        buchungenResult,
-        liefertourenResult,
-        waeschekraefteResult,
-        waescheartikelResult,
-      ] = await Promise.all([
-        supabase.from("kunden").select("id, aktiv"),
-        supabase.from("objekte").select("id, aktiv"),
-        supabase.from("waeschebestellungen").select("id, status"),
-        supabase.from("buchungen").select("id, check_in, check_out"),
+      const [bestellungenResult, liefertourenResult] = await Promise.all([
+        supabase.from("waeschebestellungen").select("id, status, lieferdatum"),
         supabase.from("liefertouren").select("id, status, datum"),
-        supabase.from("waeschekraefte").select("id, aktiv"),
-        supabase.from("waescheartikel").select("id, aktiv"),
       ]);
 
-      const kunden = kundenResult.data || [];
-      const objekte = objekteResult.data || [];
       const bestellungen = bestellungenResult.data || [];
-      const buchungen = buchungenResult.data || [];
       const touren = liefertourenResult.data || [];
-      const waeschekraefte = waeschekraefteResult.data || [];
-      const waescheartikel = waescheartikelResult.data || [];
-
-      // Calculate buchung status
-      const buchungStats = buchungen.reduce(
-        (acc, b) => {
-          const checkIn = new Date(b.check_in);
-          const checkOut = new Date(b.check_out);
-          const todayDate = new Date(today);
-
-          if (todayDate >= checkIn && todayDate < checkOut) {
-            acc.eingecheckt++;
-          }
-          if (b.check_in === today) acc.checkInHeute++;
-          if (b.check_out === today) acc.checkOutHeute++;
-
-          return acc;
-        },
-        { eingecheckt: 0, checkInHeute: 0, checkOutHeute: 0 }
-      );
 
       return {
-        kunden: {
-          total: kunden.length,
-          aktiv: kunden.filter((k) => k.aktiv).length,
-        },
-        objekte: {
-          total: objekte.length,
-          aktiv: objekte.filter((o) => o.aktiv).length,
-        },
         bestellungen: {
           total: bestellungen.length,
           neu: bestellungen.filter((b) => b.status === "neu").length,
           inBearbeitung: bestellungen.filter((b) => b.status === "in_bearbeitung").length,
-          ausgeliefert: bestellungen.filter((b) => b.status === "ausgeliefert").length,
-        },
-        buchungen: {
-          total: buchungen.length,
-          ...buchungStats,
+          versandbereit: bestellungen.filter((b) => b.status === "ausgeliefert").length,
+          heuteAuszuliefern: bestellungen.filter((b) => b.lieferdatum === today && b.status !== "abgeschlossen" && b.status !== "storniert").length,
         },
         liefertouren: {
           total: touren.length,
-          aktiv: touren.filter((t) => t.status === "aktiv").length,
+          aktiv: touren.filter((t) => t.status === "aktiv" || t.status === "in_durchfuehrung").length,
           heute: touren.filter((t) => t.datum === today).length,
-        },
-        waeschekraefte: {
-          total: waeschekraefte.length,
-          aktiv: waeschekraefte.filter((w) => w.aktiv).length,
-        },
-        waescheartikel: {
-          total: waescheartikel.length,
-          aktiv: waescheartikel.filter((w) => w.aktiv).length,
         },
       };
     },
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
   });
 }
 
-export function useUpcomingCheckIns() {
+export function useDashboardBestellungen(status: "neu" | "in_bearbeitung" | "ausgeliefert" | "abgeholt" | "abgeschlossen" | "storniert") {
   return useQuery({
-    queryKey: ["upcoming_checkins"],
-    queryFn: async (): Promise<UpcomingCheckIn[]> => {
-      const today = new Date().toISOString().split("T")[0];
-      const in7Days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-
-      const { data, error } = await supabase
-        .from("buchungen")
-        .select(`
-          id, buchungsnummer, gastname, check_in, anzahl_personen,
-          objekte (name, kunden (name))
-        `)
-        .gte("check_in", today)
-        .lte("check_in", in7Days)
-        .order("check_in")
-        .limit(5);
-
-      if (error) throw error;
-
-      return (data || []).map((b) => {
-        const objekt = b.objekte as { name: string; kunden: { name: string } | null } | null;
-        return {
-          id: b.id,
-          buchungsnummer: b.buchungsnummer,
-          gastname: b.gastname,
-          objektName: objekt?.name || "—",
-          kundeName: objekt?.kunden?.name || "—",
-          check_in: b.check_in,
-          anzahl_personen: b.anzahl_personen,
-        };
-      });
-    },
-  });
-}
-
-export function useUpcomingCheckOuts() {
-  return useQuery({
-    queryKey: ["upcoming_checkouts"],
-    queryFn: async (): Promise<UpcomingCheckOut[]> => {
-      const today = new Date().toISOString().split("T")[0];
-      const in3Days = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-
-      const { data, error } = await supabase
-        .from("buchungen")
-        .select(`
-          id, buchungsnummer, gastname, check_out, anzahl_personen,
-          objekte (name, kunden (name))
-        `)
-        .gte("check_out", today)
-        .lte("check_out", in3Days)
-        .order("check_out")
-        .limit(5);
-
-      if (error) throw error;
-
-      return (data || []).map((b) => {
-        const objekt = b.objekte as { name: string; kunden: { name: string } | null } | null;
-        return {
-          id: b.id,
-          buchungsnummer: b.buchungsnummer,
-          gastname: b.gastname,
-          objektName: objekt?.name || "—",
-          kundeName: objekt?.kunden?.name || "—",
-          check_out: b.check_out,
-          anzahl_personen: b.anzahl_personen,
-        };
-      });
-    },
-  });
-}
-
-export function useRecentBestellungen() {
-  return useQuery({
-    queryKey: ["recent_bestellungen"],
-    queryFn: async (): Promise<RecentBestellung[]> => {
+    queryKey: ["dashboard_bestellungen", status],
+    queryFn: async (): Promise<DashboardBestellung[]> => {
       const { data, error } = await supabase
         .from("waeschebestellungen")
         .select(`
-          id, bestellnummer, status, lieferdatum, created_at,
+          id, bestellnummer, status, lieferdatum, created_at, prioritaet,
           kunden (name),
           objekte (name)
         `)
-        .in("status", ["neu", "in_bearbeitung"])
+        .eq("status", status)
+        .order("prioritaet", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false })
-        .limit(5);
+        .limit(10);
 
       if (error) throw error;
+
+      // Fetch positions for all orders
+      const orderIds = (data || []).map((b) => b.id);
+      const { data: positionen } = await supabase
+        .from("bestellpositionen")
+        .select(`
+          id, menge, bestellung_id,
+          waescheartikel (name, farbe)
+        `)
+        .in("bestellung_id", orderIds);
+
+      const positionenByOrder = (positionen || []).reduce((acc, p) => {
+        if (!acc[p.bestellung_id]) acc[p.bestellung_id] = [];
+        const artikel = p.waescheartikel as { name: string; farbe: string | null } | null;
+        acc[p.bestellung_id].push({
+          id: p.id,
+          menge: p.menge,
+          artikelName: artikel?.name || "—",
+          artikelFarbe: artikel?.farbe || null,
+        });
+        return acc;
+      }, {} as Record<string, DashboardBestellung["positionen"]>);
 
       return (data || []).map((b) => ({
         id: b.id,
@@ -227,6 +123,49 @@ export function useRecentBestellungen() {
         status: b.status,
         lieferdatum: b.lieferdatum,
         created_at: b.created_at,
+        prioritaet: b.prioritaet,
+        positionen: positionenByOrder[b.id] || [],
+      }));
+    },
+  });
+}
+
+export function useTodayLiefertouren() {
+  return useQuery({
+    queryKey: ["today_liefertouren"],
+    queryFn: async (): Promise<TodayLiefertour[]> => {
+      const today = new Date().toISOString().split("T")[0];
+
+      const { data, error } = await supabase
+        .from("liefertouren")
+        .select(`
+          id, tournummer, name, status,
+          waeschekraefte (name)
+        `)
+        .eq("datum", today)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      // Get stop counts
+      const tourIds = (data || []).map((t) => t.id);
+      const { data: stopps } = await supabase
+        .from("liefertour_stopps")
+        .select("id, tour_id")
+        .in("tour_id", tourIds);
+
+      const stoppCountByTour = (stopps || []).reduce((acc, s) => {
+        acc[s.tour_id] = (acc[s.tour_id] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      return (data || []).map((t) => ({
+        id: t.id,
+        tournummer: t.tournummer,
+        name: t.name,
+        status: t.status,
+        waeschekraftName: (t.waeschekraefte as { name: string } | null)?.name || null,
+        stoppCount: stoppCountByTour[t.id] || 0,
       }));
     },
   });
