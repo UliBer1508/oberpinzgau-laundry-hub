@@ -67,6 +67,7 @@ export function ManagementTableRow({ bestellung, isSelected }: ManagementTableRo
   const statusInfo = statusConfig[status] || statusConfig.neu;
   const priority = bestellung.prioritaet || 0;
   const priorityInfo = priorityConfig[priority] || priorityConfig[0];
+  const positionen = bestellung.positionen || [];
 
   const handleWaeschekraftChange = (value: string) => {
     updateWaeschekraft.mutate(
@@ -205,10 +206,10 @@ export function ManagementTableRow({ bestellung, isSelected }: ManagementTableRo
 
       <TableCell>
         <div className="space-y-0.5 text-sm max-h-24 overflow-y-auto">
-          {bestellung.positionen.length === 0 ? (
+          {positionen.length === 0 ? (
             <span className="text-muted-foreground italic">Keine Artikel</span>
           ) : (
-            bestellung.positionen.map((pos) => (
+            positionen.map((pos) => (
               <div key={pos.id} className="flex items-center gap-1.5">
                 <span className="font-mono text-muted-foreground text-xs">{pos.menge}×</span>
                 <span className="truncate">{pos.artikelName}</span>
