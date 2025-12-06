@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Minus, Trash2, Package } from "lucide-react";
+import { Plus, Minus, Trash2, Package, User, Calendar } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -25,13 +27,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   useWaeschesetArtikel,
   useWaescheartikelForSelect,
   useAddArtikelToSet,
   useRemoveArtikelFromSet,
   useUpdateArtikelMenge,
+  useUpdateArtikelBerechnungsart,
   type Waescheset,
   type WaeschesetArtikel,
+  type Berechnungsart,
 } from "@/hooks/useWaeschesets";
 import { useToast } from "@/hooks/use-toast";
 
@@ -58,6 +68,7 @@ export function WaeschesetArtikelDialog({
   const { toast } = useToast();
   const [selectedArtikel, setSelectedArtikel] = useState<string>("");
   const [menge, setMenge] = useState<number>(1);
+  const [berechnungsart, setBerechnungsart] = useState<Berechnungsart>("pro_buchung");
 
   const { data: setArtikel = [], isLoading } = useWaeschesetArtikel(
     open ? set?.id ?? null : null
@@ -67,6 +78,7 @@ export function WaeschesetArtikelDialog({
   const addArtikel = useAddArtikelToSet();
   const removeArtikel = useRemoveArtikelFromSet();
   const updateMenge = useUpdateArtikelMenge();
+  const updateBerechnungsart = useUpdateArtikelBerechnungsart();
 
   // Filter out already added articles
   const verfuegbareArtikel = alleArtikel.filter(
@@ -81,9 +93,11 @@ export function WaeschesetArtikelDialog({
         set_id: set.id,
         artikel_id: selectedArtikel,
         menge,
+        berechnungsart,
       });
       setSelectedArtikel("");
       setMenge(1);
+      setBerechnungsart("pro_buchung");
       toast({ title: "Artikel hinzugefügt" });
     } catch {
       toast({ title: "Fehler beim Hinzufügen", variant: "destructive" });
@@ -115,6 +129,23 @@ export function WaeschesetArtikelDialog({
     }
   };
 
+  const handleToggleBerechnungsart = async (artikel: WaeschesetArtikel) => {
+    if (!set) return;
+
+    const newBerechnungsart: Berechnungsart = 
+      artikel.berechnungsart === "pro_buchung" ? "pro_gast" : "pro_buchung";
+
+    try {
+      await updateBerechnungsart.mutateAsync({
+        id: artikel.id,
+        berechnungsart: newBerechnungsart,
+        set_id: set.id,
+      });
+    } catch {
+      toast({ title: "Fehler beim Aktualisieren", variant: "destructive" });
+    }
+  };
+
   const getFarbStyle = (farbe: string | null) => {
     if (!farbe) return "bg-gray-200";
     return FARB_STYLES[farbe] || "bg-gray-200";
@@ -122,14 +153,11 @@ export function WaeschesetArtikelDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
             <span>Artikel im Set: {set?.name}</span>
-            <Badge variant="outline" className="ml-2">
-              {set?.objektName}
-            </Badge>
           </DialogTitle>
         </DialogHeader>
 
@@ -156,6 +184,7 @@ export function WaeschesetArtikelDialog({
                     <TableHead>Kategorie</TableHead>
                     <TableHead>Farbe</TableHead>
                     <TableHead className="text-center">Menge</TableHead>
+                    <TableHead className="text-center">Berechnung</TableHead>
                     <TableHead className="w-[60px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -224,6 +253,42 @@ export function WaeschesetArtikelDialog({
                           </Button>
                         </div>
                       </TableCell>
+                      <TableCell className="text-center">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant={artikel.berechnungsart === "pro_gast" ? "default" : "outline"}
+                                size="sm"
+                                className="gap-1.5"
+                                onClick={() => handleToggleBerechnungsart(artikel)}
+                              >
+                                {artikel.berechnungsart === "pro_gast" ? (
+                                  <>
+                                    <User className="h-3.5 w-3.5" />
+                                    <span>Pro Gast</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Calendar className="h-3.5 w-3.5" />
+                                    <span>Pro Buchung</span>
+                                  </>
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                {artikel.berechnungsart === "pro_gast"
+                                  ? "Menge wird mit Gästeanzahl multipliziert"
+                                  : "Menge gilt für die gesamte Buchung"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Klicken zum Wechseln
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </TableCell>
                       <TableCell>
                         <Button
                           variant="ghost"
@@ -242,41 +307,70 @@ export function WaeschesetArtikelDialog({
           )}
 
           {/* Add article section */}
-          <div className="flex gap-2 rounded-lg border bg-muted/50 p-4">
-            <Select value={selectedArtikel} onValueChange={setSelectedArtikel}>
-              <SelectTrigger className="flex-1 bg-background">
-                <SelectValue placeholder="Artikel auswählen..." />
-              </SelectTrigger>
-              <SelectContent>
-                {verfuegbareArtikel.length === 0 ? (
-                  <SelectItem value="none" disabled>
-                    Keine weiteren Artikel verfügbar
-                  </SelectItem>
-                ) : (
-                  verfuegbareArtikel.map((artikel) => (
-                    <SelectItem key={artikel.id} value={artikel.id}>
-                      {artikel.artikelnummer} - {artikel.name}
-                      {artikel.kategorie && ` (${artikel.kategorie})`}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-            <Input
-              type="number"
-              min={1}
-              value={menge}
-              onChange={(e) => setMenge(parseInt(e.target.value) || 1)}
-              className="w-20 bg-background"
-              placeholder="Menge"
-            />
-            <Button
-              onClick={handleAddArtikel}
-              disabled={!selectedArtikel || addArtikel.isPending}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Hinzufügen
-            </Button>
+          <div className="rounded-lg border bg-muted/50 p-4">
+            <div className="flex flex-wrap gap-3">
+              <div className="flex-1 min-w-[200px]">
+                <Select value={selectedArtikel} onValueChange={setSelectedArtikel}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Artikel auswählen..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {verfuegbareArtikel.length === 0 ? (
+                      <SelectItem value="none" disabled>
+                        Keine weiteren Artikel verfügbar
+                      </SelectItem>
+                    ) : (
+                      verfuegbareArtikel.map((artikel) => (
+                        <SelectItem key={artikel.id} value={artikel.id}>
+                          {artikel.artikelnummer} - {artikel.name}
+                          {artikel.kategorie && ` (${artikel.kategorie})`}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="w-20">
+                <Input
+                  type="number"
+                  min={1}
+                  value={menge}
+                  onChange={(e) => setMenge(parseInt(e.target.value) || 1)}
+                  className="bg-background"
+                  placeholder="Menge"
+                />
+              </div>
+
+              <RadioGroup
+                value={berechnungsart}
+                onValueChange={(value) => setBerechnungsart(value as Berechnungsart)}
+                className="flex items-center gap-4 rounded-md border bg-background px-3 py-2"
+              >
+                <div className="flex items-center gap-1.5">
+                  <RadioGroupItem value="pro_buchung" id="pro_buchung" />
+                  <Label htmlFor="pro_buchung" className="flex items-center gap-1 cursor-pointer text-sm">
+                    <Calendar className="h-3.5 w-3.5" />
+                    Pro Buchung
+                  </Label>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <RadioGroupItem value="pro_gast" id="pro_gast" />
+                  <Label htmlFor="pro_gast" className="flex items-center gap-1 cursor-pointer text-sm">
+                    <User className="h-3.5 w-3.5" />
+                    Pro Gast
+                  </Label>
+                </div>
+              </RadioGroup>
+
+              <Button
+                onClick={handleAddArtikel}
+                disabled={!selectedArtikel || addArtikel.isPending}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Hinzufügen
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>

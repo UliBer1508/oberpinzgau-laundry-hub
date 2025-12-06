@@ -13,9 +13,9 @@ import { Label } from "@/components/ui/label";
 interface WaeschesetsFilterProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  selectedObjekt: string;
-  onObjektChange: (value: string) => void;
-  objekte: { id: string; name: string; objektnummer: string }[];
+  selectedKunde: string;
+  onKundeChange: (value: string) => void;
+  kunden: { id: string; name: string }[];
   showOnlyAktiv: boolean;
   onShowOnlyAktivChange: (value: boolean) => void;
 }
@@ -23,9 +23,9 @@ interface WaeschesetsFilterProps {
 export function WaeschesetsFilter({
   searchTerm,
   onSearchChange,
-  selectedObjekt,
-  onObjektChange,
-  objekte,
+  selectedKunde,
+  onKundeChange,
+  kunden,
   showOnlyAktiv,
   onShowOnlyAktivChange,
 }: WaeschesetsFilterProps) {
@@ -34,22 +34,22 @@ export function WaeschesetsFilter({
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Suche nach Name, Beschreibung oder Objekt..."
+          placeholder="Suche nach Name, Kunde oder Objekt..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-9"
         />
       </div>
 
-      <Select value={selectedObjekt} onValueChange={onObjektChange}>
+      <Select value={selectedKunde} onValueChange={onKundeChange}>
         <SelectTrigger className="w-full sm:w-[200px]">
-          <SelectValue placeholder="Alle Objekte" />
+          <SelectValue placeholder="Alle Kunden" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Alle Objekte</SelectItem>
-          {objekte.map((objekt) => (
-            <SelectItem key={objekt.id} value={objekt.id}>
-              {objekt.name}
+          <SelectItem value="all">Alle Kunden</SelectItem>
+          {kunden.map((kunde) => (
+            <SelectItem key={kunde.id} value={kunde.id}>
+              {kunde.name}
             </SelectItem>
           ))}
         </SelectContent>

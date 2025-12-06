@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -28,11 +28,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Lock } from "lucide-react";
 import type { Waescheset, WaeschesetInsert } from "@/hooks/useWaeschesets";
+import { useKundenForWaeschesets, useObjekteByKunde } from "@/hooks/useWaeschesets";
 
 const formSchema = z.object({
+  kunde_id: z.string().min(1, "Bitte wählen Sie einen Kunden"),
   objekt_id: z.string().min(1, "Bitte wählen Sie ein Objekt"),
-  name: z.string().min(1, "Name ist erforderlich"),
   beschreibung: z.string().optional(),
   aktiv: z.boolean(),
 });
@@ -52,33 +54,65 @@ export function WaeschesetFormDialog({
   open,
   onOpenChange,
   set,
-  objekte,
   onSubmit,
   isLoading,
 }: WaeschesetFormDialogProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      kunde_id: "",
       objekt_id: "",
-      name: "",
       beschreibung: "",
       aktiv: true,
     },
   });
 
+  const selectedKundeId = form.watch("kunde_id");
+  const selectedObjektId = form.watch("objekt_id");
+
+  // Fetch Kunden and Objekte
+  const { data: kunden = [] } = useKundenForWaeschesets();
+  const { data: kundeObjekte = [] } = useObjekteByKunde(selectedKundeId || null);
+
+  // Get selected kunde and objekt names for auto-generated name
+  const selectedKunde = useMemo(() => 
+    kunden.find(k => k.id === selectedKundeId),
+    [kunden, selectedKundeId]
+  );
+  
+  const selectedObjekt = useMemo(() => 
+    kundeObjekte.find(o => o.id === selectedObjektId),
+    [kundeObjekte, selectedObjektId]
+  );
+
+  // Auto-generated name
+  const autoName = useMemo(() => {
+    if (!selectedKunde || !selectedObjekt) return "";
+    const kundeName = selectedKunde.firma || selectedKunde.name;
+    return `${kundeName} - ${selectedObjekt.name}`;
+  }, [selectedKunde, selectedObjekt]);
+
+  // Reset objekt when kunde changes
+  useEffect(() => {
+    if (selectedKundeId && !set) {
+      form.setValue("objekt_id", "");
+    }
+  }, [selectedKundeId, form, set]);
+
   useEffect(() => {
     if (open) {
       if (set) {
+        // Editing existing set - find kunde from set data
         form.reset({
+          kunde_id: set.kundeId || "",
           objekt_id: set.objekt_id,
-          name: set.name,
           beschreibung: set.beschreibung || "",
           aktiv: set.aktiv ?? true,
         });
       } else {
         form.reset({
+          kunde_id: "",
           objekt_id: "",
-          name: "",
           beschreibung: "",
           aktiv: true,
         });
@@ -89,7 +123,7 @@ export function WaeschesetFormDialog({
   const handleSubmit = (values: FormValues) => {
     const data: WaeschesetInsert = {
       objekt_id: values.objekt_id,
-      name: values.name,
+      name: autoName,
       beschreibung: values.beschreibung || null,
       aktiv: values.aktiv,
     };
@@ -109,10 +143,10 @@ export function WaeschesetFormDialog({
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="objekt_id"
+              name="kunde_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Objekt *</FormLabel>
+                  <FormLabel>Kunde *</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
@@ -120,13 +154,13 @@ export function WaeschesetFormDialog({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Objekt auswählen" />
+                        <SelectValue placeholder="Kunde auswählen" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {objekte.map((objekt) => (
-                        <SelectItem key={objekt.id} value={objekt.id}>
-                          {objekt.name} ({objekt.objektnummer})
+                      {kunden.map((kunde) => (
+                        <SelectItem key={kunde.id} value={kunde.id}>
+                          {kunde.firma || kunde.name} ({kunde.kundennummer})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -138,17 +172,53 @@ export function WaeschesetFormDialog({
 
             <FormField
               control={form.control}
-              name="name"
+              name="objekt_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="z.B. Standard-Set" {...field} />
-                  </FormControl>
+                  <FormLabel>Objekt *</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={!!set || !selectedKundeId}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={
+                          !selectedKundeId 
+                            ? "Bitte zuerst Kunde wählen" 
+                            : kundeObjekte.length === 0 
+                              ? "Keine Objekte vorhanden" 
+                              : "Objekt auswählen"
+                        } />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {kundeObjekte.map((objekt) => (
+                        <SelectItem key={objekt.id} value={objekt.id}>
+                          {objekt.name} ({objekt.objektnummer})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Auto-generated name (read-only) */}
+            <div className="space-y-2">
+              <FormLabel className="flex items-center gap-2">
+                Name (automatisch generiert)
+                <Lock className="h-3 w-3 text-muted-foreground" />
+              </FormLabel>
+              <div className="flex items-center rounded-md border bg-muted/50 px-3 py-2 text-sm">
+                {autoName || (
+                  <span className="text-muted-foreground">
+                    Wird automatisch erstellt...
+                  </span>
+                )}
+              </div>
+            </div>
 
             <FormField
               control={form.control}
@@ -192,7 +262,10 @@ export function WaeschesetFormDialog({
               >
                 Abbrechen
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                disabled={isLoading || !autoName}
+              >
                 {isLoading ? "Speichern..." : "Speichern"}
               </Button>
             </DialogFooter>
