@@ -14,7 +14,583 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bestellpositionen: {
+        Row: {
+          artikel_id: string
+          bestellung_id: string
+          id: string
+          menge: number
+          notizen: string | null
+        }
+        Insert: {
+          artikel_id: string
+          bestellung_id: string
+          id?: string
+          menge?: number
+          notizen?: string | null
+        }
+        Update: {
+          artikel_id?: string
+          bestellung_id?: string
+          id?: string
+          menge?: number
+          notizen?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bestellpositionen_artikel_id_fkey"
+            columns: ["artikel_id"]
+            isOneToOne: false
+            referencedRelation: "waescheartikel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bestellpositionen_bestellung_id_fkey"
+            columns: ["bestellung_id"]
+            isOneToOne: false
+            referencedRelation: "waeschebestellungen"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buchungen: {
+        Row: {
+          anzahl_personen: number | null
+          buchungsnummer: string
+          check_in: string
+          check_out: string
+          created_at: string
+          gastname: string | null
+          id: string
+          notizen: string | null
+          objekt_id: string
+          updated_at: string
+        }
+        Insert: {
+          anzahl_personen?: number | null
+          buchungsnummer: string
+          check_in: string
+          check_out: string
+          created_at?: string
+          gastname?: string | null
+          id?: string
+          notizen?: string | null
+          objekt_id: string
+          updated_at?: string
+        }
+        Update: {
+          anzahl_personen?: number | null
+          buchungsnummer?: string
+          check_in?: string
+          check_out?: string
+          created_at?: string
+          gastname?: string | null
+          id?: string
+          notizen?: string | null
+          objekt_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buchungen_objekt_id_fkey"
+            columns: ["objekt_id"]
+            isOneToOne: false
+            referencedRelation: "objekte"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kunden: {
+        Row: {
+          aktiv: boolean | null
+          anlieferadresse: string | null
+          bestellart: Database["public"]["Enums"]["bestellart"] | null
+          created_at: string
+          email: string | null
+          firma: string | null
+          id: string
+          kundennummer: string
+          name: string
+          notizen: string | null
+          ort: string | null
+          plz: string | null
+          strasse: string | null
+          telefon: string | null
+          updated_at: string
+        }
+        Insert: {
+          aktiv?: boolean | null
+          anlieferadresse?: string | null
+          bestellart?: Database["public"]["Enums"]["bestellart"] | null
+          created_at?: string
+          email?: string | null
+          firma?: string | null
+          id?: string
+          kundennummer: string
+          name: string
+          notizen?: string | null
+          ort?: string | null
+          plz?: string | null
+          strasse?: string | null
+          telefon?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aktiv?: boolean | null
+          anlieferadresse?: string | null
+          bestellart?: Database["public"]["Enums"]["bestellart"] | null
+          created_at?: string
+          email?: string | null
+          firma?: string | null
+          id?: string
+          kundennummer?: string
+          name?: string
+          notizen?: string | null
+          ort?: string | null
+          plz?: string | null
+          strasse?: string | null
+          telefon?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      liefertour_stopps: {
+        Row: {
+          ankunftszeit: string | null
+          bestellung_id: string
+          erledigt: boolean | null
+          id: string
+          notizen: string | null
+          reihenfolge: number
+          tour_id: string
+        }
+        Insert: {
+          ankunftszeit?: string | null
+          bestellung_id: string
+          erledigt?: boolean | null
+          id?: string
+          notizen?: string | null
+          reihenfolge: number
+          tour_id: string
+        }
+        Update: {
+          ankunftszeit?: string | null
+          bestellung_id?: string
+          erledigt?: boolean | null
+          id?: string
+          notizen?: string | null
+          reihenfolge?: number
+          tour_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liefertour_stopps_bestellung_id_fkey"
+            columns: ["bestellung_id"]
+            isOneToOne: false
+            referencedRelation: "waeschebestellungen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liefertour_stopps_tour_id_fkey"
+            columns: ["tour_id"]
+            isOneToOne: false
+            referencedRelation: "liefertouren"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      liefertouren: {
+        Row: {
+          created_at: string
+          datum: string
+          id: string
+          name: string
+          notizen: string | null
+          status: string | null
+          tournummer: string
+          updated_at: string
+          waeschekraft_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          datum: string
+          id?: string
+          name: string
+          notizen?: string | null
+          status?: string | null
+          tournummer: string
+          updated_at?: string
+          waeschekraft_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          datum?: string
+          id?: string
+          name?: string
+          notizen?: string | null
+          status?: string | null
+          tournummer?: string
+          updated_at?: string
+          waeschekraft_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liefertouren_waeschekraft_id_fkey"
+            columns: ["waeschekraft_id"]
+            isOneToOne: false
+            referencedRelation: "waeschekraefte"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      objekte: {
+        Row: {
+          aktiv: boolean | null
+          ansprechpartner: string | null
+          created_at: string
+          id: string
+          kunde_id: string
+          name: string
+          notizen: string | null
+          objektnummer: string
+          ort: string | null
+          plz: string | null
+          strasse: string | null
+          telefon: string | null
+          typ: Database["public"]["Enums"]["objekt_typ"]
+          updated_at: string
+        }
+        Insert: {
+          aktiv?: boolean | null
+          ansprechpartner?: string | null
+          created_at?: string
+          id?: string
+          kunde_id: string
+          name: string
+          notizen?: string | null
+          objektnummer: string
+          ort?: string | null
+          plz?: string | null
+          strasse?: string | null
+          telefon?: string | null
+          typ: Database["public"]["Enums"]["objekt_typ"]
+          updated_at?: string
+        }
+        Update: {
+          aktiv?: boolean | null
+          ansprechpartner?: string | null
+          created_at?: string
+          id?: string
+          kunde_id?: string
+          name?: string
+          notizen?: string | null
+          objektnummer?: string
+          ort?: string | null
+          plz?: string | null
+          strasse?: string | null
+          telefon?: string | null
+          typ?: Database["public"]["Enums"]["objekt_typ"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objekte_kunde_id_fkey"
+            columns: ["kunde_id"]
+            isOneToOne: false
+            referencedRelation: "kunden"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          telefon: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          name: string
+          telefon?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          telefon?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      waescheartikel: {
+        Row: {
+          aktiv: boolean | null
+          artikelnummer: string
+          bezeichnung: string | null
+          created_at: string
+          farbe: string | null
+          id: string
+          kategorie: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          aktiv?: boolean | null
+          artikelnummer: string
+          bezeichnung?: string | null
+          created_at?: string
+          farbe?: string | null
+          id?: string
+          kategorie?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          aktiv?: boolean | null
+          artikelnummer?: string
+          bezeichnung?: string | null
+          created_at?: string
+          farbe?: string | null
+          id?: string
+          kategorie?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      waeschebestellungen: {
+        Row: {
+          abholdatum: string | null
+          abholzeit: string | null
+          bestellnummer: string
+          buchung_id: string | null
+          created_at: string
+          id: string
+          kunde_id: string
+          lieferdatum: string | null
+          lieferzeit: string | null
+          notizen: string | null
+          objekt_id: string | null
+          status: Database["public"]["Enums"]["bestellung_status"] | null
+          updated_at: string
+          waeschekraft_id: string | null
+        }
+        Insert: {
+          abholdatum?: string | null
+          abholzeit?: string | null
+          bestellnummer: string
+          buchung_id?: string | null
+          created_at?: string
+          id?: string
+          kunde_id: string
+          lieferdatum?: string | null
+          lieferzeit?: string | null
+          notizen?: string | null
+          objekt_id?: string | null
+          status?: Database["public"]["Enums"]["bestellung_status"] | null
+          updated_at?: string
+          waeschekraft_id?: string | null
+        }
+        Update: {
+          abholdatum?: string | null
+          abholzeit?: string | null
+          bestellnummer?: string
+          buchung_id?: string | null
+          created_at?: string
+          id?: string
+          kunde_id?: string
+          lieferdatum?: string | null
+          lieferzeit?: string | null
+          notizen?: string | null
+          objekt_id?: string | null
+          status?: Database["public"]["Enums"]["bestellung_status"] | null
+          updated_at?: string
+          waeschekraft_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waeschebestellungen_buchung_id_fkey"
+            columns: ["buchung_id"]
+            isOneToOne: false
+            referencedRelation: "buchungen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waeschebestellungen_kunde_id_fkey"
+            columns: ["kunde_id"]
+            isOneToOne: false
+            referencedRelation: "kunden"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waeschebestellungen_objekt_id_fkey"
+            columns: ["objekt_id"]
+            isOneToOne: false
+            referencedRelation: "objekte"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waeschebestellungen_waeschekraft_id_fkey"
+            columns: ["waeschekraft_id"]
+            isOneToOne: false
+            referencedRelation: "waeschekraefte"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waeschekraefte: {
+        Row: {
+          aktiv: boolean | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notizen: string | null
+          ort: string | null
+          personalnummer: string
+          plz: string | null
+          portalzugang: boolean | null
+          strasse: string | null
+          telefon: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          aktiv?: boolean | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notizen?: string | null
+          ort?: string | null
+          personalnummer: string
+          plz?: string | null
+          portalzugang?: boolean | null
+          strasse?: string | null
+          telefon?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          aktiv?: boolean | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notizen?: string | null
+          ort?: string | null
+          personalnummer?: string
+          plz?: string | null
+          portalzugang?: boolean | null
+          strasse?: string | null
+          telefon?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      waescheset_artikel: {
+        Row: {
+          artikel_id: string
+          id: string
+          menge: number
+          set_id: string
+        }
+        Insert: {
+          artikel_id: string
+          id?: string
+          menge?: number
+          set_id: string
+        }
+        Update: {
+          artikel_id?: string
+          id?: string
+          menge?: number
+          set_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waescheset_artikel_artikel_id_fkey"
+            columns: ["artikel_id"]
+            isOneToOne: false
+            referencedRelation: "waescheartikel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waescheset_artikel_set_id_fkey"
+            columns: ["set_id"]
+            isOneToOne: false
+            referencedRelation: "waeschesets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waeschesets: {
+        Row: {
+          aktiv: boolean | null
+          beschreibung: string | null
+          created_at: string
+          id: string
+          name: string
+          objekt_id: string
+          updated_at: string
+        }
+        Insert: {
+          aktiv?: boolean | null
+          beschreibung?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          objekt_id: string
+          updated_at?: string
+        }
+        Update: {
+          aktiv?: boolean | null
+          beschreibung?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          objekt_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waeschesets_objekt_id_fkey"
+            columns: ["objekt_id"]
+            isOneToOne: false
+            referencedRelation: "objekte"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +599,16 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "waeschekraft" | "kunde"
+      bestellart: "lieferung" | "abholung" | "beides"
+      bestellung_status:
+        | "neu"
+        | "in_bearbeitung"
+        | "ausgeliefert"
+        | "abgeholt"
+        | "abgeschlossen"
+        | "storniert"
+      objekt_typ: "hotel" | "apartmenthaus" | "ferienhaus" | "ferienwohnung"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +735,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "waeschekraft", "kunde"],
+      bestellart: ["lieferung", "abholung", "beides"],
+      bestellung_status: [
+        "neu",
+        "in_bearbeitung",
+        "ausgeliefert",
+        "abgeholt",
+        "abgeschlossen",
+        "storniert",
+      ],
+      objekt_typ: ["hotel", "apartmenthaus", "ferienhaus", "ferienwohnung"],
+    },
   },
 } as const
