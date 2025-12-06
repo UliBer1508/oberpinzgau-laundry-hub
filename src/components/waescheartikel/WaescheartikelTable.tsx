@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Pencil, Power, ArrowUpDown } from "lucide-react";
+import { MoreHorizontal, Pencil, Power, ArrowUpDown, Image as ImageIcon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -29,15 +29,11 @@ type SortDirection = "asc" | "desc";
 
 const colorMap: Record<string, string> = {
   "Weiß": "bg-white border border-border",
-  "Beige": "bg-amber-100",
+  "Weiß gestreift": "bg-gradient-to-r from-white via-gray-200 to-white border border-border",
   "Grau": "bg-gray-400",
-  "Blau": "bg-blue-500",
-  "Grün": "bg-green-500",
-  "Anthrazit": "bg-gray-700",
-  "Rot": "bg-red-500",
-  "Gelb": "bg-yellow-400",
-  "Rosa": "bg-pink-300",
+  "Grau gestreift": "bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400",
   "Braun": "bg-amber-700",
+  "Bunt": "bg-gradient-to-r from-red-400 via-yellow-400 to-blue-400",
 };
 
 function getColorClass(farbe: string | null): string {
@@ -116,6 +112,7 @@ export function WaescheartikelTable({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[60px]">Bild</TableHead>
             <TableHead className="w-[100px]">
               <SortButton field="artikelnummer">Art.-Nr.</SortButton>
             </TableHead>
@@ -138,13 +135,26 @@ export function WaescheartikelTable({
         <TableBody>
           {sortedArtikel.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center">
+              <TableCell colSpan={8} className="h-24 text-center">
                 Keine Wäscheartikel gefunden.
               </TableCell>
             </TableRow>
           ) : (
             sortedArtikel.map((artikel) => (
               <TableRow key={artikel.id}>
+                <TableCell>
+                  {artikel.bild_url ? (
+                    <img
+                      src={artikel.bild_url}
+                      alt={artikel.name}
+                      className="w-12 h-12 object-cover rounded border"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-muted rounded border flex items-center justify-center">
+                      <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell className="font-mono text-sm">
                   {artikel.artikelnummer}
                 </TableCell>

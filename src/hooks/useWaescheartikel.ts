@@ -110,3 +110,42 @@ export function useGenerateArtikelnummer() {
     },
   });
 }
+
+export function useUploadArtikelBild() {
+  return useMutation({
+    mutationFn: async (file: File): Promise<string> => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('artikel-bilder')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('artikel-bilder')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    },
+  });
+}
+
+export function useDeleteArtikelBild() {
+  return useMutation({
+    mutationFn: async (bildUrl: string): Promise<void> => {
+      // Extract file path from URL
+      const url = new URL(bildUrl);
+      const pathParts = url.pathname.split('/');
+      const fileName = pathParts[pathParts.length - 1];
+
+      const { error } = await supabase.storage
+        .from('artikel-bilder')
+        .remove([fileName]);
+
+      if (error) throw error;
+    },
+  });
+}
