@@ -74,10 +74,7 @@ const Kunden = () => {
   };
 
   const handleShowObjekte = (kunde: Kunde) => {
-    toast({
-      title: "Objekte anzeigen",
-      description: `Objektliste für ${kunde.name} wird geladen...`,
-    });
+    window.location.href = `/objekte?kunde=${kunde.id}`;
   };
 
   const handleToggleAktiv = (kunde: Kunde) => {
