@@ -44,7 +44,8 @@ import {
   useKundenForWaeschesets, 
   useObjekteByKunde, 
   useWaescheartikelForSelect,
-  useWaeschesetArtikel 
+  useWaeschesetArtikel,
+  useExistingWaeschesetNames,
 } from "@/hooks/useWaeschesets";
 
 const formSchema = z.object({
@@ -107,6 +108,7 @@ export function WaeschesetFormDialog({
   const { data: kundeObjekte = [] } = useObjekteByKunde(selectedKundeId || null);
   const { data: alleArtikel = [] } = useWaescheartikelForSelect();
   const { data: existingArtikel = [] } = useWaeschesetArtikel(set?.id || null);
+  const { data: existingNames = [] } = useExistingWaeschesetNames(selectedObjektId || null);
 
   // Get selected kunde and objekt names for auto-generated name
   const selectedKunde = useMemo(() => 
@@ -119,12 +121,29 @@ export function WaeschesetFormDialog({
     [kundeObjekte, selectedObjektId]
   );
 
-  // Auto-generated name
+  // Auto-generated name with automatic numbering for multiple sets
   const autoName = useMemo(() => {
     if (!selectedKunde || !selectedObjekt) return "";
     const kundeName = selectedKunde.firma || selectedKunde.name;
-    return `${kundeName} - ${selectedObjekt.name}`;
-  }, [selectedKunde, selectedObjekt]);
+    const baseName = `${kundeName} - ${selectedObjekt.name}`;
+    
+    // If editing an existing set for the same object, keep the original name
+    if (set?.objekt_id === selectedObjektId) {
+      return set.name;
+    }
+    
+    // Check if baseName already exists
+    if (!existingNames.includes(baseName)) {
+      return baseName;
+    }
+    
+    // Find next available number: "Kunde - Objekt 2", "Kunde - Objekt 3", etc.
+    let counter = 2;
+    while (existingNames.includes(`${baseName} ${counter}`)) {
+      counter++;
+    }
+    return `${baseName} ${counter}`;
+  }, [selectedKunde, selectedObjekt, existingNames, set, selectedObjektId]);
 
   // Filter out already added articles
   const availableArtikel = useMemo(() => {
