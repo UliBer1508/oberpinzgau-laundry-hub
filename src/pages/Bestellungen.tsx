@@ -7,8 +7,10 @@ import { toast } from "sonner";
 import { BestellungenStats } from "@/components/bestellungen/BestellungenStats";
 import { BestellungenFilter } from "@/components/bestellungen/BestellungenFilter";
 import { BestellungenTable } from "@/components/bestellungen/BestellungenTable";
-import { BestellungFormDialog } from "@/components/bestellungen/BestellungFormDialog";
+import { BestellungFormDialog, type BuchungData } from "@/components/bestellungen/BestellungFormDialog";
 import { BestellungPositionenDialog } from "@/components/bestellungen/BestellungPositionenDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useBestellungen,
   useKundenForSelect,
@@ -28,6 +30,7 @@ export default function Bestellungen() {
   const [positionenDialogOpen, setPositionenDialogOpen] = useState(false);
   const [selectedBestellung, setSelectedBestellung] = useState<Bestellung | null>(null);
 
+  const queryClient = useQueryClient();
   const { data: bestellungen = [], isLoading, error } = useBestellungen();
   const { data: kunden = [] } = useKundenForSelect();
   const createBestellung = useCreateBestellung();
@@ -83,13 +86,58 @@ export default function Bestellungen() {
     }
   };
 
-  const handleSaveBestellung = async (data: BestellungInsert) => {
+  const handleSaveBestellung = async (data: BestellungInsert, buchungData?: BuchungData) => {
     try {
       if (selectedBestellung) {
         await updateBestellung.mutateAsync({ id: selectedBestellung.id, ...data });
         toast.success("Bestellung aktualisiert");
       } else {
-        await createBestellung.mutateAsync(data);
+        // Bei 'mit_buchung' zuerst Buchung erstellen
+        if (buchungData && buchungData.objekt_id) {
+          // Buchungsnummer generieren
+          const { data: lastBuchung } = await supabase
+            .from("buchungen")
+            .select("buchungsnummer")
+            .order("created_at", { ascending: false })
+            .limit(1);
+          
+          let nextBuchungsnummer = "BU0001";
+          if (lastBuchung && lastBuchung.length > 0) {
+            const match = lastBuchung[0].buchungsnummer.match(/BU(\d+)/);
+            if (match) {
+              const nextNum = parseInt(match[1], 10) + 1;
+              nextBuchungsnummer = `BU${nextNum.toString().padStart(4, "0")}`;
+            }
+          }
+
+          // Buchung erstellen
+          const { data: newBuchung, error: buchungError } = await supabase
+            .from("buchungen")
+            .insert({
+              buchungsnummer: nextBuchungsnummer,
+              objekt_id: buchungData.objekt_id,
+              check_in: buchungData.check_in,
+              check_out: buchungData.check_out,
+              gastname: buchungData.gastname || null,
+              anzahl_personen: buchungData.anzahl_personen,
+            })
+            .select()
+            .single();
+
+          if (buchungError) throw buchungError;
+
+          // Bestellung mit buchung_id erstellen
+          await createBestellung.mutateAsync({
+            ...data,
+            buchung_id: newBuchung.id,
+            lieferdatum: buchungData.check_in,
+            abholdatum: buchungData.check_out,
+          });
+          
+          queryClient.invalidateQueries({ queryKey: ["buchungen"] });
+        } else {
+          await createBestellung.mutateAsync(data);
+        }
         toast.success("Bestellung erstellt");
       }
       setFormDialogOpen(false);
