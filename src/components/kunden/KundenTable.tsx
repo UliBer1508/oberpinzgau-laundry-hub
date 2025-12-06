@@ -16,21 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Building2, Power, PowerOff } from "lucide-react";
-
-export interface Kunde {
-  id: string;
-  kundennummer: string;
-  name: string;
-  firma: string | null;
-  strasse: string | null;
-  plz: string | null;
-  ort: string | null;
-  email: string | null;
-  telefon: string | null;
-  bestellart: "lieferung" | "abholung" | "beides" | null;
-  aktiv: boolean;
-  objekteCount: number;
-}
+import type { Kunde } from "@/hooks/useKunden";
 
 interface KundenTableProps {
   kunden: Kunde[];
