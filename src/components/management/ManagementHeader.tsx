@@ -1,0 +1,116 @@
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, addDays, subDays } from "date-fns";
+import { de } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+
+interface ManagementHeaderProps {
+  selectedDate: Date;
+  onDateChange: (date: Date) => void;
+  dateRange: "today" | "week" | "all";
+  onDateRangeChange: (range: "today" | "week" | "all") => void;
+  totalCount: number;
+  openCount: number;
+}
+
+export function ManagementHeader({
+  selectedDate,
+  onDateChange,
+  dateRange,
+  onDateRangeChange,
+  totalCount,
+  openCount,
+}: ManagementHeaderProps) {
+  return (
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-2">
+        <div className="flex items-center rounded-lg border bg-card">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+            onClick={() => onDateChange(subDays(selectedDate, 1))}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" className="h-9 gap-2 px-3">
+                <CalendarDays className="h-4 w-4" />
+                <span className="font-medium">
+                  {format(selectedDate, "EEEE, d. MMMM", { locale: de })}
+                </span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && onDateChange(date)}
+                locale={de}
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+            onClick={() => onDateChange(addDays(selectedDate, 1))}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="flex items-center rounded-lg border bg-card p-1">
+          <Button
+            variant={dateRange === "today" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-7 px-3"
+            onClick={() => onDateRangeChange("today")}
+          >
+            Heute
+          </Button>
+          <Button
+            variant={dateRange === "week" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-7 px-3"
+            onClick={() => onDateRangeChange("week")}
+          >
+            7 Tage
+          </Button>
+          <Button
+            variant={dateRange === "all" ? "secondary" : "ghost"}
+            size="sm"
+            className="h-7 px-3"
+            onClick={() => onDateRangeChange("all")}
+          >
+            Alle
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2">
+          <span className="text-sm text-muted-foreground">Gesamt:</span>
+          <Badge variant="secondary" className="font-mono">
+            {totalCount}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2">
+          <span className="text-sm text-muted-foreground">Offen:</span>
+          <Badge variant={openCount > 0 ? "default" : "secondary"} className={cn(
+            "font-mono",
+            openCount > 0 && "bg-amber-500 hover:bg-amber-600"
+          )}>
+            {openCount}
+          </Badge>
+        </div>
+      </div>
+    </div>
+  );
+}

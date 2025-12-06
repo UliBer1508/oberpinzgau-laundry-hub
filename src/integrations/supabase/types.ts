@@ -396,6 +396,7 @@ export type Database = {
         Row: {
           abholdatum: string | null
           abholzeit: string | null
+          bearbeitung_notizen: string | null
           bestellnummer: string
           buchung_id: string | null
           created_at: string
@@ -405,6 +406,8 @@ export type Database = {
           lieferzeit: string | null
           notizen: string | null
           objekt_id: string | null
+          prioritaet: number | null
+          reihenfolge: number | null
           status: Database["public"]["Enums"]["bestellung_status"] | null
           updated_at: string
           waeschekraft_id: string | null
@@ -412,6 +415,7 @@ export type Database = {
         Insert: {
           abholdatum?: string | null
           abholzeit?: string | null
+          bearbeitung_notizen?: string | null
           bestellnummer: string
           buchung_id?: string | null
           created_at?: string
@@ -421,6 +425,8 @@ export type Database = {
           lieferzeit?: string | null
           notizen?: string | null
           objekt_id?: string | null
+          prioritaet?: number | null
+          reihenfolge?: number | null
           status?: Database["public"]["Enums"]["bestellung_status"] | null
           updated_at?: string
           waeschekraft_id?: string | null
@@ -428,6 +434,7 @@ export type Database = {
         Update: {
           abholdatum?: string | null
           abholzeit?: string | null
+          bearbeitung_notizen?: string | null
           bestellnummer?: string
           buchung_id?: string | null
           created_at?: string
@@ -437,6 +444,8 @@ export type Database = {
           lieferzeit?: string | null
           notizen?: string | null
           objekt_id?: string | null
+          prioritaet?: number | null
+          reihenfolge?: number | null
           status?: Database["public"]["Enums"]["bestellung_status"] | null
           updated_at?: string
           waeschekraft_id?: string | null
