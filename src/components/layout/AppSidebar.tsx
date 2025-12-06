@@ -10,8 +10,11 @@ import {
   Layers,
   Settings,
   LogOut,
+  LogIn,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -45,6 +48,37 @@ const managementNavItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const getInitials = () => {
+    if (profile?.name) {
+      return profile.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+    }
+    if (user?.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return "??";
+  };
+
+  const getDisplayName = () => {
+    if (profile?.name) return profile.name;
+    if (user?.email) return user.email.split("@")[0];
+    return "Nicht angemeldet";
+  };
+
+  const handleAuthAction = () => {
+    if (user) {
+      signOut();
+    } else {
+      navigate("/auth");
+    }
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
@@ -120,19 +154,25 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground">
-            <span className="text-sm font-medium">AW</span>
+            <span className="text-sm font-medium">{getInitials()}</span>
           </div>
           {!isCollapsed && (
             <div className="flex flex-1 flex-col">
               <span className="text-sm font-medium text-sidebar-foreground">
-                Admin Weber
+                {getDisplayName()}
               </span>
-              <span className="text-xs text-sidebar-muted">Administrator</span>
+              <span className="text-xs text-sidebar-muted">
+                {user ? "Benutzer" : "Gast"}
+              </span>
             </div>
           )}
           {!isCollapsed && (
-            <button className="rounded-lg p-2 text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-              <LogOut className="h-4 w-4" />
+            <button 
+              onClick={handleAuthAction}
+              className="rounded-lg p-2 text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              title={user ? "Abmelden" : "Anmelden"}
+            >
+              {user ? <LogOut className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
             </button>
           )}
         </div>
