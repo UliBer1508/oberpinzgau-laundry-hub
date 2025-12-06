@@ -1,7 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -16,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { GripVertical, ChevronRight, Circle } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -27,7 +26,6 @@ import { toast } from "sonner";
 interface ManagementTableRowProps {
   bestellung: ManagementBestellung;
   isSelected: boolean;
-  onSelect: () => void;
 }
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive"; className?: string }> = {
@@ -45,7 +43,7 @@ const priorityConfig: Record<number, { icon: string; color: string }> = {
   2: { icon: "🔴", color: "text-red-500" },
 };
 
-export function ManagementTableRow({ bestellung, isSelected, onSelect }: ManagementTableRowProps) {
+export function ManagementTableRow({ bestellung, isSelected }: ManagementTableRowProps) {
   const {
     attributes,
     listeners,
@@ -205,10 +203,22 @@ export function ManagementTableRow({ bestellung, isSelected, onSelect }: Managem
         </Select>
       </TableCell>
 
-      <TableCell className="text-center">
-        <Badge variant="outline" className="font-mono">
-          {bestellung.positionenCount}
-        </Badge>
+      <TableCell>
+        <div className="space-y-0.5 text-sm max-h-24 overflow-y-auto">
+          {bestellung.positionen.length === 0 ? (
+            <span className="text-muted-foreground italic">Keine Artikel</span>
+          ) : (
+            bestellung.positionen.map((pos) => (
+              <div key={pos.id} className="flex items-center gap-1.5">
+                <span className="font-mono text-muted-foreground text-xs">{pos.menge}×</span>
+                <span className="truncate">{pos.artikelName}</span>
+                {pos.farbe && (
+                  <span className="text-xs text-muted-foreground shrink-0">({pos.farbe})</span>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       </TableCell>
 
       <TableCell>
@@ -229,17 +239,6 @@ export function ManagementTableRow({ bestellung, isSelected, onSelect }: Managem
             ))}
           </SelectContent>
         </Select>
-      </TableCell>
-
-      <TableCell>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={onSelect}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
       </TableCell>
     </TableRow>
   );

@@ -2,6 +2,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
+export type BestellPosition = {
+  id: string;
+  menge: number;
+  artikelName: string;
+  farbe: string | null;
+};
+
 export type ManagementBestellung = Tables<"waeschebestellungen"> & {
   kundeName: string;
   kundeNummer: string;
@@ -9,20 +16,9 @@ export type ManagementBestellung = Tables<"waeschebestellungen"> & {
   objektStrasse: string | null;
   objektOrt: string | null;
   waeschekraftName: string | null;
-  positionenCount: number;
+  positionen: BestellPosition[];
 };
 
-export type BestellPosition = {
-  id: string;
-  artikel_id: string;
-  menge: number;
-  notizen: string | null;
-  artikelName: string;
-  artikelNummer: string;
-  kategorie: string | null;
-  farbe: string | null;
-  bild_url: string | null;
-};
 
 // Fetch all Bestellungen for management view
 export function useManagementBestellungen() {
@@ -41,16 +37,31 @@ export function useManagementBestellungen() {
 
       if (error) throw error;
 
-      // Get position counts
-      const { data: positionCounts, error: countsError } = await supabase
+      // Get all positions with article data
+      const { data: allPositionen, error: positionenError } = await supabase
         .from("bestellpositionen")
-        .select("bestellung_id");
+        .select(`
+          id,
+          bestellung_id,
+          menge,
+          waescheartikel!artikel_id (name, farbe)
+        `);
 
-      if (countsError) throw countsError;
+      if (positionenError) throw positionenError;
 
-      const countMap = new Map<string, number>();
-      positionCounts?.forEach((item) => {
-        countMap.set(item.bestellung_id, (countMap.get(item.bestellung_id) || 0) + 1);
+      // Group positions by bestellung_id
+      const positionenMap = new Map<string, BestellPosition[]>();
+      allPositionen?.forEach((pos) => {
+        const bestellungId = pos.bestellung_id;
+        if (!positionenMap.has(bestellungId)) {
+          positionenMap.set(bestellungId, []);
+        }
+        positionenMap.get(bestellungId)!.push({
+          id: pos.id,
+          menge: pos.menge,
+          artikelName: (pos.waescheartikel as { name: string } | null)?.name || "",
+          farbe: (pos.waescheartikel as { farbe: string | null } | null)?.farbe || null,
+        });
       });
 
       return bestellungen?.map((b) => ({
@@ -61,48 +72,12 @@ export function useManagementBestellungen() {
         objektStrasse: (b.objekte as { strasse: string } | null)?.strasse || null,
         objektOrt: (b.objekte as { ort: string } | null)?.ort || null,
         waeschekraftName: (b.waeschekraefte as { name: string } | null)?.name || null,
-        positionenCount: countMap.get(b.id) || 0,
+        positionen: positionenMap.get(b.id) || [],
       })) as ManagementBestellung[];
     },
   });
 }
 
-// Fetch positions for a specific Bestellung
-export function useManagementPositionen(bestellungId: string | null) {
-  return useQuery({
-    queryKey: ["management-positionen", bestellungId],
-    enabled: !!bestellungId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("bestellpositionen")
-        .select(`
-          *,
-          waescheartikel!artikel_id (
-            name,
-            artikelnummer,
-            kategorie,
-            farbe,
-            bild_url
-          )
-        `)
-        .eq("bestellung_id", bestellungId!);
-
-      if (error) throw error;
-
-      return data?.map((item) => ({
-        id: item.id,
-        artikel_id: item.artikel_id,
-        menge: item.menge,
-        notizen: item.notizen,
-        artikelName: (item.waescheartikel as { name: string } | null)?.name || "",
-        artikelNummer: (item.waescheartikel as { artikelnummer: string } | null)?.artikelnummer || "",
-        kategorie: (item.waescheartikel as { kategorie: string | null } | null)?.kategorie || null,
-        farbe: (item.waescheartikel as { farbe: string | null } | null)?.farbe || null,
-        bild_url: (item.waescheartikel as { bild_url: string | null } | null)?.bild_url || null,
-      })) as BestellPosition[];
-    },
-  });
-}
 
 // Update Bestellung priority
 export function useUpdatePrioritaet() {

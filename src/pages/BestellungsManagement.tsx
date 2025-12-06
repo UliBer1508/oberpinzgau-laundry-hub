@@ -4,8 +4,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { ManagementHeader } from "@/components/management/ManagementHeader";
 import { ManagementFilterBar } from "@/components/management/ManagementFilterBar";
 import { ManagementTable } from "@/components/management/ManagementTable";
-import { BestellungDetailPanel } from "@/components/management/BestellungDetailPanel";
-import { useManagementBestellungen, type ManagementBestellung } from "@/hooks/useManagementBestellungen";
+import { useManagementBestellungen } from "@/hooks/useManagementBestellungen";
 import { Loader2 } from "lucide-react";
 
 export default function BestellungsManagement() {
@@ -15,7 +14,6 @@ export default function BestellungsManagement() {
   const [waeschekraftFilter, setWaeschekraftFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBestellung, setSelectedBestellung] = useState<ManagementBestellung | null>(null);
 
   const { data: bestellungen, isLoading } = useManagementBestellungen();
 
@@ -130,19 +128,10 @@ export default function BestellungsManagement() {
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <ManagementTable
-                bestellungen={sortedBestellungen}
-                onSelectBestellung={setSelectedBestellung}
-                selectedBestellungId={selectedBestellung?.id}
-              />
+              <ManagementTable bestellungen={sortedBestellungen} />
             )}
           </main>
         </SidebarInset>
-
-        <BestellungDetailPanel
-          bestellung={selectedBestellung}
-          onClose={() => setSelectedBestellung(null)}
-        />
       </div>
     </SidebarProvider>
   );
