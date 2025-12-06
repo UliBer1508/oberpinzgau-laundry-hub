@@ -192,23 +192,111 @@ export function useWaescheartikelForSelect() {
   });
 }
 
-// Create a new Wäscheset
+// Type for creating waescheset with articles
+export type CreateWaeschesetWithArtikel = {
+  waescheset: WaeschesetInsert;
+  artikel: {
+    artikel_id: string;
+    menge: number;
+    berechnungsart: Berechnungsart;
+  }[];
+};
+
+// Create a new Wäscheset with articles
 export function useCreateWaescheset() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (waescheset: WaeschesetInsert) => {
-      const { data, error } = await supabase
+    mutationFn: async ({ waescheset, artikel }: CreateWaeschesetWithArtikel) => {
+      // Create the set first
+      const { data: createdSet, error: setError } = await supabase
         .from("waeschesets")
         .insert(waescheset)
         .select()
         .single();
 
-      if (error) throw error;
-      return data;
+      if (setError) throw setError;
+
+      // If there are articles, add them
+      if (artikel.length > 0) {
+        const artikelToInsert = artikel.map(a => ({
+          set_id: createdSet.id,
+          artikel_id: a.artikel_id,
+          menge: a.menge,
+          berechnungsart: a.berechnungsart,
+        }));
+
+        const { error: artikelError } = await supabase
+          .from("waescheset_artikel")
+          .insert(artikelToInsert);
+
+        if (artikelError) throw artikelError;
+      }
+
+      return createdSet;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["waeschesets"] });
+    },
+  });
+}
+
+// Type for updating waescheset with articles
+export type UpdateWaeschesetWithArtikel = {
+  id: string;
+  waescheset: WaeschesetUpdate;
+  artikel: {
+    artikel_id: string;
+    menge: number;
+    berechnungsart: Berechnungsart;
+  }[];
+};
+
+// Update an existing Wäscheset with articles
+export function useUpdateWaeschesetWithArtikel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, waescheset, artikel }: UpdateWaeschesetWithArtikel) => {
+      // Update the set
+      const { data: updatedSet, error: setError } = await supabase
+        .from("waeschesets")
+        .update(waescheset)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (setError) throw setError;
+
+      // Delete existing articles
+      const { error: deleteError } = await supabase
+        .from("waescheset_artikel")
+        .delete()
+        .eq("set_id", id);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new articles
+      if (artikel.length > 0) {
+        const artikelToInsert = artikel.map(a => ({
+          set_id: id,
+          artikel_id: a.artikel_id,
+          menge: a.menge,
+          berechnungsart: a.berechnungsart,
+        }));
+
+        const { error: artikelError } = await supabase
+          .from("waescheset_artikel")
+          .insert(artikelToInsert);
+
+        if (artikelError) throw artikelError;
+      }
+
+      return updatedSet;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["waeschesets"] });
+      queryClient.invalidateQueries({ queryKey: ["waescheset-artikel", variables.id] });
     },
   });
 }
