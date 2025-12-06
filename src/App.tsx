@@ -10,6 +10,7 @@ import Waescheartikel from "./pages/Waescheartikel";
 import Waeschesets from "./pages/Waeschesets";
 import Bestellungen from "./pages/Bestellungen";
 import Liefertouren from "./pages/Liefertouren";
+import Waeschekraefte from "./pages/Waeschekraefte";
 import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/waeschesets" element={<Waeschesets />} />
           <Route path="/bestellungen" element={<Bestellungen />} />
           <Route path="/liefertouren" element={<Liefertouren />} />
+          <Route path="/waeschekraefte" element={<Waeschekraefte />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
