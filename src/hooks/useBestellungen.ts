@@ -364,3 +364,31 @@ export function useAddWaeschesetToBestellung() {
     },
   });
 }
+
+// Delete Bestellung
+export function useDeleteBestellung() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      // Erst alle Positionen löschen
+      const { error: posError } = await supabase
+        .from("bestellpositionen")
+        .delete()
+        .eq("bestellung_id", id);
+
+      if (posError) throw posError;
+
+      // Dann die Bestellung löschen
+      const { error } = await supabase
+        .from("waeschebestellungen")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bestellungen"] });
+    },
+  });
+}

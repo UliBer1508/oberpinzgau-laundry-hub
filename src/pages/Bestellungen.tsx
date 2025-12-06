@@ -12,11 +12,22 @@ import { BestellungPositionenDialog } from "@/components/bestellungen/Bestellung
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   useBestellungen,
   useKundenForSelect,
   useCreateBestellung,
   useUpdateBestellung,
   useUpdateBestellungStatus,
+  useDeleteBestellung,
   type Bestellung,
   type BestellungInsert,
   type BestellungStatus,
@@ -28,6 +39,7 @@ export default function Bestellungen() {
   const [selectedKunde, setSelectedKunde] = useState<string>("alle");
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [positionenDialogOpen, setPositionenDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedBestellung, setSelectedBestellung] = useState<Bestellung | null>(null);
 
   const queryClient = useQueryClient();
@@ -36,6 +48,7 @@ export default function Bestellungen() {
   const createBestellung = useCreateBestellung();
   const updateBestellung = useUpdateBestellung();
   const updateStatus = useUpdateBestellungStatus();
+  const deleteBestellung = useDeleteBestellung();
 
   const filteredBestellungen = useMemo(() => {
     return bestellungen.filter((b) => {
@@ -83,6 +96,23 @@ export default function Bestellungen() {
       toast.success("Status aktualisiert");
     } catch {
       toast.error("Fehler beim Aktualisieren des Status");
+    }
+  };
+
+  const handleDeleteClick = (bestellung: Bestellung) => {
+    setSelectedBestellung(bestellung);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedBestellung) return;
+    try {
+      await deleteBestellung.mutateAsync(selectedBestellung.id);
+      toast.success("Bestellung gelöscht");
+      setDeleteDialogOpen(false);
+      setSelectedBestellung(null);
+    } catch {
+      toast.error("Fehler beim Löschen der Bestellung");
     }
   };
 
@@ -203,6 +233,7 @@ export default function Bestellungen() {
                 onEdit={handleEditBestellung}
                 onManagePositionen={handleManagePositionen}
                 onStatusChange={handleStatusChange}
+                onDelete={handleDeleteClick}
               />
             )}
           </div>
@@ -221,6 +252,27 @@ export default function Bestellungen() {
         onOpenChange={setPositionenDialogOpen}
         bestellung={selectedBestellung}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bestellung löschen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Möchten Sie die Bestellung "{selectedBestellung?.bestellnummer}" wirklich löschen?
+              Alle zugehörigen Positionen werden ebenfalls gelöscht.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarProvider>
   );
 }

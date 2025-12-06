@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Package, ArrowRight, XCircle } from "lucide-react";
+import { MoreHorizontal, Pencil, Package, ArrowRight, XCircle, Trash2 } from "lucide-react";
 import { BestellungStatusBadge } from "./BestellungStatusBadge";
 import type { Bestellung, BestellungStatus } from "@/hooks/useBestellungen";
 import { format } from "date-fns";
@@ -25,6 +25,7 @@ interface BestellungenTableProps {
   onEdit: (bestellung: Bestellung) => void;
   onManagePositionen: (bestellung: Bestellung) => void;
   onStatusChange: (id: string, status: BestellungStatus) => void;
+  onDelete: (bestellung: Bestellung) => void;
 }
 
 const NEXT_STATUS: Partial<Record<BestellungStatus, { status: BestellungStatus; label: string }>> = {
@@ -39,6 +40,7 @@ export function BestellungenTable({
   onEdit,
   onManagePositionen,
   onStatusChange,
+  onDelete,
 }: BestellungenTableProps) {
   return (
     <div className="rounded-lg border bg-card">
@@ -120,6 +122,14 @@ export function BestellungenTable({
                           </DropdownMenuItem>
                         </>
                       )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => onDelete(bestellung)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Löschen
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
