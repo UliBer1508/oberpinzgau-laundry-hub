@@ -93,14 +93,14 @@ export function useBestellungPositionen(bestellungId: string | null) {
   });
 }
 
-// Fetch Kunden for select
+// Fetch Kunden for select with bestellmodus
 export function useKundenForSelect() {
   return useQuery({
     queryKey: ["kunden-for-select"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("kunden")
-        .select("id, name, kundennummer")
+        .select("id, name, kundennummer, bestellmodus")
         .eq("aktiv", true)
         .order("name");
 
