@@ -10,14 +10,26 @@ import {
   useUpdateWaescheset,
   useToggleWaeschesetAktiv,
   useKundenForWaeschesets,
+  useAddArtikelToSet,
   type Waescheset,
   type WaeschesetInsert,
+  type Berechnungsart,
 } from "@/hooks/useWaeschesets";
 import { WaeschesetsStats } from "@/components/waeschesets/WaeschesetsStats";
 import { WaeschesetsFilter } from "@/components/waeschesets/WaeschesetsFilter";
 import { WaeschesetsTable } from "@/components/waeschesets/WaeschesetsTable";
 import { WaeschesetFormDialog } from "@/components/waeschesets/WaeschesetFormDialog";
-import { WaeschesetArtikelDialog } from "@/components/waeschesets/WaeschesetArtikelDialog";
+
+interface PendingArtikel {
+  id: string;
+  artikel_id: string;
+  artikelNummer: string;
+  artikelName: string;
+  kategorie: string | null;
+  farbe: string | null;
+  menge: number;
+  berechnungsart: Berechnungsart;
+}
 
 export default function Waeschesets() {
   const { toast } = useToast();
@@ -25,7 +37,6 @@ export default function Waeschesets() {
   const [selectedKunde, setSelectedKunde] = useState("all");
   const [showOnlyAktiv, setShowOnlyAktiv] = useState(false);
   const [formDialogOpen, setFormDialogOpen] = useState(false);
-  const [artikelDialogOpen, setArtikelDialogOpen] = useState(false);
   const [selectedSet, setSelectedSet] = useState<Waescheset | null>(null);
 
   const { data: sets = [], isLoading, error } = useWaeschesets();
@@ -33,6 +44,7 @@ export default function Waeschesets() {
   const createSet = useCreateWaescheset();
   const updateSet = useUpdateWaescheset();
   const toggleAktiv = useToggleWaeschesetAktiv();
+  const addArtikel = useAddArtikelToSet();
 
   // Filter sets
   const filteredSets = useMemo(() => {
@@ -76,9 +88,10 @@ export default function Waeschesets() {
     setFormDialogOpen(true);
   };
 
+  // Opens the form dialog in edit mode for managing articles
   const handleManageArtikel = (set: Waescheset) => {
     setSelectedSet(set);
-    setArtikelDialogOpen(true);
+    setFormDialogOpen(true);
   };
 
   const handleToggleAktiv = async (set: Waescheset) => {
@@ -95,13 +108,26 @@ export default function Waeschesets() {
     }
   };
 
-  const handleSaveSet = async (data: WaeschesetInsert) => {
+  const handleSaveSet = async (data: WaeschesetInsert, pendingArtikel?: PendingArtikel[]) => {
     try {
       if (selectedSet) {
         await updateSet.mutateAsync({ id: selectedSet.id, ...data });
         toast({ title: "Wäscheset aktualisiert" });
       } else {
-        await createSet.mutateAsync(data);
+        // Create new set
+        const newSet = await createSet.mutateAsync(data);
+        
+        // Add pending articles to the new set
+        if (pendingArtikel && pendingArtikel.length > 0) {
+          for (const artikel of pendingArtikel) {
+            await addArtikel.mutateAsync({
+              set_id: newSet.id,
+              artikel_id: artikel.artikel_id,
+              menge: artikel.menge,
+              berechnungsart: artikel.berechnungsart,
+            });
+          }
+        }
         toast({ title: "Wäscheset erstellt" });
       }
       setFormDialogOpen(false);
@@ -188,7 +214,7 @@ export default function Waeschesets() {
               />
             )}
 
-            {/* Form Dialog */}
+            {/* Combined Form Dialog with Articles */}
             <WaeschesetFormDialog
               open={formDialogOpen}
               onOpenChange={setFormDialogOpen}
@@ -196,13 +222,6 @@ export default function Waeschesets() {
               objekte={[]}
               onSubmit={handleSaveSet}
               isLoading={createSet.isPending || updateSet.isPending}
-            />
-
-            {/* Artikel Dialog */}
-            <WaeschesetArtikelDialog
-              open={artikelDialogOpen}
-              onOpenChange={setArtikelDialogOpen}
-              set={selectedSet}
             />
           </div>
         </main>
