@@ -29,21 +29,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Kunde } from "./KundenTable";
+import type { Kunde } from "@/hooks/useKunden";
 
 const kundeFormSchema = z.object({
   kundennummer: z.string().min(1, "Kundennummer ist erforderlich"),
   name: z.string().min(1, "Name ist erforderlich"),
-  firma: z.string().optional(),
-  strasse: z.string().optional(),
-  plz: z.string().optional(),
-  ort: z.string().optional(),
-  email: z.string().email("Ungültige E-Mail").optional().or(z.literal("")),
-  telefon: z.string().optional(),
-  bestellart: z.enum(["lieferung", "abholung", "beides"]).optional(),
-  anlieferadresse: z.string().optional(),
-  notizen: z.string().optional(),
-  aktiv: z.boolean(),
+  firma: z.string().optional().nullable(),
+  strasse: z.string().optional().nullable(),
+  plz: z.string().optional().nullable(),
+  ort: z.string().optional().nullable(),
+  email: z.string().email("Ungültige E-Mail").optional().nullable().or(z.literal("")),
+  telefon: z.string().optional().nullable(),
+  bestellart: z.enum(["lieferung", "abholung", "beides"]).optional().nullable(),
+  anlieferadresse: z.string().optional().nullable(),
+  notizen: z.string().optional().nullable(),
+  aktiv: z.boolean().optional().nullable(),
 });
 
 type KundeFormValues = z.infer<typeof kundeFormSchema>;
@@ -88,9 +88,9 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
         email: kunde.email || "",
         telefon: kunde.telefon || "",
         bestellart: kunde.bestellart || "beides",
-        anlieferadresse: "",
-        notizen: "",
-        aktiv: kunde.aktiv,
+        anlieferadresse: kunde.anlieferadresse || "",
+        notizen: kunde.notizen || "",
+        aktiv: kunde.aktiv ?? true,
       });
     } else {
       form.reset({
@@ -108,11 +108,22 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
         aktiv: true,
       });
     }
-  }, [kunde, form]);
+  }, [kunde, form, open]);
 
   const handleSubmit = (data: KundeFormValues) => {
-    onSave(data);
-    onOpenChange(false);
+    // Clean up empty strings to null for optional fields
+    const cleanedData = {
+      ...data,
+      firma: data.firma || null,
+      strasse: data.strasse || null,
+      plz: data.plz || null,
+      ort: data.ort || null,
+      email: data.email || null,
+      telefon: data.telefon || null,
+      anlieferadresse: data.anlieferadresse || null,
+      notizen: data.notizen || null,
+    };
+    onSave(cleanedData);
   };
 
   return (
@@ -152,7 +163,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Bestellart</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || "beides"}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Bestellart wählen" />
@@ -191,7 +202,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                   <FormItem>
                     <FormLabel>Firma</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Musterfirma GmbH" />
+                      <Input {...field} value={field.value || ""} placeholder="Musterfirma GmbH" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -209,7 +220,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                   <FormItem>
                     <FormLabel>Straße</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Musterstraße 123" />
+                      <Input {...field} value={field.value || ""} placeholder="Musterstraße 123" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -223,7 +234,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                     <FormItem>
                       <FormLabel>PLZ</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="5020" />
+                        <Input {...field} value={field.value || ""} placeholder="5020" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -236,7 +247,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                     <FormItem className="sm:col-span-2">
                       <FormLabel>Ort</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Salzburg" />
+                        <Input {...field} value={field.value || ""} placeholder="Salzburg" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -254,7 +265,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                   <FormItem>
                     <FormLabel>E-Mail</FormLabel>
                     <FormControl>
-                      <Input {...field} type="email" placeholder="info@beispiel.at" />
+                      <Input {...field} value={field.value || ""} type="email" placeholder="info@beispiel.at" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -267,7 +278,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                   <FormItem>
                     <FormLabel>Telefon</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="+43 123 456789" />
+                      <Input {...field} value={field.value || ""} placeholder="+43 123 456789" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -285,6 +296,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                   <FormControl>
                     <Textarea
                       {...field}
+                      value={field.value || ""}
                       placeholder="Falls abweichend von der Hauptadresse..."
                       rows={2}
                     />
@@ -304,6 +316,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                   <FormControl>
                     <Textarea
                       {...field}
+                      value={field.value || ""}
                       placeholder="Interne Bemerkungen zum Kunden..."
                       rows={3}
                     />
@@ -327,7 +340,7 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                   </div>
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value ?? true}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>

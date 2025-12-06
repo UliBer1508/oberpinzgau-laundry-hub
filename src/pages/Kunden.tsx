@@ -3,108 +3,32 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { KundenStats } from "@/components/kunden/KundenStats";
 import { KundenFilter } from "@/components/kunden/KundenFilter";
-import { KundenTable, type Kunde } from "@/components/kunden/KundenTable";
+import { KundenTable } from "@/components/kunden/KundenTable";
 import { KundeFormDialog } from "@/components/kunden/KundeFormDialog";
 import { toast } from "@/hooks/use-toast";
-
-// Dummy-Daten für die Design-Vorschau
-const dummyKunden: Kunde[] = [
-  {
-    id: "1",
-    kundennummer: "K001",
-    name: "Maria Huber",
-    firma: "Alpenhotel Huber",
-    strasse: "Bergstraße 12",
-    plz: "5741",
-    ort: "Neukirchen am Großvenediger",
-    email: "info@alpenhotel-huber.at",
-    telefon: "+43 6565 1234",
-    bestellart: "beides",
-    aktiv: true,
-    objekteCount: 3,
-  },
-  {
-    id: "2",
-    kundennummer: "K002",
-    name: "Thomas Gruber",
-    firma: "Pension Edelweiß",
-    strasse: "Hauptplatz 5",
-    plz: "5730",
-    ort: "Mittersill",
-    email: "pension@edelweiss.at",
-    telefon: "+43 6562 5678",
-    bestellart: "lieferung",
-    aktiv: true,
-    objekteCount: 1,
-  },
-  {
-    id: "3",
-    kundennummer: "K003",
-    name: "Anna Berger",
-    firma: null,
-    strasse: "Dorfweg 8",
-    plz: "5742",
-    ort: "Wald im Pinzgau",
-    email: "anna.berger@gmail.com",
-    telefon: "+43 664 9876543",
-    bestellart: "abholung",
-    aktiv: true,
-    objekteCount: 2,
-  },
-  {
-    id: "4",
-    kundennummer: "K004",
-    name: "Franz Maier",
-    firma: "Hotel Sonnblick",
-    strasse: "Sonnenweg 1",
-    plz: "5743",
-    ort: "Krimml",
-    email: "rezeption@hotel-sonnblick.at",
-    telefon: "+43 6564 2222",
-    bestellart: "beides",
-    aktiv: false,
-    objekteCount: 4,
-  },
-  {
-    id: "5",
-    kundennummer: "K005",
-    name: "Elisabeth Moser",
-    firma: "Ferienwohnungen Pinzgau",
-    strasse: "Almweg 22",
-    plz: "5741",
-    ort: "Neukirchen am Großvenediger",
-    email: "info@fewo-pinzgau.at",
-    telefon: "+43 6565 3333",
-    bestellart: "lieferung",
-    aktiv: true,
-    objekteCount: 6,
-  },
-  {
-    id: "6",
-    kundennummer: "K006",
-    name: "Karl Wimmer",
-    firma: "Aparthotel Tauernblick",
-    strasse: "Tauernstraße 45",
-    plz: "5730",
-    ort: "Mittersill",
-    email: "office@tauernblick.at",
-    telefon: "+43 6562 4444",
-    bestellart: "beides",
-    aktiv: true,
-    objekteCount: 8,
-  },
-];
+import {
+  useKunden,
+  useCreateKunde,
+  useUpdateKunde,
+  useToggleKundeAktiv,
+  type Kunde,
+} from "@/hooks/useKunden";
 
 const Kunden = () => {
-  const [kunden, setKunden] = useState<Kunde[]>(dummyKunden);
   const [searchTerm, setSearchTerm] = useState("");
   const [bestellartFilter, setBestellartFilter] = useState("alle");
   const [nurAktive, setNurAktive] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedKunde, setSelectedKunde] = useState<Kunde | null>(null);
+
+  // Daten aus Supabase laden
+  const { data: kunden = [], isLoading, error } = useKunden();
+  const createKunde = useCreateKunde();
+  const updateKunde = useUpdateKunde();
+  const toggleAktiv = useToggleKundeAktiv();
 
   // Stats berechnen
   const stats = useMemo(() => {
@@ -123,7 +47,6 @@ const Kunden = () => {
   // Gefilterte Kunden
   const filteredKunden = useMemo(() => {
     return kunden.filter((kunde) => {
-      // Suchfilter
       const searchLower = searchTerm.toLowerCase();
       const matchesSearch =
         !searchTerm ||
@@ -131,11 +54,9 @@ const Kunden = () => {
         kunde.kundennummer.toLowerCase().includes(searchLower) ||
         kunde.firma?.toLowerCase().includes(searchLower);
 
-      // Bestellart-Filter
       const matchesBestellart =
         bestellartFilter === "alle" || kunde.bestellart === bestellartFilter;
 
-      // Aktiv-Filter
       const matchesAktiv = !nurAktive || kunde.aktiv;
 
       return matchesSearch && matchesBestellart && matchesAktiv;
@@ -160,45 +81,85 @@ const Kunden = () => {
   };
 
   const handleToggleAktiv = (kunde: Kunde) => {
-    setKunden((prev) =>
-      prev.map((k) =>
-        k.id === kunde.id ? { ...k, aktiv: !k.aktiv } : k
-      )
+    toggleAktiv.mutate(
+      { id: kunde.id, aktiv: !kunde.aktiv },
+      {
+        onSuccess: () => {
+          toast({
+            title: kunde.aktiv ? "Kunde deaktiviert" : "Kunde aktiviert",
+            description: `${kunde.name} wurde ${kunde.aktiv ? "deaktiviert" : "aktiviert"}.`,
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: "Fehler",
+            description: "Aktion konnte nicht ausgeführt werden.",
+            variant: "destructive",
+          });
+          console.error(error);
+        },
+      }
     );
-    toast({
-      title: kunde.aktiv ? "Kunde deaktiviert" : "Kunde aktiviert",
-      description: `${kunde.name} wurde ${kunde.aktiv ? "deaktiviert" : "aktiviert"}.`,
-    });
   };
 
   const handleSaveKunde = (data: any) => {
     if (selectedKunde) {
-      // Bearbeiten
-      setKunden((prev) =>
-        prev.map((k) =>
-          k.id === selectedKunde.id
-            ? { ...k, ...data, objekteCount: k.objekteCount }
-            : k
-        )
+      updateKunde.mutate(
+        { id: selectedKunde.id, ...data },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Kunde aktualisiert",
+              description: `${data.name} wurde erfolgreich aktualisiert.`,
+            });
+            setDialogOpen(false);
+          },
+          onError: (error) => {
+            toast({
+              title: "Fehler",
+              description: "Kunde konnte nicht aktualisiert werden.",
+              variant: "destructive",
+            });
+            console.error(error);
+          },
+        }
       );
-      toast({
-        title: "Kunde aktualisiert",
-        description: `${data.name} wurde erfolgreich aktualisiert.`,
-      });
     } else {
-      // Neu anlegen
-      const newKunde: Kunde = {
-        id: Date.now().toString(),
-        ...data,
-        objekteCount: 0,
-      };
-      setKunden((prev) => [newKunde, ...prev]);
-      toast({
-        title: "Kunde angelegt",
-        description: `${data.name} wurde erfolgreich angelegt.`,
+      createKunde.mutate(data, {
+        onSuccess: () => {
+          toast({
+            title: "Kunde angelegt",
+            description: `${data.name} wurde erfolgreich angelegt.`,
+          });
+          setDialogOpen(false);
+        },
+        onError: (error) => {
+          toast({
+            title: "Fehler",
+            description: "Kunde konnte nicht angelegt werden.",
+            variant: "destructive",
+          });
+          console.error(error);
+        },
       });
     }
   };
+
+  if (error) {
+    return (
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full">
+          <AppSidebar />
+          <main className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-destructive mb-2">Fehler beim Laden der Kunden</p>
+              <p className="text-sm text-muted-foreground">{error.message}</p>
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -216,8 +177,12 @@ const Kunden = () => {
                 </p>
               </div>
             </div>
-            <Button onClick={handleNewKunde}>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button onClick={handleNewKunde} disabled={createKunde.isPending}>
+              {createKunde.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="mr-2 h-4 w-4" />
+              )}
               Neuer Kunde
             </Button>
           </header>
@@ -241,15 +206,23 @@ const Kunden = () => {
                   nurAktive={nurAktive}
                   onNurAktiveChange={setNurAktive}
                 />
-                <KundenTable
-                  kunden={filteredKunden}
-                  onEdit={handleEditKunde}
-                  onShowObjekte={handleShowObjekte}
-                  onToggleAktiv={handleToggleAktiv}
-                />
-                <div className="text-sm text-muted-foreground">
-                  {filteredKunden.length} von {kunden.length} Kunden angezeigt
-                </div>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <>
+                    <KundenTable
+                      kunden={filteredKunden}
+                      onEdit={handleEditKunde}
+                      onShowObjekte={handleShowObjekte}
+                      onToggleAktiv={handleToggleAktiv}
+                    />
+                    <div className="text-sm text-muted-foreground">
+                      {filteredKunden.length} von {kunden.length} Kunden angezeigt
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
