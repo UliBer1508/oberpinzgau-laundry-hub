@@ -39,15 +39,11 @@ const KATEGORIEN = [
 
 const FARBEN = [
   "Weiß",
-  "Beige",
+  "Weiß gestreift",
   "Grau",
-  "Blau",
-  "Grün",
-  "Anthrazit",
-  "Rot",
-  "Gelb",
-  "Rosa",
+  "Grau gestreift",
   "Braun",
+  "Bunt",
 ];
 
 const formSchema = z.object({
