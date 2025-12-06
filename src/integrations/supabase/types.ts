@@ -355,6 +355,7 @@ export type Database = {
           aktiv: boolean | null
           artikelnummer: string
           bezeichnung: string | null
+          bild_url: string | null
           created_at: string
           farbe: string | null
           id: string
@@ -366,6 +367,7 @@ export type Database = {
           aktiv?: boolean | null
           artikelnummer: string
           bezeichnung?: string | null
+          bild_url?: string | null
           created_at?: string
           farbe?: string | null
           id?: string
@@ -377,6 +379,7 @@ export type Database = {
           aktiv?: boolean | null
           artikelnummer?: string
           bezeichnung?: string | null
+          bild_url?: string | null
           created_at?: string
           farbe?: string | null
           id?: string

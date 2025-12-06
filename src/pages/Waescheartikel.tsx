@@ -78,7 +78,7 @@ export default function Waescheartikel() {
     setEditingArtikel(null);
   };
 
-  const handleSubmit = async (data: WaescheartikelInsert) => {
+  const handleSubmit = async (data: WaescheartikelInsert & { bild_url?: string | null }) => {
     try {
       if (editingArtikel) {
         await updateMutation.mutateAsync({ id: editingArtikel.id, ...data });
