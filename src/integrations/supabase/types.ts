@@ -495,6 +495,7 @@ export type Database = {
           portalzugang: boolean | null
           strasse: string | null
           telefon: string | null
+          typ: Database["public"]["Enums"]["mitarbeiter_typ"]
           updated_at: string
           user_id: string | null
         }
@@ -511,6 +512,7 @@ export type Database = {
           portalzugang?: boolean | null
           strasse?: string | null
           telefon?: string | null
+          typ?: Database["public"]["Enums"]["mitarbeiter_typ"]
           updated_at?: string
           user_id?: string | null
         }
@@ -527,6 +529,7 @@ export type Database = {
           portalzugang?: boolean | null
           strasse?: string | null
           telefon?: string | null
+          typ?: Database["public"]["Enums"]["mitarbeiter_typ"]
           updated_at?: string
           user_id?: string | null
         }
@@ -628,6 +631,7 @@ export type Database = {
         | "abgeholt"
         | "abgeschlossen"
         | "storniert"
+      mitarbeiter_typ: "waeschekraft" | "fahrer" | "beides"
       objekt_typ: "hotel" | "apartmenthaus" | "ferienhaus" | "ferienwohnung"
     }
     CompositeTypes: {
@@ -768,6 +772,7 @@ export const Constants = {
         "abgeschlossen",
         "storniert",
       ],
+      mitarbeiter_typ: ["waeschekraft", "fahrer", "beides"],
       objekt_typ: ["hotel", "apartmenthaus", "ferienhaus", "ferienwohnung"],
     },
   },

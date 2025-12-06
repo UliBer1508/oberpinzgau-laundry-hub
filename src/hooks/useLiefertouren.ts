@@ -165,8 +165,26 @@ export function useWaeschekraefte() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("waeschekraefte")
-        .select("id, name, personalnummer")
+        .select("id, name, personalnummer, typ")
         .eq("aktiv", true)
+        .order("name");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+// Fetch only drivers (fahrer or beides) for tour dropdown
+export function useFahrer() {
+  return useQuery({
+    queryKey: ["fahrer"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("waeschekraefte")
+        .select("id, name, personalnummer, typ")
+        .eq("aktiv", true)
+        .in("typ", ["fahrer", "beides"])
         .order("name");
 
       if (error) throw error;

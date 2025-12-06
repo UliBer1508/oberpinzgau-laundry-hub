@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { useWaeschekraefte, useGenerateTournummer } from "@/hooks/useLiefertouren";
+import { useFahrer, useGenerateTournummer } from "@/hooks/useLiefertouren";
 import type { Liefertour } from "@/hooks/useLiefertouren";
 
 const formSchema = z.object({
@@ -62,7 +62,7 @@ export function LiefertourFormDialog({
   tour,
   onSubmit,
 }: LiefertourFormDialogProps) {
-  const { data: waeschekraefte = [] } = useWaeschekraefte();
+  const { data: fahrer = [] } = useFahrer();
   const { data: nextTournummer } = useGenerateTournummer();
 
   const form = useForm<FormValues>({
@@ -186,21 +186,21 @@ export function LiefertourFormDialog({
                 name="waeschekraft_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Wäschekraft</FormLabel>
+                    <FormLabel>Fahrer</FormLabel>
                     <Select 
                       value={field.value || "none"} 
                       onValueChange={(val) => field.onChange(val === "none" ? "" : val)}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Wäschekraft wählen" />
+                          <SelectValue placeholder="Fahrer wählen" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="none">Keine Zuweisung</SelectItem>
-                        {waeschekraefte.map((wk) => (
-                          <SelectItem key={wk.id} value={wk.id}>
-                            {wk.name}
+                        {fahrer.map((f) => (
+                          <SelectItem key={f.id} value={f.id}>
+                            {f.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -1,4 +1,4 @@
-import { Users, UserCheck, UserX, KeyRound } from "lucide-react";
+import { Users, Shirt, Truck, UserCog } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import type { Waeschekraft } from "@/hooks/useWaeschekraefte";
 
@@ -9,36 +9,36 @@ interface WaeschekraefteStatsProps {
 export function WaeschekraefteStats({ waeschekraefte }: WaeschekraefteStatsProps) {
   const stats = {
     total: waeschekraefte.length,
-    aktiv: waeschekraefte.filter((w) => w.aktiv).length,
-    inaktiv: waeschekraefte.filter((w) => !w.aktiv).length,
-    mitPortal: waeschekraefte.filter((w) => w.portalzugang).length,
+    waeschekraft: waeschekraefte.filter((w) => w.typ === "waeschekraft").length,
+    fahrer: waeschekraefte.filter((w) => w.typ === "fahrer").length,
+    beides: waeschekraefte.filter((w) => w.typ === "beides").length,
   };
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
-        title="Gesamt Wäschekräfte"
+        title="Gesamt Personal"
         value={stats.total}
         icon={Users}
         variant="primary"
       />
       <StatCard
-        title="Aktiv"
-        value={stats.aktiv}
-        icon={UserCheck}
+        title="Wäschekräfte"
+        value={stats.waeschekraft}
+        icon={Shirt}
+        variant="info"
+      />
+      <StatCard
+        title="Fahrer"
+        value={stats.fahrer}
+        icon={Truck}
         variant="success"
       />
       <StatCard
-        title="Inaktiv"
-        value={stats.inaktiv}
-        icon={UserX}
+        title="Beides"
+        value={stats.beides}
+        icon={UserCog}
         variant="warning"
-      />
-      <StatCard
-        title="Mit Portalzugang"
-        value={stats.mitPortal}
-        icon={KeyRound}
-        variant="info"
       />
     </div>
   );
