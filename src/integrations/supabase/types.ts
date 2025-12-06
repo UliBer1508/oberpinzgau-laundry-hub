@@ -105,6 +105,7 @@ export type Database = {
           aktiv: boolean | null
           anlieferadresse: string | null
           bestellart: Database["public"]["Enums"]["bestellart"] | null
+          bestellmodus: Database["public"]["Enums"]["bestellmodus"]
           created_at: string
           email: string | null
           firma: string | null
@@ -122,6 +123,7 @@ export type Database = {
           aktiv?: boolean | null
           anlieferadresse?: string | null
           bestellart?: Database["public"]["Enums"]["bestellart"] | null
+          bestellmodus?: Database["public"]["Enums"]["bestellmodus"]
           created_at?: string
           email?: string | null
           firma?: string | null
@@ -139,6 +141,7 @@ export type Database = {
           aktiv?: boolean | null
           anlieferadresse?: string | null
           bestellart?: Database["public"]["Enums"]["bestellart"] | null
+          bestellmodus?: Database["public"]["Enums"]["bestellmodus"]
           created_at?: string
           email?: string | null
           firma?: string | null
@@ -608,6 +611,7 @@ export type Database = {
       app_role: "admin" | "waeschekraft" | "kunde"
       berechnungsart: "pro_buchung" | "pro_gast"
       bestellart: "lieferung" | "abholung" | "beides"
+      bestellmodus: "mit_buchung" | "nur_sets"
       bestellung_status:
         | "neu"
         | "in_bearbeitung"
@@ -746,6 +750,7 @@ export const Constants = {
       app_role: ["admin", "waeschekraft", "kunde"],
       berechnungsart: ["pro_buchung", "pro_gast"],
       bestellart: ["lieferung", "abholung", "beides"],
+      bestellmodus: ["mit_buchung", "nur_sets"],
       bestellung_status: [
         "neu",
         "in_bearbeitung",
