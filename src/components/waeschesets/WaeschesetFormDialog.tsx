@@ -226,7 +226,16 @@ export function WaeschesetFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto"
+        onInteractOutside={(e) => {
+          const target = e.target as HTMLElement;
+          // Allow interactions with Select dropdown portals
+          if (target.closest('[data-radix-select-content]')) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>
             {set ? "Wäscheset bearbeiten" : "Neues Wäscheset erstellen"}
