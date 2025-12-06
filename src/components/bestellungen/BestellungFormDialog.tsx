@@ -110,11 +110,16 @@ export function BestellungFormDialog({
   }, [bestellung, nextBestellnummer, open]);
 
   // Synchronisiere Liefer-/Abholdatum mit Check-in/Check-out bei 'mit_buchung'
+  // Lieferdatum = 1 Tag vor Check-in, Abholdatum = Check-out
   useEffect(() => {
-    if (bestellmodus === "mit_buchung") {
+    if (bestellmodus === "mit_buchung" && formData.check_in) {
+      const checkInDate = new Date(formData.check_in);
+      checkInDate.setDate(checkInDate.getDate() - 1);
+      const lieferdatum = checkInDate.toISOString().split('T')[0];
+      
       setFormData((prev) => ({
         ...prev,
-        lieferdatum: prev.check_in,
+        lieferdatum: lieferdatum,
         abholdatum: prev.check_out,
       }));
     }
