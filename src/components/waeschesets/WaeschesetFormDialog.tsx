@@ -44,8 +44,7 @@ import {
   useKundenForWaeschesets, 
   useObjekteByKunde, 
   useWaescheartikelForSelect,
-  useWaeschesetArtikel,
-  useExistingWaeschesetNames,
+  useWaeschesetArtikel 
 } from "@/hooks/useWaeschesets";
 
 const formSchema = z.object({
@@ -108,7 +107,6 @@ export function WaeschesetFormDialog({
   const { data: kundeObjekte = [] } = useObjekteByKunde(selectedKundeId || null);
   const { data: alleArtikel = [] } = useWaescheartikelForSelect();
   const { data: existingArtikel = [] } = useWaeschesetArtikel(set?.id || null);
-  const { data: existingNames = [] } = useExistingWaeschesetNames(selectedObjektId || null);
 
   // Get selected kunde and objekt names for auto-generated name
   const selectedKunde = useMemo(() => 
@@ -121,29 +119,12 @@ export function WaeschesetFormDialog({
     [kundeObjekte, selectedObjektId]
   );
 
-  // Auto-generated name with automatic numbering for multiple sets
+  // Auto-generated name
   const autoName = useMemo(() => {
     if (!selectedKunde || !selectedObjekt) return "";
     const kundeName = selectedKunde.firma || selectedKunde.name;
-    const baseName = `${kundeName} - ${selectedObjekt.name}`;
-    
-    // If editing an existing set for the same object, keep the original name
-    if (set?.objekt_id === selectedObjektId) {
-      return set.name;
-    }
-    
-    // Check if baseName already exists
-    if (!existingNames.includes(baseName)) {
-      return baseName;
-    }
-    
-    // Find next available number: "Kunde - Objekt 2", "Kunde - Objekt 3", etc.
-    let counter = 2;
-    while (existingNames.includes(`${baseName} ${counter}`)) {
-      counter++;
-    }
-    return `${baseName} ${counter}`;
-  }, [selectedKunde, selectedObjekt, existingNames, set, selectedObjektId]);
+    return `${kundeName} - ${selectedObjekt.name}`;
+  }, [selectedKunde, selectedObjekt]);
 
   // Filter out already added articles
   const availableArtikel = useMemo(() => {
@@ -254,67 +235,69 @@ export function WaeschesetFormDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            {/* Kunde Select - direkter Ansatz ohne FormField */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Kunde *
-              </label>
-              <Select
-                value={selectedKundeId}
-                onValueChange={(value) => form.setValue("kunde_id", value)}
-                disabled={!!set}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Kunde auswählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  {kunden.map((kunde) => (
-                    <SelectItem key={kunde.id} value={kunde.id}>
-                      {kunde.firma || kunde.name} ({kunde.kundennummer})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.kunde_id && (
-                <p className="text-sm font-medium text-destructive">
-                  {form.formState.errors.kunde_id.message}
-                </p>
+            <FormField
+              control={form.control}
+              name="kunde_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kunde *</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={!!set}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Kunde auswählen" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {kunden.map((kunde) => (
+                        <SelectItem key={kunde.id} value={kunde.id}>
+                          {kunde.firma || kunde.name} ({kunde.kundennummer})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
 
-            {/* Objekt Select - direkter Ansatz ohne FormField */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Objekt *
-              </label>
-              <Select
-                value={selectedObjektId}
-                onValueChange={(value) => form.setValue("objekt_id", value)}
-                disabled={!!set || !selectedKundeId}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={
-                    !selectedKundeId 
-                      ? "Bitte zuerst Kunde wählen" 
-                      : kundeObjekte.length === 0 
-                        ? "Keine Objekte vorhanden" 
-                        : "Objekt auswählen"
-                  } />
-                </SelectTrigger>
-                <SelectContent>
-                  {kundeObjekte.map((objekt) => (
-                    <SelectItem key={objekt.id} value={objekt.id}>
-                      {objekt.name} ({objekt.objektnummer})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.objekt_id && (
-                <p className="text-sm font-medium text-destructive">
-                  {form.formState.errors.objekt_id.message}
-                </p>
+            <FormField
+              control={form.control}
+              name="objekt_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Objekt *</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={!!set || !selectedKundeId}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={
+                          !selectedKundeId 
+                            ? "Bitte zuerst Kunde wählen" 
+                            : kundeObjekte.length === 0 
+                              ? "Keine Objekte vorhanden" 
+                              : "Objekt auswählen"
+                        } />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {kundeObjekte.map((objekt) => (
+                        <SelectItem key={objekt.id} value={objekt.id}>
+                          {objekt.name} ({objekt.objektnummer})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
 
             {/* Auto-generated name (read-only) */}
             <div className="space-y-2">

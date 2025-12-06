@@ -59,23 +59,6 @@ export function useObjekteByKunde(kundeId: string | null) {
 }
 
 // Fetch all Wäschesets with Objekt name, Kunde name, and article count
-// Hook to get existing Wäscheset names for a specific object (for automatic numbering)
-export function useExistingWaeschesetNames(objektId: string | null) {
-  return useQuery({
-    queryKey: ["waescheset-names", objektId],
-    enabled: !!objektId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("waeschesets")
-        .select("name")
-        .eq("objekt_id", objektId!);
-      
-      if (error) throw error;
-      return data?.map(s => s.name) || [];
-    },
-  });
-}
-
 export function useWaeschesets() {
   return useQuery({
     queryKey: ["waeschesets"],
