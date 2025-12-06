@@ -1,15 +1,25 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { DeliveryTable } from "@/components/dashboard/DeliveryTable";
-import { QuickActions } from "@/components/dashboard/QuickActions";
-import { UpcomingPickups } from "@/components/dashboard/UpcomingPickups";
+import { ModuleOverview } from "@/components/dashboard/ModuleOverview";
+import { UpcomingCheckIns } from "@/components/dashboard/UpcomingCheckIns";
+import { UpcomingCheckOuts } from "@/components/dashboard/UpcomingCheckOuts";
+import { RecentBestellungen } from "@/components/dashboard/RecentBestellungen";
+import { QuickActionsUpdated } from "@/components/dashboard/QuickActionsUpdated";
 import {
-  Truck,
-  Package,
+  useDashboardStats,
+  useUpcomingCheckIns,
+  useUpcomingCheckOuts,
+  useRecentBestellungen,
+} from "@/hooks/useDashboard";
+import {
+  Users,
   ShoppingCart,
   Calendar,
+  Truck,
   Bell,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +32,11 @@ const Index = () => {
     year: "numeric",
   });
 
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: checkIns = [], isLoading: checkInsLoading } = useUpcomingCheckIns();
+  const { data: checkOuts = [], isLoading: checkOutsLoading } = useUpcomingCheckOuts();
+  const { data: bestellungen = [], isLoading: bestellungenLoading } = useRecentBestellungen();
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
@@ -30,7 +45,7 @@ const Index = () => {
           {/* Header */}
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="lg:hidden" />
+              <SidebarTrigger className="-ml-2" />
               <div>
                 <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
                 <p className="text-sm text-muted-foreground">{today}</p>
@@ -39,70 +54,74 @@ const Index = () => {
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
-                  3
-                </span>
+                {stats && (stats.bestellungen.neu > 0 || stats.buchungen.checkInHeute > 0) && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
+                    {stats.bestellungen.neu + stats.buchungen.checkInHeute}
+                  </span>
+                )}
               </Button>
             </div>
           </header>
 
           {/* Content */}
-          <div className="p-6">
-            {/* Stats Grid */}
-            <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="p-6 space-y-6">
+            {/* Key Stats Grid */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard
-                title="Heutige Lieferungen"
-                value={12}
-                subtitle="5 abgeschlossen"
-                icon={Truck}
-                variant="primary"
+                title="Check-ins heute"
+                value={stats?.buchungen.checkInHeute ?? 0}
+                subtitle={`${stats?.buchungen.eingecheckt ?? 0} aktuell eingecheckt`}
+                icon={LogIn}
+                variant="success"
+              />
+              <StatCard
+                title="Check-outs heute"
+                value={stats?.buchungen.checkOutHeute ?? 0}
+                icon={LogOut}
+                variant="warning"
               />
               <StatCard
                 title="Offene Bestellungen"
-                value={28}
-                trend={{ value: 12, isPositive: true }}
+                value={(stats?.bestellungen.neu ?? 0) + (stats?.bestellungen.inBearbeitung ?? 0)}
+                subtitle={`${stats?.bestellungen.neu ?? 0} neu`}
                 icon={ShoppingCart}
                 variant="info"
               />
               <StatCard
-                title="Anstehende Abholungen"
-                value={8}
-                subtitle="Heute & Morgen"
-                icon={Calendar}
-                variant="warning"
-              />
-              <StatCard
-                title="Wäscheartikel im Umlauf"
-                value="2.450"
-                trend={{ value: 5, isPositive: true }}
-                icon={Package}
-                variant="success"
+                title="Aktive Touren"
+                value={stats?.liefertouren.aktiv ?? 0}
+                subtitle={`${stats?.liefertouren.heute ?? 0} heute geplant`}
+                icon={Truck}
+                variant="primary"
               />
             </div>
 
+            {/* Module Overview */}
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold">Module Übersicht</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ModuleOverview stats={stats} isLoading={statsLoading} />
+              </CardContent>
+            </Card>
+
             {/* Main Content Grid */}
             <div className="grid gap-6 lg:grid-cols-3">
-              {/* Delivery Table - 2/3 width */}
-              <div className="lg:col-span-2">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-4">
-                    <CardTitle className="text-lg font-semibold">
-                      Heutige Lieferungen
-                    </CardTitle>
-                    <Button variant="outline" size="sm">
-                      Alle anzeigen
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <DeliveryTable />
-                  </CardContent>
-                </Card>
+              {/* Left column - Check-ins & Check-outs */}
+              <div className="space-y-6">
+                <UpcomingCheckIns checkIns={checkIns} isLoading={checkInsLoading} />
+                <UpcomingCheckOuts checkOuts={checkOuts} isLoading={checkOutsLoading} />
               </div>
 
-              {/* Right Sidebar - 1/3 width */}
+              {/* Middle column - Bestellungen */}
               <div className="space-y-6">
-                <QuickActions />
-                <UpcomingPickups />
+                <RecentBestellungen bestellungen={bestellungen} isLoading={bestellungenLoading} />
+              </div>
+
+              {/* Right column - Quick Actions */}
+              <div className="space-y-6">
+                <QuickActionsUpdated />
               </div>
             </div>
           </div>
