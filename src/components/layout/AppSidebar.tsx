@@ -54,7 +54,7 @@ const bestellungenSubItems = [
 ];
 
 const managementNavItems = [
-  { title: "Wäschekräfte", url: "/waeschekraefte", icon: UserCheck },
+  { title: "Wäschekräfte/Fahrer", url: "/waeschekraefte", icon: UserCheck },
   { title: "Wäscheartikel", url: "/waescheartikel", icon: Package },
   { title: "Wäschesets", url: "/waeschesets", icon: Layers },
   { title: "Benutzerverwaltung", url: "/benutzer", icon: Settings },
