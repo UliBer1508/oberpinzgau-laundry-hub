@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Package, ArrowRight, XCircle, Trash2, User, CalendarDays } from "lucide-react";
+import { MoreHorizontal, Pencil, Package, ArrowRight, XCircle, Trash2, User, CalendarDays, Eye } from "lucide-react";
 import { BestellungStatusBadge } from "./BestellungStatusBadge";
 import type { Bestellung, BestellungStatus } from "@/hooks/useBestellungen";
 import { format } from "date-fns";
@@ -27,6 +27,7 @@ interface BestellungenTableProps {
   onManagePositionen: (bestellung: Bestellung) => void;
   onStatusChange: (id: string, status: BestellungStatus) => void;
   onDelete: (bestellung: Bestellung) => void;
+  onViewDetails: (bestellung: Bestellung) => void;
 }
 
 const NEXT_STATUS: Partial<Record<BestellungStatus, { status: BestellungStatus; label: string }>> = {
@@ -42,6 +43,7 @@ export function BestellungenTable({
   onManagePositionen,
   onStatusChange,
   onDelete,
+  onViewDetails,
 }: BestellungenTableProps) {
   return (
     <div className="rounded-lg border bg-card">
@@ -128,6 +130,11 @@ export function BestellungenTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onViewDetails(bestellung)}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        Details anzeigen
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => onManagePositionen(bestellung)}>
                         <Package className="mr-2 h-4 w-4" />
                         Positionen verwalten

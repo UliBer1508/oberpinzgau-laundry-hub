@@ -53,6 +53,41 @@ export type Database = {
           },
         ]
       }
+      bestellung_history: {
+        Row: {
+          bearbeiter_name: string | null
+          bestellung_id: string
+          id: string
+          notiz: string | null
+          status: string
+          zeitpunkt: string
+        }
+        Insert: {
+          bearbeiter_name?: string | null
+          bestellung_id: string
+          id?: string
+          notiz?: string | null
+          status: string
+          zeitpunkt?: string
+        }
+        Update: {
+          bearbeiter_name?: string | null
+          bestellung_id?: string
+          id?: string
+          notiz?: string | null
+          status?: string
+          zeitpunkt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bestellung_history_bestellung_id_fkey"
+            columns: ["bestellung_id"]
+            isOneToOne: false
+            referencedRelation: "waeschebestellungen"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kunden: {
         Row: {
           aktiv: boolean | null

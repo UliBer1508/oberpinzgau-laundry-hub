@@ -241,7 +241,7 @@ export function useUpdateBestellungStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: BestellungStatus }) => {
+    mutationFn: async ({ id, status, bearbeiter_name }: { id: string; status: BestellungStatus; bearbeiter_name?: string }) => {
       const { data, error } = await supabase
         .from("waeschebestellungen")
         .update({ status })
@@ -250,6 +250,15 @@ export function useUpdateBestellungStatus() {
         .single();
 
       if (error) throw error;
+
+      // History-Eintrag erstellen
+      await supabase
+        .from("bestellung_history")
+        .insert({
+          bestellung_id: id,
+          status,
+          bearbeiter_name: bearbeiter_name || null,
+        });
 
       // Automatisch Rechnung erstellen wenn Status auf "ausgeliefert" gesetzt wird
       if (status === "ausgeliefert") {
@@ -268,9 +277,10 @@ export function useUpdateBestellungStatus() {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["bestellungen"] });
       queryClient.invalidateQueries({ queryKey: ["rechnungen"] });
+      queryClient.invalidateQueries({ queryKey: ["bestellung-detail", variables.id] });
     },
   });
 }
