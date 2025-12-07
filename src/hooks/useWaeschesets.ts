@@ -23,6 +23,7 @@ export type WaeschesetArtikel = Tables<"waescheset_artikel"> & {
   bild_url: string | null;
   bezeichnung: string | null;
   preis: number | null;
+  groesse: string | null;
   berechnungsart: Berechnungsart;
 };
 
@@ -161,7 +162,8 @@ export function useWaeschesetArtikel(setId: string | null) {
             farbe,
             bild_url,
             bezeichnung,
-            preis
+            preis,
+            groesse
           )
         `)
         .eq("set_id", setId!);
@@ -177,6 +179,7 @@ export function useWaeschesetArtikel(setId: string | null) {
           bild_url: string | null;
           bezeichnung: string | null;
           preis: number | null;
+          groesse: string | null;
         } | null;
         
         return {
@@ -188,6 +191,7 @@ export function useWaeschesetArtikel(setId: string | null) {
           bild_url: artikel?.bild_url || null,
           bezeichnung: artikel?.bezeichnung || null,
           preis: artikel?.preis ?? null,
+          groesse: artikel?.groesse ?? null,
           berechnungsart: (item.berechnungsart as Berechnungsart) || "pro_buchung",
         };
       }) as WaeschesetArtikel[];
@@ -219,7 +223,7 @@ export function useWaescheartikelForSelect() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("waescheartikel")
-        .select("id, name, artikelnummer, kategorie, farbe, bild_url, bezeichnung, preis")
+        .select("id, name, artikelnummer, kategorie, farbe, bild_url, bezeichnung, preis, groesse")
         .eq("aktiv", true)
         .order("name");
 
