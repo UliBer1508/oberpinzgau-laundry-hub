@@ -7,6 +7,7 @@ export type Waescheset = Tables<"waeschesets"> & {
   kundeName: string;
   kundeId: string;
   artikelCount: number;
+  gesamtpreis: number | null;
 };
 
 export type WaeschesetInsert = TablesInsert<"waeschesets">;
@@ -61,7 +62,7 @@ export function useObjekteByKunde(kundeId: string | null) {
   });
 }
 
-// Fetch all Wäschesets with Objekt name, Kunde name, and article count
+// Fetch all Wäschesets with Objekt name, Kunde name, article count, and total price
 export function useWaeschesets() {
   return useQuery({
     queryKey: ["waeschesets"],
@@ -81,29 +82,44 @@ export function useWaeschesets() {
 
       if (setsError) throw setsError;
 
-      // Get article counts for each set
-      const { data: artikelCounts, error: countsError } = await supabase
+      // Get article details with prices for each set
+      const { data: artikelDetails, error: artikelError } = await supabase
         .from("waescheset_artikel")
-        .select("set_id");
+        .select(`
+          set_id,
+          menge,
+          waescheartikel!artikel_id (preis)
+        `);
 
-      if (countsError) throw countsError;
+      if (artikelError) throw artikelError;
 
-      // Count articles per set
-      const countMap = new Map<string, number>();
-      artikelCounts?.forEach((item) => {
-        countMap.set(item.set_id, (countMap.get(item.set_id) || 0) + 1);
+      // Calculate count and total price per set
+      const statsMap = new Map<string, { count: number; gesamtpreis: number | null }>();
+      artikelDetails?.forEach((item) => {
+        const current = statsMap.get(item.set_id) || { count: 0, gesamtpreis: null };
+        current.count += 1;
+        
+        const artikel = item.waescheartikel as { preis: number | null } | null;
+        if (artikel?.preis !== null && artikel?.preis !== undefined) {
+          const artikelSumme = item.menge * artikel.preis;
+          current.gesamtpreis = (current.gesamtpreis ?? 0) + artikelSumme;
+        }
+        
+        statsMap.set(item.set_id, current);
       });
 
       return sets?.map((set) => {
         const objekt = set.objekte as { name: string; kunde_id: string; kunden: { name: string; firma: string | null } | null } | null;
         const kunde = objekt?.kunden;
+        const stats = statsMap.get(set.id) || { count: 0, gesamtpreis: null };
         
         return {
           ...set,
           objektName: objekt?.name || "Unbekannt",
           kundeId: objekt?.kunde_id || "",
           kundeName: kunde?.firma || kunde?.name || "Unbekannt",
-          artikelCount: countMap.get(set.id) || 0,
+          artikelCount: stats.count,
+          gesamtpreis: stats.gesamtpreis,
         };
       }) as Waescheset[];
     },
@@ -196,14 +212,14 @@ export function useObjekteForSelect() {
   });
 }
 
-// Fetch all active Wäscheartikel for adding to sets (with image and description)
+// Fetch all active Wäscheartikel for adding to sets (with image, description, and price)
 export function useWaescheartikelForSelect() {
   return useQuery({
     queryKey: ["waescheartikel-for-select"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("waescheartikel")
-        .select("id, name, artikelnummer, kategorie, farbe, bild_url, bezeichnung")
+        .select("id, name, artikelnummer, kategorie, farbe, bild_url, bezeichnung, preis")
         .eq("aktiv", true)
         .order("name");
 

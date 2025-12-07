@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Plus, Minus, Trash2, Package, User, Calendar, Lock, ChevronsUpDown, Check, ImageIcon, Search } from "lucide-react";
+import { Plus, Minus, Trash2, Package, User, Calendar, Lock, ChevronsUpDown, Check, ImageIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -61,6 +62,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { formatPreis } from "@/lib/formatPreis";
 import { useToast } from "@/hooks/use-toast";
 import type { Waescheset, WaeschesetInsert, Berechnungsart } from "@/hooks/useWaeschesets";
 import {
@@ -102,6 +104,7 @@ interface PendingArtikel {
   farbe: string | null;
   bild_url: string | null;
   bezeichnung: string | null;
+  preis: number | null;
   menge: number;
   berechnungsart: Berechnungsart;
 }
@@ -263,6 +266,7 @@ export function WaeschesetFormDialog({
         farbe: artikel.farbe,
         bild_url: artikel.bild_url,
         bezeichnung: artikel.bezeichnung,
+        preis: artikel.preis ?? null,
         menge,
         berechnungsart,
       };
@@ -505,6 +509,8 @@ export function WaeschesetFormDialog({
                         <TableHead className="hidden sm:table-cell">Kategorie</TableHead>
                         <TableHead className="hidden md:table-cell">Farbe</TableHead>
                         <TableHead className="text-center w-[130px]">Menge</TableHead>
+                        <TableHead className="text-right w-[90px]">E-Preis</TableHead>
+                        <TableHead className="text-right w-[90px]">Summe</TableHead>
                         <TableHead className="text-center w-[140px]">Berechnung</TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
@@ -520,7 +526,9 @@ export function WaeschesetFormDialog({
                         const farbe = isExisting ? (artikel as any).farbe : (artikel as PendingArtikel).farbe;
                         const bildUrl = isExisting ? (artikel as any).bild_url : (artikel as PendingArtikel).bild_url;
                         const artikelMenge = isExisting ? (artikel as any).menge : (artikel as PendingArtikel).menge;
+                        const artikelPreis = isExisting ? (artikel as any).preis : (artikel as PendingArtikel).preis;
                         const artikelBerechnungsart = isExisting ? (artikel as any).berechnungsart : (artikel as PendingArtikel).berechnungsart;
+                        const artikelSumme = artikelPreis !== null ? artikelMenge * artikelPreis : null;
 
                         return (
                           <TableRow key={isExisting ? artikelId : tempId}>
@@ -586,6 +594,12 @@ export function WaeschesetFormDialog({
                                 </Button>
                               </div>
                             </TableCell>
+                            <TableCell className="text-right text-xs text-muted-foreground">
+                              {formatPreis(artikelPreis)}
+                            </TableCell>
+                            <TableCell className="text-right text-xs font-medium">
+                              {formatPreis(artikelSumme)}
+                            </TableCell>
                             <TableCell className="text-center">
                               <TooltipProvider>
                                 <Tooltip>
@@ -635,6 +649,27 @@ export function WaeschesetFormDialog({
                         );
                       })}
                     </TableBody>
+                    <TableFooter>
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-right font-medium">
+                          Gesamtpreis:
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                          {formatPreis(
+                            displayArtikel.reduce((sum, artikel) => {
+                              const isExisting = set !== null;
+                              const artikelPreis = isExisting ? (artikel as any).preis : (artikel as PendingArtikel).preis;
+                              const artikelMenge = isExisting ? (artikel as any).menge : (artikel as PendingArtikel).menge;
+                              if (artikelPreis !== null) {
+                                return sum + artikelMenge * artikelPreis;
+                              }
+                              return sum;
+                            }, 0) || null
+                          )}
+                        </TableCell>
+                        <TableCell colSpan={2}></TableCell>
+                      </TableRow>
+                    </TableFooter>
                   </Table>
                 </div>
               )}
