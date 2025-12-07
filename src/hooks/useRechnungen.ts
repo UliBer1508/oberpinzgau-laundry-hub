@@ -16,6 +16,7 @@ export type Rechnung = {
   kunde_strasse: string | null;
   kunde_plz: string | null;
   kunde_ort: string | null;
+  kunde_kundennummer: string | null;
   nettobetrag: number;
   mwst_satz: number;
   mwst_betrag: number;
@@ -233,6 +234,7 @@ export async function createRechnungForBestellung(bestellungId: string) {
       kunde_strasse: kunde.strasse,
       kunde_plz: kunde.plz,
       kunde_ort: kunde.ort,
+      kunde_kundennummer: kunde.kundennummer,
       nettobetrag,
       mwst_satz: mwstSatz,
       mwst_betrag: mwstBetrag,

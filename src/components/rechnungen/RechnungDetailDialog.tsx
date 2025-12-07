@@ -16,11 +16,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Rechnung, RechnungStatus, useRechnungPositionen } from "@/hooks/useRechnungen";
+import { useRechnungseinstellungen } from "@/hooks/useRechnungseinstellungen";
 import { RechnungStatusBadge } from "./RechnungStatusBadge";
 import { formatPreis } from "@/lib/formatPreis";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { CheckCircle, AlertTriangle, XCircle, Phone, Mail } from "lucide-react";
 
 interface RechnungDetailDialogProps {
   rechnung: Rechnung | null;
@@ -36,8 +37,11 @@ export function RechnungDetailDialog({
   onStatusChange,
 }: RechnungDetailDialogProps) {
   const { data: positionen = [], isLoading } = useRechnungPositionen(rechnung?.id || null);
+  const { data: einstellungen } = useRechnungseinstellungen();
 
   if (!rechnung) return null;
+
+  const hasFirmaData = einstellungen?.firma_name || einstellungen?.firma_bezeichnung;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -50,8 +54,78 @@ export function RechnungDetailDialog({
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Briefkopf: Kunde links, Firma rechts */}
+          <div className="grid grid-cols-2 gap-8">
+            {/* Linke Seite: Kundendaten */}
+            <div className="space-y-3">
+              {/* Kundennummer Hinweis */}
+              {rechnung.kunde_kundennummer && (
+                <div className="text-xs space-y-0.5">
+                  <p className="font-semibold">Kunden-Nr. {rechnung.kunde_kundennummer}</p>
+                  <p className="text-muted-foreground italic">
+                    (Bei Zahlung/Rücksendung/Gutschrift bitte unbedingt angeben!)
+                  </p>
+                </div>
+              )}
+
+              {/* Kundenadresse */}
+              <div className="border rounded-md p-3 text-sm">
+                {rechnung.kunde_firma && <p className="font-medium">{rechnung.kunde_firma}</p>}
+                <p>{rechnung.kunde_name}</p>
+                {rechnung.kunde_strasse && <p>{rechnung.kunde_strasse}</p>}
+                {(rechnung.kunde_plz || rechnung.kunde_ort) && (
+                  <p>
+                    {rechnung.kunde_plz} {rechnung.kunde_ort}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Rechte Seite: Firmendaten */}
+            <div className="text-right text-sm">
+              {hasFirmaData ? (
+                <div className="space-y-1">
+                  {einstellungen?.firma_bezeichnung && (
+                    <p className="font-semibold">{einstellungen.firma_bezeichnung}</p>
+                  )}
+                  {einstellungen?.firma_name && (
+                    <p>{einstellungen.firma_name}</p>
+                  )}
+                  {einstellungen?.firma_strasse && (
+                    <p>{einstellungen.firma_strasse}</p>
+                  )}
+                  {(einstellungen?.firma_plz || einstellungen?.firma_ort) && (
+                    <p>
+                      {einstellungen.firma_plz} {einstellungen.firma_ort}
+                    </p>
+                  )}
+                  <div className="pt-2 text-muted-foreground space-y-0.5">
+                    {einstellungen?.firma_telefon && (
+                      <p className="flex items-center justify-end gap-1">
+                        <Phone className="h-3 w-3" />
+                        {einstellungen.firma_telefon}
+                      </p>
+                    )}
+                    {einstellungen?.firma_email && (
+                      <p className="flex items-center justify-end gap-1">
+                        <Mail className="h-3 w-3" />
+                        {einstellungen.firma_email}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-muted-foreground italic">
+                  Firmendaten nicht hinterlegt
+                </p>
+              )}
+            </div>
+          </div>
+
+          <Separator />
+
           {/* Rechnungsdaten */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Rechnungsdatum</p>
               <p className="font-medium">
@@ -77,23 +151,6 @@ export function RechnungDetailDialog({
             <div>
               <p className="text-muted-foreground">Bestellung</p>
               <p className="font-medium">{rechnung.bestellnummer}</p>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Kundenadresse */}
-          <div>
-            <p className="text-sm text-muted-foreground mb-2">Kunde</p>
-            <div className="text-sm">
-              {rechnung.kunde_firma && <p className="font-medium">{rechnung.kunde_firma}</p>}
-              <p>{rechnung.kunde_name}</p>
-              {rechnung.kunde_strasse && <p>{rechnung.kunde_strasse}</p>}
-              {(rechnung.kunde_plz || rechnung.kunde_ort) && (
-                <p>
-                  {rechnung.kunde_plz} {rechnung.kunde_ort}
-                </p>
-              )}
             </div>
           </div>
 

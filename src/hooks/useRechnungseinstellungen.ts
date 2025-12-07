@@ -6,6 +6,13 @@ export type Rechnungseinstellungen = {
   mwst_satz: number;
   bearbeitungsgebuehr: number;
   updated_at: string;
+  firma_name: string | null;
+  firma_bezeichnung: string | null;
+  firma_strasse: string | null;
+  firma_plz: string | null;
+  firma_ort: string | null;
+  firma_telefon: string | null;
+  firma_email: string | null;
 };
 
 // Einstellungen abrufen
@@ -30,24 +37,28 @@ export function useUpdateRechnungseinstellungen() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ 
-      id, 
-      mwst_satz, 
-      bearbeitungsgebuehr 
-    }: { 
+    mutationFn: async (data: { 
       id: string; 
       mwst_satz: number; 
-      bearbeitungsgebuehr: number; 
+      bearbeitungsgebuehr: number;
+      firma_name?: string | null;
+      firma_bezeichnung?: string | null;
+      firma_strasse?: string | null;
+      firma_plz?: string | null;
+      firma_ort?: string | null;
+      firma_telefon?: string | null;
+      firma_email?: string | null;
     }) => {
-      const { data, error } = await supabase
+      const { id, ...updateData } = data;
+      const { data: result, error } = await supabase
         .from("rechnungseinstellungen")
-        .update({ mwst_satz, bearbeitungsgebuehr })
+        .update(updateData)
         .eq("id", id)
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rechnungseinstellungen"] });

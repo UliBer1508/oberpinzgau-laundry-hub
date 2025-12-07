@@ -343,6 +343,7 @@ export type Database = {
           id: string
           kunde_firma: string | null
           kunde_id: string
+          kunde_kundennummer: string | null
           kunde_name: string
           kunde_ort: string | null
           kunde_plz: string | null
@@ -366,6 +367,7 @@ export type Database = {
           id?: string
           kunde_firma?: string | null
           kunde_id: string
+          kunde_kundennummer?: string | null
           kunde_name: string
           kunde_ort?: string | null
           kunde_plz?: string | null
@@ -389,6 +391,7 @@ export type Database = {
           id?: string
           kunde_firma?: string | null
           kunde_id?: string
+          kunde_kundennummer?: string | null
           kunde_name?: string
           kunde_ort?: string | null
           kunde_plz?: string | null
@@ -422,18 +425,39 @@ export type Database = {
       rechnungseinstellungen: {
         Row: {
           bearbeitungsgebuehr: number
+          firma_bezeichnung: string | null
+          firma_email: string | null
+          firma_name: string | null
+          firma_ort: string | null
+          firma_plz: string | null
+          firma_strasse: string | null
+          firma_telefon: string | null
           id: string
           mwst_satz: number
           updated_at: string
         }
         Insert: {
           bearbeitungsgebuehr?: number
+          firma_bezeichnung?: string | null
+          firma_email?: string | null
+          firma_name?: string | null
+          firma_ort?: string | null
+          firma_plz?: string | null
+          firma_strasse?: string | null
+          firma_telefon?: string | null
           id?: string
           mwst_satz?: number
           updated_at?: string
         }
         Update: {
           bearbeitungsgebuehr?: number
+          firma_bezeichnung?: string | null
+          firma_email?: string | null
+          firma_name?: string | null
+          firma_ort?: string | null
+          firma_plz?: string | null
+          firma_strasse?: string | null
+          firma_telefon?: string | null
           id?: string
           mwst_satz?: number
           updated_at?: string
