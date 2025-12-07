@@ -12,6 +12,8 @@ import {
   LogIn,
   ChevronDown,
   FileText,
+  ClipboardList,
+  ListTodo,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -49,8 +51,8 @@ const mainNavItems = [
 ];
 
 const bestellungenSubItems = [
-  { title: "Übersicht", url: "/bestellungen" },
-  { title: "Arbeitsverwaltung", url: "/bestellungen/management" },
+  { title: "Übersicht", url: "/bestellungen", icon: ClipboardList },
+  { title: "Arbeitsverwaltung", url: "/bestellungen/management", icon: ListTodo },
 ];
 
 const managementNavItems = [
@@ -176,7 +178,8 @@ export function AppSidebar() {
                               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent"
                               activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                             >
-                              {item.title}
+                              <item.icon className="h-4 w-4 shrink-0" />
+                              <span>{item.title}</span>
                             </NavLink>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
