@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { Plus, LayoutList } from "lucide-react";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { BestellungenStats } from "@/components/bestellungen/BestellungenStats";
 import { BestellungenFilter } from "@/components/bestellungen/BestellungenFilter";
@@ -10,7 +10,6 @@ import { BestellungenTable } from "@/components/bestellungen/BestellungenTable";
 import { BestellungFormDialog, type BestellungFormData } from "@/components/bestellungen/BestellungFormDialog";
 import { BestellungPositionenDialog } from "@/components/bestellungen/BestellungPositionenDialog";
 import { BestellungDetailDialog } from "@/components/bestellungen/BestellungDetailDialog";
-import { BestellungenUebersichtDialog } from "@/components/bestellungen/BestellungenUebersichtDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -43,7 +42,6 @@ export default function Bestellungen() {
   const [positionenDialogOpen, setPositionenDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [uebersichtDialogOpen, setUebersichtDialogOpen] = useState(false);
   const [selectedBestellung, setSelectedBestellung] = useState<Bestellung | null>(null);
 
   const queryClient = useQueryClient();
@@ -70,12 +68,14 @@ export default function Bestellungen() {
   }, [bestellungen, searchTerm, selectedStatus, selectedKunde]);
 
   const stats = useMemo(() => {
+    const gesamtumsatz = bestellungen.reduce((sum, b) => sum + (b.gesamtpreis || 0), 0);
     return {
       gesamt: bestellungen.length,
-      neu: bestellungen.filter((b) => b.status === "neu").length,
-      inBearbeitung: bestellungen.filter((b) => b.status === "in_bearbeitung").length,
-      ausgeliefert: bestellungen.filter((b) => b.status === "ausgeliefert").length,
+      inBearbeitung: bestellungen.filter((b) => 
+        b.status === "neu" || b.status === "in_bearbeitung" || b.status === "ausgeliefert"
+      ).length,
       abgeschlossen: bestellungen.filter((b) => b.status === "abgeschlossen").length,
+      gesamtumsatz,
     };
   }, [bestellungen]);
 
@@ -198,16 +198,10 @@ export default function Bestellungen() {
                   Verwalten Sie alle Wäschebestellungen
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={() => setUebersichtDialogOpen(true)}>
-                  <LayoutList className="mr-2 h-4 w-4" />
-                  Übersicht
-                </Button>
-                <Button onClick={handleAddBestellung}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Neue Bestellung
-                </Button>
-              </div>
+              <Button onClick={handleAddBestellung}>
+                <Plus className="mr-2 h-4 w-4" />
+                Bestellung erstellen
+              </Button>
             </div>
           </header>
 
@@ -261,10 +255,6 @@ export default function Bestellungen() {
         bestellungId={selectedBestellung?.id || null}
       />
 
-      <BestellungenUebersichtDialog
-        open={uebersichtDialogOpen}
-        onOpenChange={setUebersichtDialogOpen}
-      />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
