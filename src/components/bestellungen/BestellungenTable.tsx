@@ -6,15 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Package, ArrowRight, XCircle, Trash2, User, CalendarDays, Eye } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Pencil, Trash2, User } from "lucide-react";
 import { BestellungStatusBadge } from "./BestellungStatusBadge";
 import type { Bestellung, BestellungStatus } from "@/hooks/useBestellungen";
 import { format } from "date-fns";
@@ -30,18 +24,29 @@ interface BestellungenTableProps {
   onViewDetails: (bestellung: Bestellung) => void;
 }
 
-const NEXT_STATUS: Partial<Record<BestellungStatus, { status: BestellungStatus; label: string }>> = {
-  neu: { status: "in_bearbeitung", label: "In Bearbeitung setzen" },
-  in_bearbeitung: { status: "ausgeliefert", label: "Als ausgeliefert markieren" },
-  ausgeliefert: { status: "abgeholt", label: "Als abgeholt markieren" },
-  abgeholt: { status: "abgeschlossen", label: "Abschließen" },
-};
+function getRechnungsstatusBadge(bestellung: Bestellung) {
+  const rechnung = (bestellung as any).rechnung;
+  if (!rechnung) {
+    return <Badge variant="outline" className="text-muted-foreground">Keine Rechnung</Badge>;
+  }
+  
+  switch (rechnung.status) {
+    case "bezahlt":
+      return <Badge className="bg-success/10 text-success border-success/20">Bezahlt</Badge>;
+    case "offen":
+      return <Badge className="bg-warning/10 text-warning border-warning/20">Ausstehend</Badge>;
+    case "mahnung":
+      return <Badge className="bg-destructive/10 text-destructive border-destructive/20">Mahnung</Badge>;
+    case "storniert":
+      return <Badge variant="outline" className="text-muted-foreground">Storniert</Badge>;
+    default:
+      return <Badge variant="outline" className="text-muted-foreground">-</Badge>;
+  }
+}
 
 export function BestellungenTable({
   bestellungen,
   onEdit,
-  onManagePositionen,
-  onStatusChange,
   onDelete,
   onViewDetails,
 }: BestellungenTableProps) {
@@ -49,18 +54,18 @@ export function BestellungenTable({
     <div className="rounded-lg border bg-card">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Bestellnummer</TableHead>
-            <TableHead>Kunde</TableHead>
-            <TableHead>Objekt</TableHead>
-            <TableHead>Gast / Buchung</TableHead>
-            <TableHead>Lieferdatum</TableHead>
-            <TableHead>Abholdatum</TableHead>
-            <TableHead>Wäschekraft</TableHead>
-            <TableHead>Positionen</TableHead>
-            <TableHead className="text-right">Preis</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="w-[70px]"></TableHead>
+          <TableRow className="bg-muted/30">
+            <TableHead className="font-semibold">Gast</TableHead>
+            <TableHead className="font-semibold">Kunde</TableHead>
+            <TableHead className="font-semibold">Objekt</TableHead>
+            <TableHead className="font-semibold">Check-in</TableHead>
+            <TableHead className="font-semibold">Check-out</TableHead>
+            <TableHead className="font-semibold text-center">Gäste</TableHead>
+            <TableHead className="font-semibold">Status</TableHead>
+            <TableHead className="font-semibold">Zahlung</TableHead>
+            <TableHead className="font-semibold text-right">Betrag</TableHead>
+            <TableHead className="font-semibold">Services</TableHead>
+            <TableHead className="font-semibold text-center">Aktionen</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -72,23 +77,26 @@ export function BestellungenTable({
             </TableRow>
           ) : (
             bestellungen.map((bestellung) => (
-              <TableRow key={bestellung.id}>
-                <TableCell className="font-medium">{bestellung.bestellnummer}</TableCell>
-                <TableCell>{bestellung.kundeName}</TableCell>
-                <TableCell>{bestellung.objektName || "-"}</TableCell>
+              <TableRow 
+                key={bestellung.id} 
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => onViewDetails(bestellung)}
+              >
+                <TableCell className="font-medium">
+                  {(bestellung as any).gastname || "-"}
+                </TableCell>
                 <TableCell>
-                  {(bestellung as any).gastname || (bestellung as any).check_in ? (
-                    <div className="space-y-0.5">
-                      {(bestellung as any).gastname && (
-                        <div className="font-medium text-sm">{(bestellung as any).gastname}</div>
-                      )}
-                      {(bestellung as any).check_in && (bestellung as any).check_out && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <CalendarDays className="h-3 w-3" />
-                          {format(new Date((bestellung as any).check_in), "dd.MM.", { locale: de })}
-                          {" - "}
-                          {format(new Date((bestellung as any).check_out), "dd.MM.yy", { locale: de })}
-                        </div>
+                  <span className="font-medium">{bestellung.kundeName}</span>
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {bestellung.objektName || "-"}
+                </TableCell>
+                <TableCell>
+                  {(bestellung as any).check_in ? (
+                    <div className="text-sm">
+                      <div>{format(new Date((bestellung as any).check_in), "dd.MM.yy", { locale: de })}</div>
+                      {bestellung.lieferzeit && (
+                        <div className="text-xs text-muted-foreground">{bestellung.lieferzeit}</div>
                       )}
                     </div>
                   ) : (
@@ -96,91 +104,58 @@ export function BestellungenTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  {bestellung.lieferdatum
-                    ? format(new Date(bestellung.lieferdatum), "dd.MM.yyyy", { locale: de })
-                    : "-"}
-                </TableCell>
-                <TableCell>
-                  {bestellung.abholdatum
-                    ? format(new Date(bestellung.abholdatum), "dd.MM.yyyy", { locale: de })
-                    : "-"}
-                </TableCell>
-                <TableCell>
-                  {bestellung.waeschekraftName ? (
-                    <span className="inline-flex items-center gap-1.5 text-sm">
-                      <User className="h-3.5 w-3.5 text-muted-foreground" />
-                      {bestellung.waeschekraftName}
-                    </span>
+                  {(bestellung as any).check_out ? (
+                    <div className="text-sm">
+                      <div>{format(new Date((bestellung as any).check_out), "dd.MM.yy", { locale: de })}</div>
+                      {(bestellung as any).abholzeit && (
+                        <div className="text-xs text-muted-foreground">{(bestellung as any).abholzeit}</div>
+                      )}
+                    </div>
                   ) : (
                     <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
-                <TableCell>{bestellung.positionenCount}</TableCell>
-                <TableCell className="text-right font-medium">
-                  {formatPreis(bestellung.gesamtpreis)}
+                <TableCell className="text-center">
+                  <span className="font-medium">{(bestellung as any).anzahl_personen || 1}</span>
                 </TableCell>
                 <TableCell>
                   <BestellungStatusBadge status={bestellung.status as BestellungStatus} />
                 </TableCell>
                 <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onViewDetails(bestellung)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        Details anzeigen
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => onManagePositionen(bestellung)}>
-                        <Package className="mr-2 h-4 w-4" />
-                        Positionen verwalten
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(bestellung)}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Bearbeiten
-                      </DropdownMenuItem>
-                      {NEXT_STATUS[bestellung.status as BestellungStatus] && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() =>
-                              onStatusChange(
-                                bestellung.id,
-                                NEXT_STATUS[bestellung.status as BestellungStatus]!.status
-                              )
-                            }
-                          >
-                            <ArrowRight className="mr-2 h-4 w-4" />
-                            {NEXT_STATUS[bestellung.status as BestellungStatus]!.label}
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                      {bestellung.status !== "storniert" && bestellung.status !== "abgeschlossen" && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => onStatusChange(bestellung.id, "storniert")}
-                            className="text-destructive"
-                          >
-                            <XCircle className="mr-2 h-4 w-4" />
-                            Stornieren
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => onDelete(bestellung)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Löschen
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {getRechnungsstatusBadge(bestellung)}
+                </TableCell>
+                <TableCell className="text-right font-semibold">
+                  {formatPreis(bestellung.gesamtpreis)}
+                </TableCell>
+                <TableCell>
+                  {bestellung.waeschekraftName ? (
+                    <Badge variant="secondary" className="gap-1">
+                      <User className="h-3 w-3" />
+                      {bestellung.waeschekraftName}
+                    </Badge>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-muted-foreground hover:text-primary"
+                      onClick={() => onEdit(bestellung)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      onClick={() => onDelete(bestellung)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))
