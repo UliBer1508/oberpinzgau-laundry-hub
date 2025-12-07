@@ -19,6 +19,7 @@ import { BestellungStatusBadge } from "./BestellungStatusBadge";
 import type { Bestellung, BestellungStatus } from "@/hooks/useBestellungen";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { formatPreis } from "@/lib/formatPreis";
 
 interface BestellungenTableProps {
   bestellungen: Bestellung[];
@@ -54,6 +55,7 @@ export function BestellungenTable({
             <TableHead>Abholdatum</TableHead>
             <TableHead>Wäschekraft</TableHead>
             <TableHead>Positionen</TableHead>
+            <TableHead className="text-right">Preis</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="w-[70px]"></TableHead>
           </TableRow>
@@ -61,7 +63,7 @@ export function BestellungenTable({
         <TableBody>
           {bestellungen.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
                 Keine Bestellungen gefunden.
               </TableCell>
             </TableRow>
@@ -92,6 +94,9 @@ export function BestellungenTable({
                   )}
                 </TableCell>
                 <TableCell>{bestellung.positionenCount}</TableCell>
+                <TableCell className="text-right font-medium">
+                  {formatPreis(bestellung.gesamtpreis)}
+                </TableCell>
                 <TableCell>
                   <BestellungStatusBadge status={bestellung.status as BestellungStatus} />
                 </TableCell>

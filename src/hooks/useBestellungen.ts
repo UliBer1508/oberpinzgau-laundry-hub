@@ -7,6 +7,7 @@ export type Bestellung = Tables<"waeschebestellungen"> & {
   objektName: string | null;
   waeschekraftName: string | null;
   positionenCount: number;
+  gesamtpreis: number | null;
 };
 
 export type BestellungInsert = TablesInsert<"waeschebestellungen">;
@@ -17,6 +18,7 @@ export type BestellPosition = Tables<"bestellpositionen"> & {
   artikelNummer: string;
   kategorie: string | null;
   farbe: string | null;
+  preis: number | null;
 };
 
 export type BestellungStatus = "neu" | "in_bearbeitung" | "ausgeliefert" | "abgeholt" | "abgeschlossen" | "storniert";
@@ -38,16 +40,29 @@ export function useBestellungen() {
 
       if (error) throw error;
 
-      // Get position counts
-      const { data: positionCounts, error: countsError } = await supabase
+      // Get position counts and prices
+      const { data: positionData, error: posError } = await supabase
         .from("bestellpositionen")
-        .select("bestellung_id");
+        .select(`
+          bestellung_id,
+          menge,
+          waescheartikel!artikel_id (preis)
+        `);
 
-      if (countsError) throw countsError;
+      if (posError) throw posError;
 
       const countMap = new Map<string, number>();
-      positionCounts?.forEach((item) => {
+      const priceMap = new Map<string, number>();
+      
+      positionData?.forEach((item) => {
         countMap.set(item.bestellung_id, (countMap.get(item.bestellung_id) || 0) + 1);
+        const artikelPreis = (item.waescheartikel as { preis: number | null } | null)?.preis;
+        if (artikelPreis !== null && artikelPreis !== undefined) {
+          priceMap.set(
+            item.bestellung_id,
+            (priceMap.get(item.bestellung_id) || 0) + item.menge * artikelPreis
+          );
+        }
       });
 
       return bestellungen?.map((b) => ({
@@ -56,6 +71,7 @@ export function useBestellungen() {
         objektName: (b.objekte as { name: string } | null)?.name || null,
         waeschekraftName: (b.waeschekraefte as { name: string } | null)?.name || null,
         positionenCount: countMap.get(b.id) || 0,
+        gesamtpreis: priceMap.has(b.id) ? priceMap.get(b.id)! : null,
       })) as Bestellung[];
     },
   });
@@ -75,7 +91,8 @@ export function useBestellungPositionen(bestellungId: string | null) {
             name,
             artikelnummer,
             kategorie,
-            farbe
+            farbe,
+            preis
           )
         `)
         .eq("bestellung_id", bestellungId!);
@@ -88,6 +105,7 @@ export function useBestellungPositionen(bestellungId: string | null) {
         artikelNummer: (item.waescheartikel as { artikelnummer: string } | null)?.artikelnummer || "",
         kategorie: (item.waescheartikel as { kategorie: string | null } | null)?.kategorie || null,
         farbe: (item.waescheartikel as { farbe: string | null } | null)?.farbe || null,
+        preis: (item.waescheartikel as { preis: number | null } | null)?.preis ?? null,
       })) as BestellPosition[];
     },
   });
