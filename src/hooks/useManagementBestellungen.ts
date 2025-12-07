@@ -190,6 +190,49 @@ export function useUpdateBearbeitungNotizen() {
   });
 }
 
+// Update Lieferdatum
+export function useUpdateLieferdatum() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, lieferdatum, lieferzeit }: { id: string; lieferdatum: string | null; lieferzeit: string | null }) => {
+      const { data, error } = await supabase
+        .from("waeschebestellungen")
+        .update({ lieferdatum, lieferzeit })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["management-bestellungen"] });
+    },
+  });
+}
+
+// Update Abholdatum
+export function useUpdateAbholdatum() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, abholdatum, abholzeit }: { id: string; abholdatum: string | null; abholzeit: string | null }) => {
+      const { data, error } = await supabase
+        .from("waeschebestellungen")
+        .update({ abholdatum, abholzeit })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["management-bestellungen"] });
+    },
+  });
+}
 // Update Bearbeitung Deadline
 export function useUpdateBearbeitungDeadline() {
   const queryClient = useQueryClient();
