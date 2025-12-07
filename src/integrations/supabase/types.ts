@@ -332,6 +332,128 @@ export type Database = {
         }
         Relationships: []
       }
+      rechnungen: {
+        Row: {
+          bestellung_id: string
+          bezahlt_am: string | null
+          bruttobetrag: number
+          created_at: string
+          faelligkeitsdatum: string | null
+          id: string
+          kunde_firma: string | null
+          kunde_id: string
+          kunde_name: string
+          kunde_ort: string | null
+          kunde_plz: string | null
+          kunde_strasse: string | null
+          mwst_betrag: number
+          mwst_satz: number
+          nettobetrag: number
+          notizen: string | null
+          rechnungsdatum: string
+          rechnungsnummer: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bestellung_id: string
+          bezahlt_am?: string | null
+          bruttobetrag: number
+          created_at?: string
+          faelligkeitsdatum?: string | null
+          id?: string
+          kunde_firma?: string | null
+          kunde_id: string
+          kunde_name: string
+          kunde_ort?: string | null
+          kunde_plz?: string | null
+          kunde_strasse?: string | null
+          mwst_betrag: number
+          mwst_satz?: number
+          nettobetrag: number
+          notizen?: string | null
+          rechnungsdatum?: string
+          rechnungsnummer: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bestellung_id?: string
+          bezahlt_am?: string | null
+          bruttobetrag?: number
+          created_at?: string
+          faelligkeitsdatum?: string | null
+          id?: string
+          kunde_firma?: string | null
+          kunde_id?: string
+          kunde_name?: string
+          kunde_ort?: string | null
+          kunde_plz?: string | null
+          kunde_strasse?: string | null
+          mwst_betrag?: number
+          mwst_satz?: number
+          nettobetrag?: number
+          notizen?: string | null
+          rechnungsdatum?: string
+          rechnungsnummer?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rechnungen_bestellung_id_fkey"
+            columns: ["bestellung_id"]
+            isOneToOne: false
+            referencedRelation: "waeschebestellungen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rechnungen_kunde_id_fkey"
+            columns: ["kunde_id"]
+            isOneToOne: false
+            referencedRelation: "kunden"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rechnungspositionen: {
+        Row: {
+          artikelnummer: string
+          bezeichnung: string
+          einzelpreis: number
+          gesamtpreis: number
+          id: string
+          menge: number
+          rechnung_id: string
+        }
+        Insert: {
+          artikelnummer: string
+          bezeichnung: string
+          einzelpreis: number
+          gesamtpreis: number
+          id?: string
+          menge: number
+          rechnung_id: string
+        }
+        Update: {
+          artikelnummer?: string
+          bezeichnung?: string
+          einzelpreis?: number
+          gesamtpreis?: number
+          id?: string
+          menge?: number
+          rechnung_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rechnungspositionen_rechnung_id_fkey"
+            columns: ["rechnung_id"]
+            isOneToOne: false
+            referencedRelation: "rechnungen"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string

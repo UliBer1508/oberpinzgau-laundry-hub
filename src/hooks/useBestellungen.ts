@@ -250,10 +250,23 @@ export function useUpdateBestellungStatus() {
         .single();
 
       if (error) throw error;
+
+      // Automatisch Rechnung erstellen wenn Status auf "ausgeliefert" gesetzt wird
+      if (status === "ausgeliefert") {
+        try {
+          const { createRechnungForBestellung } = await import("./useRechnungen");
+          await createRechnungForBestellung(id);
+        } catch (rechnungError) {
+          console.error("Fehler beim Erstellen der Rechnung:", rechnungError);
+          // Wir werfen den Fehler nicht, damit der Status-Update trotzdem durchgeht
+        }
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bestellungen"] });
+      queryClient.invalidateQueries({ queryKey: ["rechnungen"] });
     },
   });
 }

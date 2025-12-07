@@ -13,6 +13,7 @@ import {
   LogIn,
   ClipboardList,
   ChevronDown,
+  FileText,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -46,6 +47,7 @@ const mainNavItems = [
   { title: "Objekte", url: "/objekte", icon: Building2 },
   { title: "Buchungen", url: "/buchungen", icon: CalendarDays },
   { title: "Liefertouren", url: "/liefertouren", icon: Truck },
+  { title: "Rechnungen", url: "/rechnungen", icon: FileText },
 ];
 
 const bestellungenSubItems = [
