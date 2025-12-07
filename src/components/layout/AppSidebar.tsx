@@ -3,7 +3,6 @@ import {
   Users,
   Building2,
   ShoppingCart,
-  CalendarDays,
   Truck,
   UserCheck,
   Package,
@@ -11,7 +10,6 @@ import {
   Settings,
   LogOut,
   LogIn,
-  ClipboardList,
   ChevronDown,
   FileText,
 } from "lucide-react";
@@ -45,7 +43,6 @@ const mainNavItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Kunden", url: "/kunden", icon: Users },
   { title: "Objekte", url: "/objekte", icon: Building2 },
-  { title: "Buchungen", url: "/buchungen", icon: CalendarDays },
   { title: "Liefertouren", url: "/liefertouren", icon: Truck },
   { title: "Rechnungen", url: "/rechnungen", icon: FileText },
 ];

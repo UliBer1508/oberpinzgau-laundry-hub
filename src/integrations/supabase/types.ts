@@ -53,53 +53,6 @@ export type Database = {
           },
         ]
       }
-      buchungen: {
-        Row: {
-          anzahl_personen: number | null
-          buchungsnummer: string
-          check_in: string
-          check_out: string
-          created_at: string
-          gastname: string | null
-          id: string
-          notizen: string | null
-          objekt_id: string
-          updated_at: string
-        }
-        Insert: {
-          anzahl_personen?: number | null
-          buchungsnummer: string
-          check_in: string
-          check_out: string
-          created_at?: string
-          gastname?: string | null
-          id?: string
-          notizen?: string | null
-          objekt_id: string
-          updated_at?: string
-        }
-        Update: {
-          anzahl_personen?: number | null
-          buchungsnummer?: string
-          check_in?: string
-          check_out?: string
-          created_at?: string
-          gastname?: string | null
-          id?: string
-          notizen?: string | null
-          objekt_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "buchungen_objekt_id_fkey"
-            columns: ["objekt_id"]
-            isOneToOne: false
-            referencedRelation: "objekte"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       kunden: {
         Row: {
           aktiv: boolean | null
@@ -572,10 +525,13 @@ export type Database = {
         Row: {
           abholdatum: string | null
           abholzeit: string | null
+          anzahl_personen: number | null
           bearbeitung_notizen: string | null
           bestellnummer: string
-          buchung_id: string | null
+          check_in: string | null
+          check_out: string | null
           created_at: string
+          gastname: string | null
           id: string
           kunde_id: string
           lieferdatum: string | null
@@ -591,10 +547,13 @@ export type Database = {
         Insert: {
           abholdatum?: string | null
           abholzeit?: string | null
+          anzahl_personen?: number | null
           bearbeitung_notizen?: string | null
           bestellnummer: string
-          buchung_id?: string | null
+          check_in?: string | null
+          check_out?: string | null
           created_at?: string
+          gastname?: string | null
           id?: string
           kunde_id: string
           lieferdatum?: string | null
@@ -610,10 +569,13 @@ export type Database = {
         Update: {
           abholdatum?: string | null
           abholzeit?: string | null
+          anzahl_personen?: number | null
           bearbeitung_notizen?: string | null
           bestellnummer?: string
-          buchung_id?: string | null
+          check_in?: string | null
+          check_out?: string | null
           created_at?: string
+          gastname?: string | null
           id?: string
           kunde_id?: string
           lieferdatum?: string | null
@@ -627,13 +589,6 @@ export type Database = {
           waeschekraft_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "waeschebestellungen_buchung_id_fkey"
-            columns: ["buchung_id"]
-            isOneToOne: false
-            referencedRelation: "buchungen"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "waeschebestellungen_kunde_id_fkey"
             columns: ["kunde_id"]

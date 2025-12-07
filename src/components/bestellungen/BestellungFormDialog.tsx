@@ -31,15 +31,7 @@ interface BestellungFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bestellung: Bestellung | null;
-  onSave: (data: BestellungInsert, buchungData?: BuchungData, formData?: BestellungFormData) => void;
-}
-
-export interface BuchungData {
-  gastname: string;
-  check_in: string;
-  check_out: string;
-  anzahl_personen: number;
-  objekt_id: string;
+  onSave: (data: BestellungInsert, formData?: BestellungFormData) => void;
 }
 
 export interface BestellungFormData {
@@ -99,10 +91,10 @@ export function BestellungFormDialog({
         abholdatum: bestellung.abholdatum || "",
         abholzeit: bestellung.abholzeit || "",
         notizen: bestellung.notizen || "",
-        gastname: "",
-        check_in: "",
-        check_out: "",
-        anzahl_personen: 1,
+        gastname: (bestellung as any).gastname || "",
+        check_in: (bestellung as any).check_in || "",
+        check_out: (bestellung as any).check_out || "",
+        anzahl_personen: (bestellung as any).anzahl_personen || 1,
       });
     } else {
       setFormData({
@@ -153,6 +145,11 @@ export function BestellungFormDialog({
       abholdatum: formData.abholdatum || null,
       abholzeit: formData.abholzeit || null,
       notizen: formData.notizen || null,
+      // Buchungsdaten direkt in der Bestellung speichern
+      gastname: bestellmodus === "mit_buchung" ? (formData.gastname || null) : null,
+      check_in: bestellmodus === "mit_buchung" ? (formData.check_in || null) : null,
+      check_out: bestellmodus === "mit_buchung" ? (formData.check_out || null) : null,
+      anzahl_personen: formData.anzahl_personen,
     };
 
     const additionalFormData: BestellungFormData = {
@@ -160,19 +157,7 @@ export function BestellungFormDialog({
       anzahl_personen: formData.anzahl_personen,
     };
 
-    // Bei 'mit_buchung' Buchungsdaten mitsenden
-    if (bestellmodus === "mit_buchung" && !isEdit) {
-      const buchungData: BuchungData = {
-        gastname: formData.gastname,
-        check_in: formData.check_in,
-        check_out: formData.check_out,
-        anzahl_personen: formData.anzahl_personen,
-        objekt_id: formData.objekt_id,
-      };
-      onSave(bestellungData, buchungData, additionalFormData);
-    } else {
-      onSave(bestellungData, undefined, additionalFormData);
-    }
+    onSave(bestellungData, additionalFormData);
   };
 
   const isFormValid = () => {
