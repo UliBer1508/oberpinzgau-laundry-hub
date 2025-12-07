@@ -151,7 +151,11 @@ export function useUpdateManagementStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: "neu" | "in_bearbeitung" | "ausgeliefert" | "abgeholt" | "abgeschlossen" | "storniert" }) => {
+    mutationFn: async ({ id, status, bearbeiter_name }: { 
+      id: string; 
+      status: "neu" | "in_bearbeitung" | "ausgeliefert" | "abgeholt" | "abgeschlossen" | "storniert";
+      bearbeiter_name?: string;
+    }) => {
       const { data, error } = await supabase
         .from("waeschebestellungen")
         .update({ status })
@@ -160,10 +164,39 @@ export function useUpdateManagementStatus() {
         .single();
 
       if (error) throw error;
+
+      // History-Eintrag erstellen
+      await supabase
+        .from("bestellung_history")
+        .insert({
+          bestellung_id: id,
+          status,
+          bearbeiter_name: bearbeiter_name || null,
+        });
+
+      // Automatisch Rechnung erstellen wenn Status auf "ausgeliefert" gesetzt wird
+      if (status === "ausgeliefert") {
+        try {
+          console.log("Management: Erstelle Rechnung für Bestellung", id);
+          const { error: invoiceError } = await supabase.functions.invoke('create-invoice', {
+            body: { bestellung_id: id }
+          });
+          
+          if (invoiceError) {
+            console.error("Fehler beim Erstellen der Rechnung:", invoiceError);
+          } else {
+            console.log("Rechnung erfolgreich erstellt für Bestellung", id);
+          }
+        } catch (rechnungError) {
+          console.error("Fehler beim Erstellen der Rechnung:", rechnungError);
+        }
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["management-bestellungen"] });
+      queryClient.invalidateQueries({ queryKey: ["rechnungen"] });
     },
   });
 }
