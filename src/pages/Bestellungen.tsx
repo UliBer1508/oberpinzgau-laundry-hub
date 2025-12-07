@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { BestellungenStats } from "@/components/bestellungen/BestellungenStats";
 import { BestellungenFilter } from "@/components/bestellungen/BestellungenFilter";
 import { BestellungenTable } from "@/components/bestellungen/BestellungenTable";
-import { BestellungFormDialog, type BuchungData, type BestellungFormData } from "@/components/bestellungen/BestellungFormDialog";
+import { BestellungFormDialog, type BestellungFormData } from "@/components/bestellungen/BestellungFormDialog";
 import { BestellungPositionenDialog } from "@/components/bestellungen/BestellungPositionenDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -118,7 +118,6 @@ export default function Bestellungen() {
 
   const handleSaveBestellung = async (
     data: BestellungInsert, 
-    buchungData?: BuchungData,
     formData?: BestellungFormData
   ) => {
     try {
@@ -128,54 +127,9 @@ export default function Bestellungen() {
         await updateBestellung.mutateAsync({ id: selectedBestellung.id, ...data });
         toast.success("Bestellung aktualisiert");
       } else {
-        // Bei 'mit_buchung' zuerst Buchung erstellen
-        if (buchungData && buchungData.objekt_id) {
-          // Buchungsnummer generieren
-          const { data: lastBuchung } = await supabase
-            .from("buchungen")
-            .select("buchungsnummer")
-            .order("created_at", { ascending: false })
-            .limit(1);
-          
-          let nextBuchungsnummer = "BU0001";
-          if (lastBuchung && lastBuchung.length > 0) {
-            const match = lastBuchung[0].buchungsnummer.match(/BU(\d+)/);
-            if (match) {
-              const nextNum = parseInt(match[1], 10) + 1;
-              nextBuchungsnummer = `BU${nextNum.toString().padStart(4, "0")}`;
-            }
-          }
-
-          // Buchung erstellen
-          const { data: newBuchung, error: buchungError } = await supabase
-            .from("buchungen")
-            .insert({
-              buchungsnummer: nextBuchungsnummer,
-              objekt_id: buchungData.objekt_id,
-              check_in: buchungData.check_in,
-              check_out: buchungData.check_out,
-              gastname: buchungData.gastname || null,
-              anzahl_personen: buchungData.anzahl_personen,
-            })
-            .select()
-            .single();
-
-          if (buchungError) throw buchungError;
-
-          // Bestellung mit buchung_id erstellen
-          const result = await createBestellung.mutateAsync({
-            ...data,
-            buchung_id: newBuchung.id,
-            lieferdatum: data.lieferdatum || buchungData.check_in,
-            abholdatum: data.abholdatum || buchungData.check_out,
-          });
-          
-          createdBestellungId = result.id;
-          queryClient.invalidateQueries({ queryKey: ["buchungen"] });
-        } else {
-          const result = await createBestellung.mutateAsync(data);
-          createdBestellungId = result.id;
-        }
+        // Bestellung direkt erstellen (mit oder ohne Buchungsdaten)
+        const result = await createBestellung.mutateAsync(data);
+        createdBestellungId = result.id;
 
         // Wäscheset-Positionen automatisch hinzufügen
         if (createdBestellungId && formData?.waescheset_id) {
