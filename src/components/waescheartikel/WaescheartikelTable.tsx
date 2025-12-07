@@ -24,7 +24,7 @@ interface WaescheartikelTableProps {
   onToggleAktiv: (id: string, aktiv: boolean) => void;
 }
 
-type SortField = "artikelnummer" | "name" | "kategorie" | "farbe" | "preis" | "aktiv";
+type SortField = "artikelnummer" | "name" | "groesse" | "kategorie" | "farbe" | "preis" | "aktiv";
 type SortDirection = "asc" | "desc";
 
 const colorMap: Record<string, string> = {
@@ -70,6 +70,10 @@ export function WaescheartikelTable({
       case "name":
         aValue = a.name || "";
         bValue = b.name || "";
+        break;
+      case "groesse":
+        aValue = a.groesse || "";
+        bValue = b.groesse || "";
         break;
       case "kategorie":
         aValue = a.kategorie || "";
@@ -127,6 +131,9 @@ export function WaescheartikelTable({
             <TableHead>
               <SortButton field="name">Name</SortButton>
             </TableHead>
+            <TableHead>
+              <SortButton field="groesse">Größe</SortButton>
+            </TableHead>
             <TableHead>Bezeichnung</TableHead>
             <TableHead>
               <SortButton field="kategorie">Kategorie</SortButton>
@@ -146,7 +153,7 @@ export function WaescheartikelTable({
         <TableBody>
           {sortedArtikel.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="h-24 text-center">
+              <TableCell colSpan={10} className="h-24 text-center">
                 Keine Wäscheartikel gefunden.
               </TableCell>
             </TableRow>
@@ -170,6 +177,9 @@ export function WaescheartikelTable({
                   {artikel.artikelnummer}
                 </TableCell>
                 <TableCell className="font-medium">{artikel.name}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {artikel.groesse || "-"}
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {artikel.bezeichnung || "-"}
                 </TableCell>

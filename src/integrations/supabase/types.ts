@@ -361,6 +361,7 @@ export type Database = {
           bild_url: string | null
           created_at: string
           farbe: string | null
+          groesse: string | null
           id: string
           kategorie: string | null
           name: string
@@ -374,6 +375,7 @@ export type Database = {
           bild_url?: string | null
           created_at?: string
           farbe?: string | null
+          groesse?: string | null
           id?: string
           kategorie?: string | null
           name: string
@@ -387,6 +389,7 @@ export type Database = {
           bild_url?: string | null
           created_at?: string
           farbe?: string | null
+          groesse?: string | null
           id?: string
           kategorie?: string | null
           name?: string

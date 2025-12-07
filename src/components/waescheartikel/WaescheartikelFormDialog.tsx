@@ -51,6 +51,7 @@ const FARBEN = [
 const formSchema = z.object({
   artikelnummer: z.string().min(1, "Artikelnummer ist erforderlich"),
   name: z.string().min(1, "Name ist erforderlich"),
+  groesse: z.string().optional(),
   bezeichnung: z.string().optional(),
   kategorie: z.string().optional(),
   farbe: z.string().optional(),
@@ -93,6 +94,7 @@ export function WaescheartikelFormDialog({
     defaultValues: {
       artikelnummer: "",
       name: "",
+      groesse: "",
       bezeichnung: "",
       kategorie: "",
       farbe: "",
@@ -107,6 +109,7 @@ export function WaescheartikelFormDialog({
         form.reset({
           artikelnummer: artikel.artikelnummer,
           name: artikel.name,
+          groesse: artikel.groesse || "",
           bezeichnung: artikel.bezeichnung || "",
           kategorie: artikel.kategorie || "",
           farbe: artikel.farbe || "",
@@ -119,6 +122,7 @@ export function WaescheartikelFormDialog({
         form.reset({
           artikelnummer: nextArtikelnummer,
           name: "",
+          groesse: "",
           bezeichnung: "",
           kategorie: "",
           farbe: "",
@@ -204,6 +208,7 @@ export function WaescheartikelFormDialog({
       onSubmit({
         artikelnummer: values.artikelnummer,
         name: values.name,
+        groesse: values.groesse || null,
         bezeichnung: values.bezeichnung || null,
         kategorie: values.kategorie || null,
         farbe: values.farbe || null,
@@ -311,6 +316,20 @@ export function WaescheartikelFormDialog({
                   <FormLabel>Name *</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="z.B. Betttuch 180x200" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="groesse"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Größe</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="z.B. 180x200 cm" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
