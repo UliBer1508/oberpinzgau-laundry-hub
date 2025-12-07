@@ -91,13 +91,15 @@ export function ManagementTable({ bestellungen }: ManagementTableProps) {
             <TableRow className="bg-muted/50">
               <TableHead className="w-[40px]"></TableHead>
               <TableHead className="w-[50px]">Prio</TableHead>
-              <TableHead className="w-[100px]">Bestellung</TableHead>
-              <TableHead>Kunde / Objekt</TableHead>
+              <TableHead className="w-[100px]">Bestellnr.</TableHead>
+              <TableHead>Kunde</TableHead>
+              <TableHead>Objekt</TableHead>
+              <TableHead className="w-[130px]">Status</TableHead>
               <TableHead className="w-[100px]">Lieferung</TableHead>
               <TableHead className="w-[100px]">Abholung</TableHead>
+              <TableHead className="w-[130px]">Bis</TableHead>
               <TableHead className="w-[160px]">Wäschekraft</TableHead>
               <TableHead className="min-w-[180px]">Artikel</TableHead>
-              <TableHead className="w-[130px]">Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -561,6 +561,7 @@ export type Database = {
           abholdatum: string | null
           abholzeit: string | null
           anzahl_personen: number | null
+          bearbeitung_deadline: string | null
           bearbeitung_notizen: string | null
           bestellnummer: string
           check_in: string | null
@@ -583,6 +584,7 @@ export type Database = {
           abholdatum?: string | null
           abholzeit?: string | null
           anzahl_personen?: number | null
+          bearbeitung_deadline?: string | null
           bearbeitung_notizen?: string | null
           bestellnummer: string
           check_in?: string | null
@@ -605,6 +607,7 @@ export type Database = {
           abholdatum?: string | null
           abholzeit?: string | null
           anzahl_personen?: number | null
+          bearbeitung_deadline?: string | null
           bearbeitung_notizen?: string | null
           bestellnummer?: string
           check_in?: string | null
