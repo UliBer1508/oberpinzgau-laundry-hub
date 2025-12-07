@@ -2,7 +2,6 @@ import {
   LayoutDashboard,
   Users,
   Building2,
-  ShoppingCart,
   Truck,
   UserCheck,
   Package,
@@ -10,13 +9,12 @@ import {
   Settings,
   LogOut,
   LogIn,
-  ChevronDown,
   FileText,
   ClipboardList,
   ListTodo,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
@@ -30,29 +28,17 @@ import {
   SidebarHeader,
   SidebarFooter,
   useSidebar,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { useState } from "react";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Kunden", url: "/kunden", icon: Users },
   { title: "Objekte", url: "/objekte", icon: Building2 },
+  { title: "Bestellungen-Übersicht", url: "/bestellungen", icon: ClipboardList },
+  { title: "Arbeitsverwaltung", url: "/bestellungen/management", icon: ListTodo },
   { title: "Liefertouren", url: "/liefertouren", icon: Truck },
   { title: "Rechnungen", url: "/rechnungen", icon: FileText },
-];
-
-const bestellungenSubItems = [
-  { title: "Übersicht", url: "/bestellungen", icon: ClipboardList },
-  { title: "Arbeitsverwaltung", url: "/bestellungen/management", icon: ListTodo },
 ];
 
 const managementNavItems = [
@@ -67,10 +53,6 @@ export function AppSidebar() {
   const isCollapsed = state === "collapsed";
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [bestellungenOpen, setBestellungenOpen] = useState(
-    location.pathname.startsWith("/bestellungen")
-  );
 
   const getInitials = () => {
     if (profile?.name) {
@@ -143,7 +125,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink
                       to={item.url}
-                      end={item.url === "/"}
+                      end={item.url === "/" || item.url === "/bestellungen"}
                       className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
@@ -153,41 +135,6 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-
-              {/* Bestellungen mit Untermenü */}
-              <Collapsible open={bestellungenOpen} onOpenChange={setBestellungenOpen}>
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton
-                      tooltip="Bestellungen"
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground w-full"
-                    >
-                      <ShoppingCart className="h-5 w-5 shrink-0" />
-                      <span className="flex-1">Bestellungen</span>
-                      <ChevronDown className={`h-4 w-4 transition-transform ${bestellungenOpen ? "rotate-180" : ""}`} />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {bestellungenSubItems.map((item) => (
-                        <SidebarMenuSubItem key={item.url}>
-                          <SidebarMenuSubButton asChild>
-                            <NavLink
-                              to={item.url}
-                              end
-                              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent"
-                              activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
-                            >
-                              <item.icon className="h-4 w-4 shrink-0" />
-                              <span>{item.title}</span>
-                            </NavLink>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
