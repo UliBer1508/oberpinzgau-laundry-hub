@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { WaescheartikelStats } from "@/components/waescheartikel/WaescheartikelStats";
 import { WaescheartikelFilter } from "@/components/waescheartikel/WaescheartikelFilter";
@@ -125,7 +125,6 @@ export default function Waescheartikel() {
         <AppSidebar />
         <main className="flex-1 p-6">
           <div className="flex items-center gap-4 mb-6">
-            <SidebarTrigger />
             <div className="flex-1">
               <h1 className="text-2xl font-bold">Wäscheartikel</h1>
               <p className="text-muted-foreground">

@@ -1,4 +1,4 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { BestellungenDashboard } from "@/components/dashboard/BestellungenDashboard";
@@ -25,7 +25,6 @@ const Index = () => {
           {/* Header */}
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="-ml-2" />
               <div>
                 <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
                 <p className="text-sm text-muted-foreground">{today}</p>

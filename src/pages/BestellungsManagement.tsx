@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { ManagementHeader } from "@/components/management/ManagementHeader";
 import { ManagementFilterBar } from "@/components/management/ManagementFilterBar";
@@ -96,7 +96,6 @@ export default function BestellungsManagement() {
         <AppSidebar />
         <SidebarInset className="flex-1">
           <header className="flex h-14 items-center gap-4 border-b bg-background px-6">
-            <SidebarTrigger />
             <div className="flex-1">
               <h1 className="text-lg font-semibold">Bestellverwaltung</h1>
             </div>
