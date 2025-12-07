@@ -92,11 +92,21 @@ export default function Rechnungen() {
     );
   };
 
-  const handleSaveEinstellungen = (mwstSatz: number, bearbeitungsgebuehr: number) => {
+  const handleSaveEinstellungen = (data: {
+    mwst_satz: number;
+    bearbeitungsgebuehr: number;
+    firma_name: string | null;
+    firma_bezeichnung: string | null;
+    firma_strasse: string | null;
+    firma_plz: string | null;
+    firma_ort: string | null;
+    firma_telefon: string | null;
+    firma_email: string | null;
+  }) => {
     if (!einstellungen?.id) return;
     
     updateEinstellungen.mutate(
-      { id: einstellungen.id, mwst_satz: mwstSatz, bearbeitungsgebuehr },
+      { id: einstellungen.id, ...data },
       {
         onSuccess: () => {
           toast({
