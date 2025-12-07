@@ -34,10 +34,9 @@ import { useUploadArtikelBild, useDeleteArtikelBild } from "@/hooks/useWaeschear
 const KATEGORIEN = [
   "Bettwäsche",
   "Handtücher",
-  "Bademäntel",
-  "Tischdecken",
-  "Bezüge",
-  "Sonstiges",
+  "Wellness",
+  "Badartikel",
+  "Küchenartikel",
 ];
 
 const FARBEN = [
