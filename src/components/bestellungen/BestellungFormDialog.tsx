@@ -116,8 +116,8 @@ export function BestellungFormDialog({
     }
   }, [bestellung, nextBestellnummer, open]);
 
-  // Synchronisiere Liefer-/Abholdatum mit Check-in/Check-out bei 'mit_buchung'
-  // Lieferdatum = 1 Tag vor Check-in, Abholdatum = Check-out
+  // Synchronisiere Lieferdatum mit Check-in bei 'mit_buchung'
+  // Lieferdatum = 1 Tag vor Check-in (Wäsche muss vor Ankunft da sein)
   useEffect(() => {
     if (bestellmodus === "mit_buchung" && formData.check_in) {
       const checkInDate = new Date(formData.check_in);
@@ -127,10 +127,9 @@ export function BestellungFormDialog({
       setFormData((prev) => ({
         ...prev,
         lieferdatum: lieferdatum,
-        abholdatum: prev.check_out,
       }));
     }
-  }, [formData.check_in, formData.check_out, bestellmodus]);
+  }, [formData.check_in, bestellmodus]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -396,12 +395,7 @@ export function BestellungFormDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="abholdatum">
-                Abholdatum
-                {bestellmodus === "mit_buchung" && formData.check_out && (
-                  <span className="ml-1 text-xs text-muted-foreground">(= Check-out)</span>
-                )}
-              </Label>
+              <Label htmlFor="abholdatum">Abholdatum</Label>
               <Input
                 id="abholdatum"
                 type="date"
