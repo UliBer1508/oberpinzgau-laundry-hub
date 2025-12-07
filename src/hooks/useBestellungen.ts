@@ -254,11 +254,15 @@ export function useUpdateBestellungStatus() {
       // Automatisch Rechnung erstellen wenn Status auf "ausgeliefert" gesetzt wird
       if (status === "ausgeliefert") {
         try {
-          const { createRechnungForBestellung } = await import("./useRechnungen");
-          await createRechnungForBestellung(id);
+          const { error: invoiceError } = await supabase.functions.invoke('create-invoice', {
+            body: { bestellung_id: id }
+          });
+          
+          if (invoiceError) {
+            console.error("Fehler beim Erstellen der Rechnung:", invoiceError);
+          }
         } catch (rechnungError) {
           console.error("Fehler beim Erstellen der Rechnung:", rechnungError);
-          // Wir werfen den Fehler nicht, damit der Status-Update trotzdem durchgeht
         }
       }
 
