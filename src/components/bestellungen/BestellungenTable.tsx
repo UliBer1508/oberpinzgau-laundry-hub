@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Pencil, Package, ArrowRight, XCircle, Trash2, User } from "lucide-react";
+import { MoreHorizontal, Pencil, Package, ArrowRight, XCircle, Trash2, User, CalendarDays } from "lucide-react";
 import { BestellungStatusBadge } from "./BestellungStatusBadge";
 import type { Bestellung, BestellungStatus } from "@/hooks/useBestellungen";
 import { format } from "date-fns";
@@ -51,6 +51,7 @@ export function BestellungenTable({
             <TableHead>Bestellnummer</TableHead>
             <TableHead>Kunde</TableHead>
             <TableHead>Objekt</TableHead>
+            <TableHead>Gast / Buchung</TableHead>
             <TableHead>Lieferdatum</TableHead>
             <TableHead>Abholdatum</TableHead>
             <TableHead>Wäschekraft</TableHead>
@@ -63,7 +64,7 @@ export function BestellungenTable({
         <TableBody>
           {bestellungen.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={11} className="h-24 text-center text-muted-foreground">
                 Keine Bestellungen gefunden.
               </TableCell>
             </TableRow>
@@ -73,6 +74,25 @@ export function BestellungenTable({
                 <TableCell className="font-medium">{bestellung.bestellnummer}</TableCell>
                 <TableCell>{bestellung.kundeName}</TableCell>
                 <TableCell>{bestellung.objektName || "-"}</TableCell>
+                <TableCell>
+                  {(bestellung as any).gastname || (bestellung as any).check_in ? (
+                    <div className="space-y-0.5">
+                      {(bestellung as any).gastname && (
+                        <div className="font-medium text-sm">{(bestellung as any).gastname}</div>
+                      )}
+                      {(bestellung as any).check_in && (bestellung as any).check_out && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <CalendarDays className="h-3 w-3" />
+                          {format(new Date((bestellung as any).check_in), "dd.MM.", { locale: de })}
+                          {" - "}
+                          {format(new Date((bestellung as any).check_out), "dd.MM.yy", { locale: de })}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   {bestellung.lieferdatum
                     ? format(new Date(bestellung.lieferdatum), "dd.MM.yyyy", { locale: de })
