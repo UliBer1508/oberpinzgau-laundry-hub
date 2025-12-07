@@ -21,6 +21,7 @@ export type WaeschesetArtikel = Tables<"waescheset_artikel"> & {
   farbe: string | null;
   bild_url: string | null;
   bezeichnung: string | null;
+  preis: number | null;
   berechnungsart: Berechnungsart;
 };
 
@@ -143,7 +144,8 @@ export function useWaeschesetArtikel(setId: string | null) {
             kategorie,
             farbe,
             bild_url,
-            bezeichnung
+            bezeichnung,
+            preis
           )
         `)
         .eq("set_id", setId!);
@@ -158,6 +160,7 @@ export function useWaeschesetArtikel(setId: string | null) {
           farbe: string | null;
           bild_url: string | null;
           bezeichnung: string | null;
+          preis: number | null;
         } | null;
         
         return {
@@ -168,6 +171,7 @@ export function useWaeschesetArtikel(setId: string | null) {
           farbe: artikel?.farbe || null,
           bild_url: artikel?.bild_url || null,
           bezeichnung: artikel?.bezeichnung || null,
+          preis: artikel?.preis ?? null,
           berechnungsart: (item.berechnungsart as Berechnungsart) || "pro_buchung",
         };
       }) as WaeschesetArtikel[];

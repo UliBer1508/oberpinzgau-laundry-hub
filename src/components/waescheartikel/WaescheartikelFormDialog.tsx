@@ -55,6 +55,7 @@ const formSchema = z.object({
   bezeichnung: z.string().optional(),
   kategorie: z.string().optional(),
   farbe: z.string().optional(),
+  preis: z.string().optional(),
   aktiv: z.boolean(),
 });
 
@@ -96,6 +97,7 @@ export function WaescheartikelFormDialog({
       bezeichnung: "",
       kategorie: "",
       farbe: "",
+      preis: "",
       aktiv: true,
     },
   });
@@ -109,6 +111,7 @@ export function WaescheartikelFormDialog({
           bezeichnung: artikel.bezeichnung || "",
           kategorie: artikel.kategorie || "",
           farbe: artikel.farbe || "",
+          preis: artikel.preis ? artikel.preis.toString().replace('.', ',') : "",
           aktiv: artikel.aktiv ?? true,
         });
         setImagePreview(artikel.bild_url || null);
@@ -120,6 +123,7 @@ export function WaescheartikelFormDialog({
           bezeichnung: "",
           kategorie: "",
           farbe: "",
+          preis: "",
           aktiv: true,
         });
         setImagePreview(null);
@@ -193,12 +197,18 @@ export function WaescheartikelFormDialog({
         bild_url = null;
       }
 
+      // Parse price from German format (comma as decimal separator)
+      const preisValue = values.preis 
+        ? parseFloat(values.preis.replace(',', '.')) 
+        : null;
+
       onSubmit({
         artikelnummer: values.artikelnummer,
         name: values.name,
         bezeichnung: values.bezeichnung || null,
         kategorie: values.kategorie || null,
         farbe: values.farbe || null,
+        preis: preisValue,
         aktiv: values.aktiv,
         bild_url,
       });
@@ -379,6 +389,24 @@ export function WaescheartikelFormDialog({
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="preis"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Preis (€)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="z.B. 12,50"
+                      className="font-mono"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
