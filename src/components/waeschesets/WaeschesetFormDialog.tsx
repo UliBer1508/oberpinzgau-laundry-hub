@@ -105,6 +105,7 @@ interface PendingArtikel {
   bild_url: string | null;
   bezeichnung: string | null;
   preis: number | null;
+  groesse: string | null;
   menge: number;
   berechnungsart: Berechnungsart;
 }
@@ -267,6 +268,7 @@ export function WaeschesetFormDialog({
         bild_url: artikel.bild_url,
         bezeichnung: artikel.bezeichnung,
         preis: artikel.preis ?? null,
+        groesse: artikel.groesse ?? null,
         menge,
         berechnungsart,
       };
@@ -506,6 +508,7 @@ export function WaeschesetFormDialog({
                         <TableHead className="w-[50px]">Bild</TableHead>
                         <TableHead className="w-[100px]">Art.-Nr.</TableHead>
                         <TableHead>Name</TableHead>
+                        <TableHead className="hidden lg:table-cell w-[100px]">Größe</TableHead>
                         <TableHead className="hidden sm:table-cell">Kategorie</TableHead>
                         <TableHead className="hidden md:table-cell">Farbe</TableHead>
                         <TableHead className="text-center w-[130px]">Menge</TableHead>
@@ -525,6 +528,7 @@ export function WaeschesetFormDialog({
                         const kategorie = isExisting ? (artikel as any).kategorie : (artikel as PendingArtikel).kategorie;
                         const farbe = isExisting ? (artikel as any).farbe : (artikel as PendingArtikel).farbe;
                         const bildUrl = isExisting ? (artikel as any).bild_url : (artikel as PendingArtikel).bild_url;
+                        const groesse = isExisting ? (artikel as any).groesse : (artikel as PendingArtikel).groesse;
                         const artikelMenge = isExisting ? (artikel as any).menge : (artikel as PendingArtikel).menge;
                         const artikelPreis = isExisting ? (artikel as any).preis : (artikel as PendingArtikel).preis;
                         const artikelBerechnungsart = isExisting ? (artikel as any).berechnungsart : (artikel as PendingArtikel).berechnungsart;
@@ -550,6 +554,9 @@ export function WaeschesetFormDialog({
                             </TableCell>
                             <TableCell className="font-medium text-sm">
                               {artikelName}
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
+                              {groesse || "-"}
                             </TableCell>
                             <TableCell className="hidden sm:table-cell">
                               {kategorie ? (
@@ -651,7 +658,7 @@ export function WaeschesetFormDialog({
                     </TableBody>
                     <TableFooter>
                       <TableRow>
-                        <TableCell colSpan={7} className="text-right font-medium">
+                        <TableCell colSpan={8} className="text-right font-medium">
                           Gesamtpreis:
                         </TableCell>
                         <TableCell className="text-right font-bold">
