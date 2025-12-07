@@ -162,7 +162,7 @@ export function BestellungFormDialog({
 
   const isFormValid = () => {
     if (!formData.kunde_id || !formData.bestellnummer) return false;
-    if (bestellmodus === "mit_buchung" && !isEdit) {
+    if (bestellmodus === "mit_buchung") {
       return formData.objekt_id && formData.check_in && formData.check_out;
     }
     return true;
@@ -299,8 +299,8 @@ export function BestellungFormDialog({
             </Select>
           </div>
 
-          {/* Buchungsfelder - nur bei bestellmodus 'mit_buchung' und Neuerstellung */}
-          {bestellmodus === "mit_buchung" && !isEdit && (
+          {/* Buchungsfelder - bei bestellmodus 'mit_buchung' */}
+          {bestellmodus === "mit_buchung" && (
             <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
               <div className="flex items-center gap-2 text-sm font-medium text-primary">
                 <CalendarDays className="h-4 w-4" />
