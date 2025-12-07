@@ -9,6 +9,7 @@ import { BestellungenFilter } from "@/components/bestellungen/BestellungenFilter
 import { BestellungenTable } from "@/components/bestellungen/BestellungenTable";
 import { BestellungFormDialog, type BestellungFormData } from "@/components/bestellungen/BestellungFormDialog";
 import { BestellungPositionenDialog } from "@/components/bestellungen/BestellungPositionenDialog";
+import { BestellungDetailDialog } from "@/components/bestellungen/BestellungDetailDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -40,6 +41,7 @@ export default function Bestellungen() {
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [positionenDialogOpen, setPositionenDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedBestellung, setSelectedBestellung] = useState<Bestellung | null>(null);
 
   const queryClient = useQueryClient();
@@ -88,6 +90,11 @@ export default function Bestellungen() {
   const handleManagePositionen = (bestellung: Bestellung) => {
     setSelectedBestellung(bestellung);
     setPositionenDialogOpen(true);
+  };
+
+  const handleViewDetails = (bestellung: Bestellung) => {
+    setSelectedBestellung(bestellung);
+    setDetailDialogOpen(true);
   };
 
   const handleStatusChange = async (id: string, status: BestellungStatus) => {
@@ -220,6 +227,7 @@ export default function Bestellungen() {
                 onManagePositionen={handleManagePositionen}
                 onStatusChange={handleStatusChange}
                 onDelete={handleDeleteClick}
+                onViewDetails={handleViewDetails}
               />
             )}
           </div>
@@ -237,6 +245,12 @@ export default function Bestellungen() {
         open={positionenDialogOpen}
         onOpenChange={setPositionenDialogOpen}
         bestellung={selectedBestellung}
+      />
+
+      <BestellungDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        bestellungId={selectedBestellung?.id || null}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
