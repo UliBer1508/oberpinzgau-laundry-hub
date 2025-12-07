@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -190,7 +190,6 @@ export default function Bestellungen() {
         <AppSidebar />
         <main className="flex-1 overflow-auto">
           <header className="sticky top-0 z-10 flex items-center gap-4 border-b bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <SidebarTrigger />
             <div className="flex flex-1 items-center justify-between">
               <div>
                 <h1 className="text-2xl font-semibold">Bestellungen</h1>

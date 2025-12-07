@@ -31,6 +31,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
@@ -101,20 +102,23 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r-0">
       <SidebarHeader className="border-b border-sidebar-border px-4 py-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <Package className="h-5 w-5" />
-          </div>
-          {!isCollapsed && (
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-sidebar-foreground">
-                Wäscheportal
-              </span>
-              <span className="text-xs text-sidebar-muted">
-                Oberpinzgau
-              </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              <Package className="h-5 w-5" />
             </div>
-          )}
+            {!isCollapsed && (
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-sidebar-foreground">
+                  Wäscheportal
+                </span>
+                <span className="text-xs text-sidebar-muted">
+                  Oberpinzgau
+                </span>
+              </div>
+            )}
+          </div>
+          <SidebarTrigger className="h-8 w-8 rounded-lg hover:bg-sidebar-accent" />
         </div>
       </SidebarHeader>
 

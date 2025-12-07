@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -178,7 +178,6 @@ const Objekte = () => {
           {/* Header */}
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="lg:hidden" />
               <div>
                 <h1 className="text-xl font-semibold text-foreground">Objekte</h1>
                 <p className="text-sm text-muted-foreground">
