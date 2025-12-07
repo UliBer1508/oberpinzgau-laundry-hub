@@ -261,6 +261,7 @@ export function useUpdateBestellungStatus() {
         });
 
       // Automatisch Rechnung erstellen wenn Status auf "ausgeliefert" gesetzt wird
+      let invoiceCreated = false;
       if (status === "ausgeliefert") {
         try {
           const { error: invoiceError } = await supabase.functions.invoke('create-invoice', {
@@ -269,13 +270,15 @@ export function useUpdateBestellungStatus() {
           
           if (invoiceError) {
             console.error("Fehler beim Erstellen der Rechnung:", invoiceError);
+          } else {
+            invoiceCreated = true;
           }
         } catch (rechnungError) {
           console.error("Fehler beim Erstellen der Rechnung:", rechnungError);
         }
       }
 
-      return data;
+      return { ...data, invoiceCreated };
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["bestellungen"] });

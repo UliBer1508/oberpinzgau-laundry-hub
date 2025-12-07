@@ -129,7 +129,15 @@ export function ManagementTableRow({ bestellung, isSelected }: ManagementTableRo
     updateStatus.mutate(
       { id: bestellung.id, status: newStatus as "neu" | "in_bearbeitung" | "ausgeliefert" | "abgeholt" | "abgeschlossen" | "storniert" },
       {
-        onSuccess: () => toast.success("Status aktualisiert"),
+        onSuccess: (data) => {
+          toast.success("Status aktualisiert");
+          if (data?.invoiceCreated) {
+            toast.success("Rechnung wurde automatisch erstellt", {
+              description: `Für Bestellung ${bestellung.bestellnummer}`,
+              duration: 5000,
+            });
+          }
+        },
         onError: () => toast.error("Fehler beim Aktualisieren"),
       }
     );

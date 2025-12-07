@@ -92,10 +92,16 @@ export function BestellungenUebersichtDialog({
     });
   }, [bestellungen, searchTerm, selectedStatus]);
 
-  const handleStatusChange = async (id: string, status: BestellungStatus) => {
+  const handleStatusChange = async (id: string, status: BestellungStatus, bestellnummer: string) => {
     try {
-      await updateStatus.mutateAsync({ id, status });
+      const result = await updateStatus.mutateAsync({ id, status });
       toast.success("Status aktualisiert");
+      if (result?.invoiceCreated) {
+        toast.success("Rechnung wurde automatisch erstellt", {
+          description: `Für Bestellung ${bestellnummer}`,
+          duration: 5000,
+        });
+      }
     } catch {
       toast.error("Fehler beim Aktualisieren");
     }
@@ -227,7 +233,7 @@ export function BestellungenUebersichtDialog({
 interface UebersichtTableRowProps {
   bestellung: BestellungMitDetails;
   waeschekraefte: { id: string; name: string; personalnummer: string }[];
-  onStatusChange: (id: string, status: BestellungStatus) => void;
+  onStatusChange: (id: string, status: BestellungStatus, bestellnummer: string) => void;
   onWaeschekraftChange: (bestellungId: string, waeschekraftId: string | null) => void;
   onPrioritaetToggle: (bestellung: BestellungMitDetails) => void;
 }
@@ -376,7 +382,7 @@ function UebersichtTableRow({
             {AVAILABLE_STATUS.map((status) => (
               <DropdownMenuItem
                 key={status}
-                onClick={() => onStatusChange(bestellung.id, status)}
+                onClick={() => onStatusChange(bestellung.id, status, bestellung.bestellnummer)}
                 disabled={status === bestellung.status}
               >
                 <BestellungStatusBadge status={status} />

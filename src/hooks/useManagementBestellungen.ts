@@ -175,6 +175,7 @@ export function useUpdateManagementStatus() {
         });
 
       // Automatisch Rechnung erstellen wenn Status auf "ausgeliefert" gesetzt wird
+      let invoiceCreated = false;
       if (status === "ausgeliefert") {
         try {
           console.log("Management: Erstelle Rechnung für Bestellung", id);
@@ -186,13 +187,14 @@ export function useUpdateManagementStatus() {
             console.error("Fehler beim Erstellen der Rechnung:", invoiceError);
           } else {
             console.log("Rechnung erfolgreich erstellt für Bestellung", id);
+            invoiceCreated = true;
           }
         } catch (rechnungError) {
           console.error("Fehler beim Erstellen der Rechnung:", rechnungError);
         }
       }
 
-      return data;
+      return { ...data, invoiceCreated };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["management-bestellungen"] });
