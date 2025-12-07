@@ -183,7 +183,9 @@ export function WaeschesetArtikelDialog({
                     <TableHead>Name</TableHead>
                     <TableHead>Kategorie</TableHead>
                     <TableHead>Farbe</TableHead>
+                    <TableHead className="text-right">Preis</TableHead>
                     <TableHead className="text-center">Menge</TableHead>
+                    <TableHead className="text-right">Summe</TableHead>
                     <TableHead className="text-center">Berechnung</TableHead>
                     <TableHead className="w-[60px]"></TableHead>
                   </TableRow>
@@ -214,6 +216,13 @@ export function WaeschesetArtikelDialog({
                           </div>
                         ) : (
                           "-"
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-mono">
+                        {artikel.preis != null ? (
+                          `${artikel.preis.toFixed(2).replace('.', ',')} €`
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -249,9 +258,16 @@ export function WaeschesetArtikelDialog({
                               handleUpdateMenge(artikel, artikel.menge + 1)
                             }
                           >
-                            <Plus className="h-3 w-3" />
+                          <Plus className="h-3 w-3" />
                           </Button>
                         </div>
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-medium">
+                        {artikel.preis != null ? (
+                          `${(artikel.menge * artikel.preis).toFixed(2).replace('.', ',')} €`
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-center">
                         <TooltipProvider>
@@ -301,6 +317,21 @@ export function WaeschesetArtikelDialog({
                       </TableCell>
                     </TableRow>
                   ))}
+                  {/* Total row */}
+                  {setArtikel.some(a => a.preis != null) && (
+                    <TableRow className="bg-muted/50 font-medium">
+                      <TableCell colSpan={6} className="text-right">
+                        Gesamtpreis:
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-base">
+                        {setArtikel
+                          .reduce((sum, a) => sum + (a.preis != null ? a.menge * a.preis : 0), 0)
+                          .toFixed(2)
+                          .replace('.', ',')} €
+                      </TableCell>
+                      <TableCell colSpan={2}></TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>

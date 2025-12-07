@@ -24,7 +24,7 @@ interface WaescheartikelTableProps {
   onToggleAktiv: (id: string, aktiv: boolean) => void;
 }
 
-type SortField = "artikelnummer" | "name" | "kategorie" | "farbe" | "aktiv";
+type SortField = "artikelnummer" | "name" | "kategorie" | "farbe" | "preis" | "aktiv";
 type SortDirection = "asc" | "desc";
 
 const colorMap: Record<string, string> = {
@@ -59,8 +59,8 @@ export function WaescheartikelTable({
   };
 
   const sortedArtikel = [...artikel].sort((a, b) => {
-    let aValue: string | boolean = "";
-    let bValue: string | boolean = "";
+    let aValue: string | boolean | number = "";
+    let bValue: string | boolean | number = "";
 
     switch (sortField) {
       case "artikelnummer":
@@ -79,6 +79,10 @@ export function WaescheartikelTable({
         aValue = a.farbe || "";
         bValue = b.farbe || "";
         break;
+      case "preis":
+        aValue = a.preis ?? -1;
+        bValue = b.preis ?? -1;
+        break;
       case "aktiv":
         aValue = a.aktiv ?? false;
         bValue = b.aktiv ?? false;
@@ -89,6 +93,10 @@ export function WaescheartikelTable({
       return sortDirection === "asc"
         ? Number(aValue) - Number(bValue)
         : Number(bValue) - Number(aValue);
+    }
+
+    if (typeof aValue === "number" && typeof bValue === "number") {
+      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
     }
 
     const comparison = String(aValue).localeCompare(String(bValue), "de");
@@ -126,6 +134,9 @@ export function WaescheartikelTable({
             <TableHead>
               <SortButton field="farbe">Farbe</SortButton>
             </TableHead>
+            <TableHead className="text-right">
+              <SortButton field="preis">Preis</SortButton>
+            </TableHead>
             <TableHead>
               <SortButton field="aktiv">Status</SortButton>
             </TableHead>
@@ -135,7 +146,7 @@ export function WaescheartikelTable({
         <TableBody>
           {sortedArtikel.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="h-24 text-center">
+              <TableCell colSpan={9} className="h-24 text-center">
                 Keine Wäscheartikel gefunden.
               </TableCell>
             </TableRow>
@@ -177,6 +188,13 @@ export function WaescheartikelTable({
                       />
                       <span>{artikel.farbe}</span>
                     </div>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                  {artikel.preis != null ? (
+                    `${artikel.preis.toFixed(2).replace('.', ',')} €`
                   ) : (
                     <span className="text-muted-foreground">-</span>
                   )}
