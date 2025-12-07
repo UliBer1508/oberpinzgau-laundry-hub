@@ -55,110 +55,119 @@ export function BestellungenTable({
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30">
-            <TableHead className="font-semibold">Gast</TableHead>
+            <TableHead className="font-semibold">Bestellnr.</TableHead>
             <TableHead className="font-semibold">Kunde</TableHead>
             <TableHead className="font-semibold">Objekt</TableHead>
-            <TableHead className="font-semibold">Check-in</TableHead>
-            <TableHead className="font-semibold">Check-out</TableHead>
-            <TableHead className="font-semibold text-center">Gäste</TableHead>
             <TableHead className="font-semibold">Status</TableHead>
+            <TableHead className="font-semibold">Lieferdatum</TableHead>
             <TableHead className="font-semibold">Zahlung</TableHead>
             <TableHead className="font-semibold text-right">Betrag</TableHead>
-            <TableHead className="font-semibold">Services</TableHead>
+            <TableHead className="font-semibold">Wäschekraft</TableHead>
+            <TableHead className="font-semibold">Buchung</TableHead>
             <TableHead className="font-semibold text-center">Aktionen</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {bestellungen.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={11} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
                 Keine Bestellungen gefunden.
               </TableCell>
             </TableRow>
           ) : (
-            bestellungen.map((bestellung) => (
-              <TableRow 
-                key={bestellung.id} 
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => onViewDetails(bestellung)}
-              >
-                <TableCell className="font-medium">
-                  {(bestellung as any).gastname || "-"}
-                </TableCell>
-                <TableCell>
-                  <span className="font-medium">{bestellung.kundeName}</span>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {bestellung.objektName || "-"}
-                </TableCell>
-                <TableCell>
-                  {(bestellung as any).check_in ? (
-                    <div className="text-sm">
-                      <div>{format(new Date((bestellung as any).check_in), "dd.MM.yy", { locale: de })}</div>
-                      {bestellung.lieferzeit && (
-                        <div className="text-xs text-muted-foreground">{bestellung.lieferzeit}</div>
-                      )}
+            bestellungen.map((bestellung) => {
+              const hasBookingData = (bestellung as any).gastname || (bestellung as any).check_in || (bestellung as any).check_out;
+              
+              return (
+                <TableRow 
+                  key={bestellung.id} 
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => onViewDetails(bestellung)}
+                >
+                  <TableCell className="font-medium">
+                    {bestellung.bestellnummer}
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-medium">{bestellung.kundeName}</span>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {bestellung.objektName || "-"}
+                  </TableCell>
+                  <TableCell>
+                    <BestellungStatusBadge status={bestellung.status as BestellungStatus} />
+                  </TableCell>
+                  <TableCell>
+                    {bestellung.lieferdatum ? (
+                      <div className="text-sm">
+                        {format(new Date(bestellung.lieferdatum), "dd.MM.yy", { locale: de })}
+                        {bestellung.lieferzeit && (
+                          <div className="text-xs text-muted-foreground">{bestellung.lieferzeit}</div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {getRechnungsstatusBadge(bestellung)}
+                  </TableCell>
+                  <TableCell className="text-right font-semibold">
+                    {formatPreis(bestellung.gesamtpreis)}
+                  </TableCell>
+                  <TableCell>
+                    {bestellung.waeschekraftName ? (
+                      <Badge variant="secondary" className="gap-1">
+                        <User className="h-3 w-3" />
+                        {bestellung.waeschekraftName}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {hasBookingData ? (
+                      <div className="text-sm space-y-0.5">
+                        {(bestellung as any).gastname && (
+                          <div className="font-medium">{(bestellung as any).gastname}</div>
+                        )}
+                        {((bestellung as any).check_in || (bestellung as any).check_out) && (
+                          <div className="text-xs text-muted-foreground">
+                            {(bestellung as any).check_in && format(new Date((bestellung as any).check_in), "dd.MM", { locale: de })}
+                            {(bestellung as any).check_in && (bestellung as any).check_out && " - "}
+                            {(bestellung as any).check_out && format(new Date((bestellung as any).check_out), "dd.MM", { locale: de })}
+                          </div>
+                        )}
+                        {(bestellung as any).anzahl_personen && (bestellung as any).anzahl_personen > 1 && (
+                          <div className="text-xs text-muted-foreground">{(bestellung as any).anzahl_personen} Gäste</div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => onEdit(bestellung)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => onDelete(bestellung)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {(bestellung as any).check_out ? (
-                    <div className="text-sm">
-                      <div>{format(new Date((bestellung as any).check_out), "dd.MM.yy", { locale: de })}</div>
-                      {(bestellung as any).abholzeit && (
-                        <div className="text-xs text-muted-foreground">{(bestellung as any).abholzeit}</div>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-center">
-                  <span className="font-medium">{(bestellung as any).anzahl_personen || 1}</span>
-                </TableCell>
-                <TableCell>
-                  <BestellungStatusBadge status={bestellung.status as BestellungStatus} />
-                </TableCell>
-                <TableCell>
-                  {getRechnungsstatusBadge(bestellung)}
-                </TableCell>
-                <TableCell className="text-right font-semibold">
-                  {formatPreis(bestellung.gesamtpreis)}
-                </TableCell>
-                <TableCell>
-                  {bestellung.waeschekraftName ? (
-                    <Badge variant="secondary" className="gap-1">
-                      <User className="h-3 w-3" />
-                      {bestellung.waeschekraftName}
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-muted-foreground hover:text-primary"
-                      onClick={() => onEdit(bestellung)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => onDelete(bestellung)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>
