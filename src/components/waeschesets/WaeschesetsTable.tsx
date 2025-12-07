@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Waescheset } from "@/hooks/useWaeschesets";
+import { formatPreis } from "@/lib/formatPreis";
 
 interface WaeschesetsTableProps {
   sets: Waescheset[];
@@ -52,6 +53,7 @@ export function WaeschesetsTable({
             <TableHead>Objekt</TableHead>
             <TableHead>Beschreibung</TableHead>
             <TableHead className="text-center">Artikel</TableHead>
+            <TableHead className="text-right">Preis</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="w-[80px]">Aktionen</TableHead>
           </TableRow>
@@ -71,6 +73,9 @@ export function WaeschesetsTable({
               </TableCell>
               <TableCell className="text-center">
                 <Badge variant="secondary">{set.artikelCount}</Badge>
+              </TableCell>
+              <TableCell className="text-right font-medium">
+                {formatPreis(set.gesamtpreis)}
               </TableCell>
               <TableCell>
                 <Badge variant={set.aktiv ? "default" : "secondary"}>
