@@ -189,3 +189,25 @@ export function useUpdateBearbeitungNotizen() {
     },
   });
 }
+
+// Update Bearbeitung Deadline
+export function useUpdateBearbeitungDeadline() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, bearbeitung_deadline }: { id: string; bearbeitung_deadline: string | null }) => {
+      const { data, error } = await supabase
+        .from("waeschebestellungen")
+        .update({ bearbeitung_deadline })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["management-bestellungen"] });
+    },
+  });
+}
