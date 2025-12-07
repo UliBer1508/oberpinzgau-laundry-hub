@@ -12,6 +12,7 @@ import Waeschesets from "./pages/Waeschesets";
 import Bestellungen from "./pages/Bestellungen";
 import BestellungsManagement from "./pages/BestellungsManagement";
 import Liefertouren from "./pages/Liefertouren";
+import Rechnungen from "./pages/Rechnungen";
 import Waeschekraefte from "./pages/Waeschekraefte";
 import Buchungen from "./pages/Buchungen";
 import Auth from "./pages/Auth";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/bestellungen" element={<Bestellungen />} />
             <Route path="/bestellungen/management" element={<BestellungsManagement />} />
             <Route path="/liefertouren" element={<Liefertouren />} />
+            <Route path="/rechnungen" element={<Rechnungen />} />
             <Route path="/waeschekraefte" element={<Waeschekraefte />} />
             <Route path="/buchungen" element={<Buchungen />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
