@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchRechnungseinstellungen } from "./useRechnungseinstellungen";
 
 export type RechnungStatus = 'offen' | 'bezahlt' | 'storniert' | 'mahnung';
 
@@ -18,6 +19,7 @@ export type Rechnung = {
   nettobetrag: number;
   mwst_satz: number;
   mwst_betrag: number;
+  bearbeitungsgebuehr: number;
   bruttobetrag: number;
   status: RechnungStatus;
   bezahlt_am: string | null;
@@ -184,10 +186,14 @@ export async function createRechnungForBestellung(bestellungId: string) {
     };
   });
 
-  // MwSt berechnen (20%)
-  const mwstSatz = 20;
+  // Globale Einstellungen laden
+  const einstellungen = await fetchRechnungseinstellungen();
+  const mwstSatz = einstellungen?.mwst_satz ?? 20;
+  const bearbeitungsgebuehr = einstellungen?.bearbeitungsgebuehr ?? 0;
+  
+  // MwSt berechnen
   const mwstBetrag = nettobetrag * (mwstSatz / 100);
-  const bruttobetrag = nettobetrag + mwstBetrag;
+  const bruttobetrag = nettobetrag + mwstBetrag + bearbeitungsgebuehr;
 
   // Rechnungsnummer generieren
   const currentYear = new Date().getFullYear();
@@ -230,6 +236,7 @@ export async function createRechnungForBestellung(bestellungId: string) {
       nettobetrag,
       mwst_satz: mwstSatz,
       mwst_betrag: mwstBetrag,
+      bearbeitungsgebuehr,
       bruttobetrag
     })
     .select()

@@ -148,6 +148,14 @@ export function RechnungDetailDialog({
                       </TableCell>
                       <TableCell className="text-right">{formatPreis(rechnung.mwst_betrag)}</TableCell>
                     </TableRow>
+                    {Number(rechnung.bearbeitungsgebuehr) > 0 && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-right">
+                          Bearbeitungsgebühr
+                        </TableCell>
+                        <TableCell className="text-right">{formatPreis(rechnung.bearbeitungsgebuehr)}</TableCell>
+                      </TableRow>
+                    )}
                     <TableRow>
                       <TableCell colSpan={4} className="text-right font-bold">
                         Brutto

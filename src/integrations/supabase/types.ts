@@ -334,6 +334,7 @@ export type Database = {
       }
       rechnungen: {
         Row: {
+          bearbeitungsgebuehr: number
           bestellung_id: string
           bezahlt_am: string | null
           bruttobetrag: number
@@ -356,6 +357,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          bearbeitungsgebuehr?: number
           bestellung_id: string
           bezahlt_am?: string | null
           bruttobetrag: number
@@ -378,6 +380,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          bearbeitungsgebuehr?: number
           bestellung_id?: string
           bezahlt_am?: string | null
           bruttobetrag?: number
@@ -415,6 +418,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rechnungseinstellungen: {
+        Row: {
+          bearbeitungsgebuehr: number
+          id: string
+          mwst_satz: number
+          updated_at: string
+        }
+        Insert: {
+          bearbeitungsgebuehr?: number
+          id?: string
+          mwst_satz?: number
+          updated_at?: string
+        }
+        Update: {
+          bearbeitungsgebuehr?: number
+          id?: string
+          mwst_satz?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       rechnungspositionen: {
         Row: {

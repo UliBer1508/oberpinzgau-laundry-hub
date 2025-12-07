@@ -10,20 +10,29 @@ import {
   Rechnung,
   RechnungStatus,
 } from "@/hooks/useRechnungen";
+import {
+  useRechnungseinstellungen,
+  useUpdateRechnungseinstellungen,
+} from "@/hooks/useRechnungseinstellungen";
 import { RechnungenStats } from "@/components/rechnungen/RechnungenStats";
 import { RechnungenFilter } from "@/components/rechnungen/RechnungenFilter";
 import { RechnungenTable } from "@/components/rechnungen/RechnungenTable";
 import { RechnungDetailDialog } from "@/components/rechnungen/RechnungDetailDialog";
+import { RechnungseinstellungenCard } from "@/components/rechnungen/RechnungseinstellungenCard";
+import { RechnungseinstellungenDialog } from "@/components/rechnungen/RechnungseinstellungenDialog";
 
 export default function Rechnungen() {
   const { toast } = useToast();
   const { data: rechnungen = [], isLoading, error } = useRechnungen();
   const updateStatus = useUpdateRechnungStatus();
+  const { data: einstellungen, isLoading: einstellungenLoading } = useRechnungseinstellungen();
+  const updateEinstellungen = useUpdateRechnungseinstellungen();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<RechnungStatus | "alle">("alle");
   const [selectedRechnung, setSelectedRechnung] = useState<Rechnung | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [einstellungenDialogOpen, setEinstellungenDialogOpen] = useState(false);
 
   // Gefilterte Rechnungen
   const filteredRechnungen = useMemo(() => {
@@ -83,6 +92,30 @@ export default function Rechnungen() {
     );
   };
 
+  const handleSaveEinstellungen = (mwstSatz: number, bearbeitungsgebuehr: number) => {
+    if (!einstellungen?.id) return;
+    
+    updateEinstellungen.mutate(
+      { id: einstellungen.id, mwst_satz: mwstSatz, bearbeitungsgebuehr },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Einstellungen gespeichert",
+            description: "Die Rechnungseinstellungen wurden aktualisiert.",
+          });
+          setEinstellungenDialogOpen(false);
+        },
+        onError: () => {
+          toast({
+            title: "Fehler",
+            description: "Einstellungen konnten nicht gespeichert werden.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
+  };
+
   if (error) {
     return (
       <SidebarProvider>
@@ -121,6 +154,13 @@ export default function Rechnungen() {
             {/* Stats */}
             <RechnungenStats stats={stats} />
 
+            {/* Einstellungen */}
+            <RechnungseinstellungenCard
+              einstellungen={einstellungen}
+              isLoading={einstellungenLoading}
+              onEdit={() => setEinstellungenDialogOpen(true)}
+            />
+
             {/* Filter */}
             <RechnungenFilter
               searchTerm={searchTerm}
@@ -146,6 +186,15 @@ export default function Rechnungen() {
         open={detailDialogOpen}
         onOpenChange={setDetailDialogOpen}
         onStatusChange={handleStatusChange}
+      />
+
+      {/* Einstellungen Dialog */}
+      <RechnungseinstellungenDialog
+        open={einstellungenDialogOpen}
+        onOpenChange={setEinstellungenDialogOpen}
+        einstellungen={einstellungen ?? null}
+        onSave={handleSaveEinstellungen}
+        isPending={updateEinstellungen.isPending}
       />
     </SidebarProvider>
   );
