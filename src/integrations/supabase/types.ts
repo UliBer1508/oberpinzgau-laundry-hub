@@ -432,6 +432,7 @@ export type Database = {
           id: string
           mahnung_betreff: string | null
           mahnung_email_absender: string | null
+          mahnung_nach_tagen: number
           mahnung_text: string | null
           mwst_satz: number
           updated_at: string
@@ -449,6 +450,7 @@ export type Database = {
           id?: string
           mahnung_betreff?: string | null
           mahnung_email_absender?: string | null
+          mahnung_nach_tagen?: number
           mahnung_text?: string | null
           mwst_satz?: number
           updated_at?: string
@@ -466,6 +468,7 @@ export type Database = {
           id?: string
           mahnung_betreff?: string | null
           mahnung_email_absender?: string | null
+          mahnung_nach_tagen?: number
           mahnung_text?: string | null
           mwst_satz?: number
           updated_at?: string
