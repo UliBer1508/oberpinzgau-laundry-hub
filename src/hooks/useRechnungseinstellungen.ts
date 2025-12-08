@@ -14,6 +14,7 @@ export type Rechnungseinstellungen = {
   firma_telefon: string | null;
   firma_email: string | null;
   zahlungsfrist_tage: number;
+  mahnung_nach_tagen: number;
   mahnung_betreff: string | null;
   mahnung_text: string | null;
 };
@@ -52,6 +53,7 @@ export function useUpdateRechnungseinstellungen() {
       firma_telefon?: string | null;
       firma_email?: string | null;
       zahlungsfrist_tage?: number;
+      mahnung_nach_tagen?: number;
       mahnung_betreff?: string | null;
       mahnung_text?: string | null;
     }) => {

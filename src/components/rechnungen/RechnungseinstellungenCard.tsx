@@ -52,7 +52,7 @@ export function RechnungseinstellungenCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-8">
+        <div className="flex flex-wrap gap-8">
           <div>
             <p className="text-sm text-muted-foreground">MwSt-Satz</p>
             <p className="text-lg font-semibold">
@@ -63,6 +63,18 @@ export function RechnungseinstellungenCard({
             <p className="text-sm text-muted-foreground">Bearbeitungsgebühr</p>
             <p className="text-lg font-semibold">
               {formatPreis(einstellungen?.bearbeitungsgebuehr ?? 0)}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Zahlungsfrist</p>
+            <p className="text-lg font-semibold">
+              {einstellungen?.zahlungsfrist_tage ?? 14} Tage
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Mahnfrist</p>
+            <p className="text-lg font-semibold">
+              {einstellungen?.mahnung_nach_tagen ?? 7} Tage nach Fälligkeit
             </p>
           </div>
         </div>

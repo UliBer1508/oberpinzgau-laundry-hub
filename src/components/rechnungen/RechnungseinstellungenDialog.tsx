@@ -29,6 +29,7 @@ interface RechnungseinstellungenDialogProps {
     firma_telefon: string | null;
     firma_email: string | null;
     zahlungsfrist_tage: number;
+    mahnung_nach_tagen: number;
     mahnung_betreff: string | null;
     mahnung_text: string | null;
   }) => void;
@@ -52,6 +53,7 @@ export function RechnungseinstellungenDialog({
   const [firmaTelefon, setFirmaTelefon] = useState<string>("");
   const [firmaEmail, setFirmaEmail] = useState<string>("");
   const [zahlungsfristTage, setZahlungsfristTage] = useState<string>("14");
+  const [mahnungNachTagen, setMahnungNachTagen] = useState<string>("7");
   const [mahnungBetreff, setMahnungBetreff] = useState<string>("");
   const [mahnungText, setMahnungText] = useState<string>("");
 
@@ -67,6 +69,7 @@ export function RechnungseinstellungenDialog({
       setFirmaTelefon(einstellungen.firma_telefon || "");
       setFirmaEmail(einstellungen.firma_email || "");
       setZahlungsfristTage(String(einstellungen.zahlungsfrist_tage || 14));
+      setMahnungNachTagen(String(einstellungen.mahnung_nach_tagen || 7));
       setMahnungBetreff(einstellungen.mahnung_betreff || "Zahlungserinnerung - Rechnung {rechnungsnummer}");
       setMahnungText(einstellungen.mahnung_text || "");
     }
@@ -76,6 +79,7 @@ export function RechnungseinstellungenDialog({
     const mwst = parseFloat(mwstSatz.replace(",", ".")) || 0;
     const gebuehr = parseFloat(bearbeitungsgebuehr.replace(",", ".")) || 0;
     const zahlungsfrist = parseInt(zahlungsfristTage, 10) || 14;
+    const mahnungNach = parseInt(mahnungNachTagen, 10) || 7;
     
     onSave({
       mwst_satz: mwst,
@@ -88,6 +92,7 @@ export function RechnungseinstellungenDialog({
       firma_telefon: firmaTelefon || null,
       firma_email: firmaEmail || null,
       zahlungsfrist_tage: zahlungsfrist,
+      mahnung_nach_tagen: mahnungNach,
       mahnung_betreff: mahnungBetreff || null,
       mahnung_text: mahnungText || null,
     });
@@ -107,7 +112,7 @@ export function RechnungseinstellungenDialog({
               <Calculator className="h-4 w-4" />
               Berechnungseinstellungen
             </h4>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="mwst">MwSt-Satz (%)</Label>
                 <Input
@@ -130,6 +135,8 @@ export function RechnungseinstellungenDialog({
                   placeholder="z.B. 5,00"
                 />
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="zahlungsfrist">Zahlungsfrist (Tage)</Label>
                 <Input
@@ -139,6 +146,17 @@ export function RechnungseinstellungenDialog({
                   value={zahlungsfristTage}
                   onChange={(e) => setZahlungsfristTage(e.target.value)}
                   placeholder="z.B. 14"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mahnungNachTagen">Mahnfrist (Tage nach Fälligkeit)</Label>
+                <Input
+                  id="mahnungNachTagen"
+                  type="number"
+                  min="0"
+                  value={mahnungNachTagen}
+                  onChange={(e) => setMahnungNachTagen(e.target.value)}
+                  placeholder="z.B. 7"
                 />
               </div>
             </div>
