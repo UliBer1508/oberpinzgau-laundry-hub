@@ -3,11 +3,13 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LiefertourenStats } from "@/components/liefertouren/LiefertourenStats";
 import { LiefertourenFilter } from "@/components/liefertouren/LiefertourenFilter";
 import { LiefertourenTable } from "@/components/liefertouren/LiefertourenTable";
 import { LiefertourFormDialog } from "@/components/liefertouren/LiefertourFormDialog";
 import { LiefertourStoppsDialog } from "@/components/liefertouren/LiefertourStoppsDialog";
+import { RoutenvorlagenTab } from "@/components/routenvorlagen/RoutenvorlagenTab";
 import {
   useLiefertouren,
   useCreateLiefertour,
@@ -109,28 +111,41 @@ export default function Liefertouren() {
             </Button>
           </header>
 
-          <div className="space-y-6 p-6">
-            <LiefertourenStats touren={touren} />
+          <div className="p-6">
+            <Tabs defaultValue="touren" className="space-y-6">
+              <TabsList>
+                <TabsTrigger value="touren">Touren</TabsTrigger>
+                <TabsTrigger value="vorlagen">Routenvorlagen</TabsTrigger>
+              </TabsList>
 
-            <LiefertourenFilter
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              statusFilter={statusFilter}
-              onStatusChange={setStatusFilter}
-              waeschekraftFilter={waeschekraftFilter}
-              onWaeschekraftChange={setWaeschekraftFilter}
-            />
+              <TabsContent value="touren" className="space-y-6">
+                <LiefertourenStats touren={touren} />
 
-            {isLoading ? (
-              <div className="py-8 text-center text-muted-foreground">Laden...</div>
-            ) : (
-              <LiefertourenTable
-                touren={filteredTouren}
-                onEdit={handleEdit}
-                onManageStopps={handleManageStopps}
-                onUpdateStatus={handleUpdateStatus}
-              />
-            )}
+                <LiefertourenFilter
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  statusFilter={statusFilter}
+                  onStatusChange={setStatusFilter}
+                  waeschekraftFilter={waeschekraftFilter}
+                  onWaeschekraftChange={setWaeschekraftFilter}
+                />
+
+                {isLoading ? (
+                  <div className="py-8 text-center text-muted-foreground">Laden...</div>
+                ) : (
+                  <LiefertourenTable
+                    touren={filteredTouren}
+                    onEdit={handleEdit}
+                    onManageStopps={handleManageStopps}
+                    onUpdateStatus={handleUpdateStatus}
+                  />
+                )}
+              </TabsContent>
+
+              <TabsContent value="vorlagen">
+                <RoutenvorlagenTab />
+              </TabsContent>
+            </Tabs>
           </div>
         </main>
       </div>

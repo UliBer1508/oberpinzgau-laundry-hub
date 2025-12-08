@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { GripVertical, Check, X, Plus, MapPin, Clock, Trash2 } from "lucide-react";
+import { GripVertical, Check, Plus, MapPin, Clock, Trash2, FileDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   useLiefertourStopps,
   useAvailableBestellungen,
@@ -27,6 +28,7 @@ import {
   useUpdateStoppReihenfolge,
 } from "@/hooks/useLiefertouren";
 import type { Liefertour, LiefertourStopp } from "@/hooks/useLiefertouren";
+import { VorlageLoadDialog } from "./VorlageLoadDialog";
 
 interface LiefertourStoppsDialogProps {
   open: boolean;
@@ -41,6 +43,7 @@ export function LiefertourStoppsDialog({
 }: LiefertourStoppsDialogProps) {
   const [selectedBestellung, setSelectedBestellung] = useState<string>("");
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [isVorlageDialogOpen, setIsVorlageDialogOpen] = useState(false);
 
   const { data: stopps = [], isLoading } = useLiefertourStopps(tour?.id || null);
   const { data: availableBestellungen = [] } = useAvailableBestellungen(tour?.datum || null, tour?.id || null);
@@ -54,6 +57,24 @@ export function LiefertourStoppsDialog({
     if (!selectedBestellung || !tour) return;
     addStopp.mutate({ tour_id: tour.id, bestellung_id: selectedBestellung });
     setSelectedBestellung("");
+  };
+
+  const handleLoadFromVorlage = async (bestellungIds: string[]) => {
+    if (!tour) return;
+
+    let successCount = 0;
+    for (const bestellungId of bestellungIds) {
+      try {
+        await addStopp.mutateAsync({ tour_id: tour.id, bestellung_id: bestellungId });
+        successCount++;
+      } catch {
+        // Bestellung evtl. bereits vorhanden
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(`${successCount} Bestellungen hinzugefügt`);
+    }
   };
 
   const handleToggleErledigt = (stopp: LiefertourStopp) => {
@@ -206,7 +227,7 @@ export function LiefertourStoppsDialog({
         </div>
 
         {/* Add Stopp */}
-        <div className="border-t pt-4 mt-4">
+        <div className="border-t pt-4 mt-4 space-y-3">
           <div className="flex items-center gap-3">
             <Select value={selectedBestellung} onValueChange={setSelectedBestellung}>
               <SelectTrigger className="flex-1">
@@ -232,8 +253,26 @@ export function LiefertourStoppsDialog({
               Hinzufügen
             </Button>
           </div>
+          
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => setIsVorlageDialogOpen(true)}
+          >
+            <FileDown className="mr-2 h-4 w-4" />
+            Von Routenvorlage laden
+          </Button>
         </div>
       </DialogContent>
+
+      {tour && (
+        <VorlageLoadDialog
+          open={isVorlageDialogOpen}
+          onOpenChange={setIsVorlageDialogOpen}
+          tourDatum={tour.datum}
+          onLoad={handleLoadFromVorlage}
+        />
+      )}
     </Dialog>
   );
 }

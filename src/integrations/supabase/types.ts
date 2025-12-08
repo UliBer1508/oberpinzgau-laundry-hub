@@ -490,6 +490,72 @@ export type Database = {
           },
         ]
       }
+      routenvorlage_kunden: {
+        Row: {
+          id: string
+          kunde_id: string
+          notizen: string | null
+          reihenfolge: number
+          vorlage_id: string
+        }
+        Insert: {
+          id?: string
+          kunde_id: string
+          notizen?: string | null
+          reihenfolge: number
+          vorlage_id: string
+        }
+        Update: {
+          id?: string
+          kunde_id?: string
+          notizen?: string | null
+          reihenfolge?: number
+          vorlage_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routenvorlage_kunden_kunde_id_fkey"
+            columns: ["kunde_id"]
+            isOneToOne: false
+            referencedRelation: "kunden"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routenvorlage_kunden_vorlage_id_fkey"
+            columns: ["vorlage_id"]
+            isOneToOne: false
+            referencedRelation: "routenvorlagen"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routenvorlagen: {
+        Row: {
+          aktiv: boolean | null
+          beschreibung: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          aktiv?: boolean | null
+          beschreibung?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          aktiv?: boolean | null
+          beschreibung?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
