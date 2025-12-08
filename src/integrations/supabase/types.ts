@@ -329,6 +329,7 @@ export type Database = {
           created_at: string
           faelligkeitsdatum: string | null
           id: string
+          kunde_email: string | null
           kunde_firma: string | null
           kunde_id: string
           kunde_kundennummer: string | null
@@ -336,6 +337,8 @@ export type Database = {
           kunde_ort: string | null
           kunde_plz: string | null
           kunde_strasse: string | null
+          mahnung_anzahl: number | null
+          mahnung_gesendet_am: string | null
           mwst_betrag: number
           mwst_satz: number
           nettobetrag: number
@@ -353,6 +356,7 @@ export type Database = {
           created_at?: string
           faelligkeitsdatum?: string | null
           id?: string
+          kunde_email?: string | null
           kunde_firma?: string | null
           kunde_id: string
           kunde_kundennummer?: string | null
@@ -360,6 +364,8 @@ export type Database = {
           kunde_ort?: string | null
           kunde_plz?: string | null
           kunde_strasse?: string | null
+          mahnung_anzahl?: number | null
+          mahnung_gesendet_am?: string | null
           mwst_betrag: number
           mwst_satz?: number
           nettobetrag: number
@@ -377,6 +383,7 @@ export type Database = {
           created_at?: string
           faelligkeitsdatum?: string | null
           id?: string
+          kunde_email?: string | null
           kunde_firma?: string | null
           kunde_id?: string
           kunde_kundennummer?: string | null
@@ -384,6 +391,8 @@ export type Database = {
           kunde_ort?: string | null
           kunde_plz?: string | null
           kunde_strasse?: string | null
+          mahnung_anzahl?: number | null
+          mahnung_gesendet_am?: string | null
           mwst_betrag?: number
           mwst_satz?: number
           nettobetrag?: number
@@ -421,8 +430,12 @@ export type Database = {
           firma_strasse: string | null
           firma_telefon: string | null
           id: string
+          mahnung_betreff: string | null
+          mahnung_email_absender: string | null
+          mahnung_text: string | null
           mwst_satz: number
           updated_at: string
+          zahlungsfrist_tage: number
         }
         Insert: {
           bearbeitungsgebuehr?: number
@@ -434,8 +447,12 @@ export type Database = {
           firma_strasse?: string | null
           firma_telefon?: string | null
           id?: string
+          mahnung_betreff?: string | null
+          mahnung_email_absender?: string | null
+          mahnung_text?: string | null
           mwst_satz?: number
           updated_at?: string
+          zahlungsfrist_tage?: number
         }
         Update: {
           bearbeitungsgebuehr?: number
@@ -447,8 +464,12 @@ export type Database = {
           firma_strasse?: string | null
           firma_telefon?: string | null
           id?: string
+          mahnung_betreff?: string | null
+          mahnung_email_absender?: string | null
+          mahnung_text?: string | null
           mwst_satz?: number
           updated_at?: string
+          zahlungsfrist_tage?: number
         }
         Relationships: []
       }
