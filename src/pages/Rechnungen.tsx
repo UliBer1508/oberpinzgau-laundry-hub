@@ -29,10 +29,17 @@ export default function Rechnungen() {
   const updateEinstellungen = useUpdateRechnungseinstellungen();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<RechnungStatus | "alle">("alle");
+  const [statusFilter, setStatusFilter] = useState<RechnungStatus | "alle" | "ueberfaellig">("alle");
   const [selectedRechnung, setSelectedRechnung] = useState<Rechnung | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [einstellungenDialogOpen, setEinstellungenDialogOpen] = useState(false);
+
+  // Prüfen ob Rechnung überfällig ist
+  const isOverdue = (r: Rechnung) => {
+    return r.status === 'offen' && 
+      r.faelligkeitsdatum && 
+      new Date(r.faelligkeitsdatum) < new Date();
+  };
 
   // Gefilterte Rechnungen
   const filteredRechnungen = useMemo(() => {
@@ -44,7 +51,14 @@ export default function Rechnungen() {
         (r.kunde_firma?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
         (r.bestellnummer?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
 
-      const matchesStatus = statusFilter === "alle" || r.status === statusFilter;
+      let matchesStatus = false;
+      if (statusFilter === "alle") {
+        matchesStatus = true;
+      } else if (statusFilter === "ueberfaellig") {
+        matchesStatus = isOverdue(r);
+      } else {
+        matchesStatus = r.status === statusFilter;
+      }
 
       return matchesSearch && matchesStatus;
     });
@@ -102,6 +116,9 @@ export default function Rechnungen() {
     firma_ort: string | null;
     firma_telefon: string | null;
     firma_email: string | null;
+    zahlungsfrist_tage: number;
+    mahnung_betreff: string | null;
+    mahnung_text: string | null;
   }) => {
     if (!einstellungen?.id) return;
     

@@ -9,8 +9,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Rechnungseinstellungen } from "@/hooks/useRechnungseinstellungen";
-import { Info, Building2, Calculator } from "lucide-react";
+import { Info, Building2, Calculator, Mail } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface RechnungseinstellungenDialogProps {
@@ -27,6 +28,9 @@ interface RechnungseinstellungenDialogProps {
     firma_ort: string | null;
     firma_telefon: string | null;
     firma_email: string | null;
+    zahlungsfrist_tage: number;
+    mahnung_betreff: string | null;
+    mahnung_text: string | null;
   }) => void;
   isPending: boolean;
 }
@@ -47,6 +51,9 @@ export function RechnungseinstellungenDialog({
   const [firmaOrt, setFirmaOrt] = useState<string>("");
   const [firmaTelefon, setFirmaTelefon] = useState<string>("");
   const [firmaEmail, setFirmaEmail] = useState<string>("");
+  const [zahlungsfristTage, setZahlungsfristTage] = useState<string>("14");
+  const [mahnungBetreff, setMahnungBetreff] = useState<string>("");
+  const [mahnungText, setMahnungText] = useState<string>("");
 
   useEffect(() => {
     if (einstellungen) {
@@ -59,12 +66,17 @@ export function RechnungseinstellungenDialog({
       setFirmaOrt(einstellungen.firma_ort || "");
       setFirmaTelefon(einstellungen.firma_telefon || "");
       setFirmaEmail(einstellungen.firma_email || "");
+      setZahlungsfristTage(String(einstellungen.zahlungsfrist_tage || 14));
+      setMahnungBetreff(einstellungen.mahnung_betreff || "Zahlungserinnerung - Rechnung {rechnungsnummer}");
+      setMahnungText(einstellungen.mahnung_text || "");
     }
   }, [einstellungen]);
 
   const handleSave = () => {
     const mwst = parseFloat(mwstSatz.replace(",", ".")) || 0;
     const gebuehr = parseFloat(bearbeitungsgebuehr.replace(",", ".")) || 0;
+    const zahlungsfrist = parseInt(zahlungsfristTage, 10) || 14;
+    
     onSave({
       mwst_satz: mwst,
       bearbeitungsgebuehr: gebuehr,
@@ -75,12 +87,15 @@ export function RechnungseinstellungenDialog({
       firma_ort: firmaOrt || null,
       firma_telefon: firmaTelefon || null,
       firma_email: firmaEmail || null,
+      zahlungsfrist_tage: zahlungsfrist,
+      mahnung_betreff: mahnungBetreff || null,
+      mahnung_text: mahnungText || null,
     });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Rechnungseinstellungen bearbeiten</DialogTitle>
         </DialogHeader>
@@ -92,7 +107,7 @@ export function RechnungseinstellungenDialog({
               <Calculator className="h-4 w-4" />
               Berechnungseinstellungen
             </h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="mwst">MwSt-Satz (%)</Label>
                 <Input
@@ -113,6 +128,17 @@ export function RechnungseinstellungenDialog({
                   value={bearbeitungsgebuehr}
                   onChange={(e) => setBearbeitungsgebuehr(e.target.value)}
                   placeholder="z.B. 5,00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="zahlungsfrist">Zahlungsfrist (Tage)</Label>
+                <Input
+                  id="zahlungsfrist"
+                  type="number"
+                  min="1"
+                  value={zahlungsfristTage}
+                  onChange={(e) => setZahlungsfristTage(e.target.value)}
+                  placeholder="z.B. 14"
                 />
               </div>
             </div>
@@ -199,6 +225,43 @@ export function RechnungseinstellungenDialog({
                   placeholder="z.B. info@firma.at"
                 />
               </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Mahnwesen */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              Mahnwesen
+            </h4>
+            
+            <div className="space-y-2">
+              <Label htmlFor="mahnungBetreff">E-Mail-Betreff</Label>
+              <Input
+                id="mahnungBetreff"
+                value={mahnungBetreff}
+                onChange={(e) => setMahnungBetreff(e.target.value)}
+                placeholder="z.B. Zahlungserinnerung - Rechnung {rechnungsnummer}"
+              />
+              <p className="text-xs text-muted-foreground">
+                Platzhalter: {"{rechnungsnummer}"}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="mahnungText">E-Mail-Text</Label>
+              <Textarea
+                id="mahnungText"
+                value={mahnungText}
+                onChange={(e) => setMahnungText(e.target.value)}
+                placeholder="Mahnung-Text mit Platzhaltern..."
+                rows={8}
+              />
+              <p className="text-xs text-muted-foreground">
+                Platzhalter: {"{kunde_name}"}, {"{rechnungsnummer}"}, {"{rechnungsdatum}"}, {"{bruttobetrag}"}, {"{faelligkeitsdatum}"}, {"{firma_name}"}
+              </p>
             </div>
           </div>
 

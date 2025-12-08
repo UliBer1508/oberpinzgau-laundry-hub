@@ -16,6 +16,7 @@ export type Rechnung = {
   kunde_plz: string | null;
   kunde_ort: string | null;
   kunde_kundennummer: string | null;
+  kunde_email: string | null;
   nettobetrag: number;
   mwst_satz: number;
   mwst_betrag: number;
@@ -24,6 +25,8 @@ export type Rechnung = {
   status: RechnungStatus;
   bezahlt_am: string | null;
   notizen: string | null;
+  mahnung_gesendet_am: string | null;
+  mahnung_anzahl: number | null;
   created_at: string;
   updated_at: string;
   bestellnummer?: string;
@@ -132,6 +135,43 @@ export function useUpdateRechnungStatus() {
       const { data, error } = await supabase
         .from("rechnungen")
         .update(updateData)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rechnungen"] });
+    },
+  });
+}
+
+// Mahnung Status aktualisieren
+export function useUpdateMahnungStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      // Erst aktuelle Rechnung laden um mahnung_anzahl zu erhöhen
+      const { data: current, error: fetchError } = await supabase
+        .from("rechnungen")
+        .select("mahnung_anzahl")
+        .eq("id", id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const newAnzahl = (current?.mahnung_anzahl || 0) + 1;
+
+      const { data, error } = await supabase
+        .from("rechnungen")
+        .update({
+          mahnung_gesendet_am: new Date().toISOString(),
+          mahnung_anzahl: newAnzahl,
+          status: 'mahnung'
+        })
         .eq("id", id)
         .select()
         .single();

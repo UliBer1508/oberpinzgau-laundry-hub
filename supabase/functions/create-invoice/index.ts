@@ -108,8 +108,9 @@ serve(async (req) => {
 
     const mwstSatz = einstellungen?.mwst_satz ?? 20;
     const bearbeitungsgebuehr = einstellungen?.bearbeitungsgebuehr ?? 0;
+    const zahlungsfristTage = einstellungen?.zahlungsfrist_tage ?? 14;
 
-    console.log(`create-invoice: MwSt-Satz: ${mwstSatz}%, Bearbeitungsgebühr: ${bearbeitungsgebuehr}€`);
+    console.log(`create-invoice: MwSt-Satz: ${mwstSatz}%, Bearbeitungsgebühr: ${bearbeitungsgebuehr}€, Zahlungsfrist: ${zahlungsfristTage} Tage`);
 
     // MwSt berechnen
     const mwstBetrag = nettobetrag * (mwstSatz / 100);
@@ -135,9 +136,9 @@ serve(async (req) => {
 
     console.log(`create-invoice: Generierte Rechnungsnummer: ${rechnungsnummer}`);
 
-    // Fälligkeitsdatum (14 Tage ab heute)
+    // Fälligkeitsdatum basierend auf Einstellungen
     const faelligkeitsdatum = new Date();
-    faelligkeitsdatum.setDate(faelligkeitsdatum.getDate() + 14);
+    faelligkeitsdatum.setDate(faelligkeitsdatum.getDate() + zahlungsfristTage);
 
     const kunde = bestellung.kunden;
 
@@ -156,6 +157,7 @@ serve(async (req) => {
         kunde_plz: kunde.plz,
         kunde_ort: kunde.ort,
         kunde_kundennummer: kunde.kundennummer,
+        kunde_email: kunde.email,
         nettobetrag,
         mwst_satz: mwstSatz,
         mwst_betrag: mwstBetrag,
