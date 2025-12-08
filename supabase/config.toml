@@ -2,3 +2,6 @@ project_id = "pkpnowevagxmhyqlawng"
 
 [functions.create-invoice]
 verify_jwt = false
+
+[functions.external-order-import]
+verify_jwt = false
