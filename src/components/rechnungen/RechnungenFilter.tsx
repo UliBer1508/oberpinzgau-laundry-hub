@@ -6,8 +6,8 @@ import { RechnungStatus } from "@/hooks/useRechnungen";
 interface RechnungenFilterProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  statusFilter: RechnungStatus | "alle";
-  onStatusFilterChange: (value: RechnungStatus | "alle") => void;
+  statusFilter: RechnungStatus | "alle" | "ueberfaellig";
+  onStatusFilterChange: (value: RechnungStatus | "alle" | "ueberfaellig") => void;
 }
 
 export function RechnungenFilter({
@@ -28,12 +28,13 @@ export function RechnungenFilter({
         />
       </div>
 
-      <Select value={statusFilter} onValueChange={(value) => onStatusFilterChange(value as RechnungStatus | "alle")}>
+      <Select value={statusFilter} onValueChange={(value) => onStatusFilterChange(value as RechnungStatus | "alle" | "ueberfaellig")}>
         <SelectTrigger className="w-full sm:w-[180px]">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="alle">Alle Status</SelectItem>
+          <SelectItem value="ueberfaellig">Überfällig</SelectItem>
           <SelectItem value="offen">Offen</SelectItem>
           <SelectItem value="bezahlt">Bezahlt</SelectItem>
           <SelectItem value="mahnung">Mahnung</SelectItem>

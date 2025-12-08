@@ -13,6 +13,9 @@ export type Rechnungseinstellungen = {
   firma_ort: string | null;
   firma_telefon: string | null;
   firma_email: string | null;
+  zahlungsfrist_tage: number;
+  mahnung_betreff: string | null;
+  mahnung_text: string | null;
 };
 
 // Einstellungen abrufen
@@ -48,6 +51,9 @@ export function useUpdateRechnungseinstellungen() {
       firma_ort?: string | null;
       firma_telefon?: string | null;
       firma_email?: string | null;
+      zahlungsfrist_tage?: number;
+      mahnung_betreff?: string | null;
+      mahnung_text?: string | null;
     }) => {
       const { id, ...updateData } = data;
       const { data: result, error } = await supabase

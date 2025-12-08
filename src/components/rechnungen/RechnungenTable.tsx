@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +42,13 @@ export function RechnungenTable({
     );
   }
 
+  // Prüfen ob Rechnung überfällig ist
+  const isOverdue = (rechnung: Rechnung) => {
+    return rechnung.status === 'offen' && 
+      rechnung.faelligkeitsdatum && 
+      new Date(rechnung.faelligkeitsdatum) < new Date();
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -53,13 +61,14 @@ export function RechnungenTable({
             <TableHead>Fällig</TableHead>
             <TableHead className="text-right">Brutto</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead className="text-center">Mahnungen</TableHead>
             <TableHead className="w-[70px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rechnungen.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                 Keine Rechnungen gefunden
               </TableCell>
             </TableRow>
@@ -82,15 +91,33 @@ export function RechnungenTable({
                   {format(new Date(rechnung.rechnungsdatum), "dd.MM.yyyy", { locale: de })}
                 </TableCell>
                 <TableCell>
-                  {rechnung.faelligkeitsdatum
-                    ? format(new Date(rechnung.faelligkeitsdatum), "dd.MM.yyyy", { locale: de })
-                    : "-"}
+                  <div className="flex items-center gap-2">
+                    <span className={isOverdue(rechnung) ? 'text-destructive font-medium' : ''}>
+                      {rechnung.faelligkeitsdatum
+                        ? format(new Date(rechnung.faelligkeitsdatum), "dd.MM.yyyy", { locale: de })
+                        : "-"}
+                    </span>
+                    {isOverdue(rechnung) && (
+                      <Badge variant="destructive" className="text-xs">
+                        Überfällig
+                      </Badge>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-right font-medium">
                   {formatPreis(rechnung.bruttobetrag)}
                 </TableCell>
                 <TableCell>
                   <RechnungStatusBadge status={rechnung.status} />
+                </TableCell>
+                <TableCell className="text-center">
+                  {(rechnung.mahnung_anzahl ?? 0) > 0 ? (
+                    <Badge variant="outline" className="text-amber-600 border-amber-300">
+                      {rechnung.mahnung_anzahl}
+                    </Badge>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
