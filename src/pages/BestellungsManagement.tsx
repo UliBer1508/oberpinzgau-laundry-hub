@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 
 export default function BestellungsManagement() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [dateRange, setDateRange] = useState<"today" | "week" | "all">("week");
+  const [dateRange, setDateRange] = useState<"today" | "week" | "all">("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [waeschekraftFilter, setWaeschekraftFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
