@@ -8,6 +8,12 @@ export type Bestellung = Tables<"waeschebestellungen"> & {
   waeschekraftName: string | null;
   positionenCount: number;
   gesamtpreis: number | null;
+  rechnung: {
+    id: string;
+    rechnungsnummer: string;
+    status: string;
+    bruttobetrag: number;
+  } | null;
 };
 
 export type BestellungInsert = TablesInsert<"waeschebestellungen">;
@@ -34,7 +40,8 @@ export function useBestellungen() {
           *,
           kunden!kunde_id (name),
           objekte!objekt_id (name),
-          waeschekraefte!waeschekraft_id (name)
+          waeschekraefte!waeschekraft_id (name),
+          rechnungen (id, rechnungsnummer, status, bruttobetrag)
         `)
         .order("created_at", { ascending: false });
 
@@ -65,14 +72,18 @@ export function useBestellungen() {
         }
       });
 
-      return bestellungen?.map((b) => ({
-        ...b,
-        kundeName: (b.kunden as { name: string } | null)?.name || "Unbekannt",
-        objektName: (b.objekte as { name: string } | null)?.name || null,
-        waeschekraftName: (b.waeschekraefte as { name: string } | null)?.name || null,
-        positionenCount: countMap.get(b.id) || 0,
-        gesamtpreis: priceMap.has(b.id) ? priceMap.get(b.id)! : null,
-      })) as Bestellung[];
+      return bestellungen?.map((b) => {
+        const rechnungenArr = b.rechnungen as Array<{ id: string; rechnungsnummer: string; status: string; bruttobetrag: number }> | null;
+        return {
+          ...b,
+          kundeName: (b.kunden as { name: string } | null)?.name || "Unbekannt",
+          objektName: (b.objekte as { name: string } | null)?.name || null,
+          waeschekraftName: (b.waeschekraefte as { name: string } | null)?.name || null,
+          positionenCount: countMap.get(b.id) || 0,
+          gesamtpreis: priceMap.has(b.id) ? priceMap.get(b.id)! : null,
+          rechnung: rechnungenArr && rechnungenArr.length > 0 ? rechnungenArr[0] : null,
+        };
+      }) as Bestellung[];
     },
   });
 }
