@@ -46,7 +46,7 @@ export function RechnungDetailDialog({
   const { data: einstellungen } = useRechnungseinstellungen();
   const updateMahnung = useUpdateMahnungStatus();
   const [mahnungConfirmOpen, setMahnungConfirmOpen] = useState(false);
-  const [showPrintView, setShowPrintView] = useState(false);
+  const [showPrintView, setShowPrintView] = useState(true);
   const printRef = useRef<HTMLDivElement>(null);
 
   if (!rechnung) return null;
