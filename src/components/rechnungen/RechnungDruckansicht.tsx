@@ -116,7 +116,10 @@ export function RechnungDruckansicht({
               <tr key={pos.id} className="border-b border-gray-200">
                 <td className="py-2">{index + 1}</td>
                 <td className="py-2 font-mono text-xs">{pos.artikelnummer}</td>
-                <td className="py-2">{pos.bezeichnung}</td>
+                <td className="py-2">
+                  {pos.bezeichnung}
+                  {pos.farbe && <span className="text-gray-600"> ({pos.farbe})</span>}
+                </td>
                 <td className="py-2 text-right">{pos.menge}</td>
                 <td className="py-2 text-right">{formatPreis(pos.einzelpreis)}</td>
                 <td className="py-2 text-right">{formatPreis(pos.gesamtpreis)}</td>
