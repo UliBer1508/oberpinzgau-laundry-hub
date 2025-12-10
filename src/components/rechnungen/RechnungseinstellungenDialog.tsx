@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Rechnungseinstellungen } from "@/hooks/useRechnungseinstellungen";
-import { Info, Building2, Calculator, Mail } from "lucide-react";
+import { Info, Building2, Calculator, Mail, Landmark, FileText } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface RechnungseinstellungenDialogProps {
@@ -32,6 +32,13 @@ interface RechnungseinstellungenDialogProps {
     mahnung_nach_tagen: number;
     mahnung_betreff: string | null;
     mahnung_text: string | null;
+    firma_hg: string | null;
+    firma_fn: string | null;
+    firma_uid: string | null;
+    bank_name: string | null;
+    bank_iban: string | null;
+    bank_bic: string | null;
+    zahlungskondition_text: string | null;
   }) => void;
   isPending: boolean;
 }
@@ -43,8 +50,13 @@ export function RechnungseinstellungenDialog({
   onSave,
   isPending,
 }: RechnungseinstellungenDialogProps) {
+  // Berechnungseinstellungen
   const [mwstSatz, setMwstSatz] = useState<string>("20");
   const [bearbeitungsgebuehr, setBearbeitungsgebuehr] = useState<string>("0");
+  const [zahlungsfristTage, setZahlungsfristTage] = useState<string>("14");
+  const [mahnungNachTagen, setMahnungNachTagen] = useState<string>("7");
+  
+  // Firmendaten
   const [firmaName, setFirmaName] = useState<string>("");
   const [firmaBezeichnung, setFirmaBezeichnung] = useState<string>("");
   const [firmaStrasse, setFirmaStrasse] = useState<string>("");
@@ -52,8 +64,21 @@ export function RechnungseinstellungenDialog({
   const [firmaOrt, setFirmaOrt] = useState<string>("");
   const [firmaTelefon, setFirmaTelefon] = useState<string>("");
   const [firmaEmail, setFirmaEmail] = useState<string>("");
-  const [zahlungsfristTage, setZahlungsfristTage] = useState<string>("14");
-  const [mahnungNachTagen, setMahnungNachTagen] = useState<string>("7");
+  
+  // Registerdaten (Neu)
+  const [firmaHg, setFirmaHg] = useState<string>("");
+  const [firmaFn, setFirmaFn] = useState<string>("");
+  const [firmaUid, setFirmaUid] = useState<string>("");
+  
+  // Bankverbindung (Neu)
+  const [bankName, setBankName] = useState<string>("");
+  const [bankIban, setBankIban] = useState<string>("");
+  const [bankBic, setBankBic] = useState<string>("");
+  
+  // Zahlungskondition (Neu)
+  const [zahlungskonditionText, setZahlungskonditionText] = useState<string>("");
+  
+  // Mahnwesen
   const [mahnungBetreff, setMahnungBetreff] = useState<string>("");
   const [mahnungText, setMahnungText] = useState<string>("");
 
@@ -72,6 +97,14 @@ export function RechnungseinstellungenDialog({
       setMahnungNachTagen(String(einstellungen.mahnung_nach_tagen || 7));
       setMahnungBetreff(einstellungen.mahnung_betreff || "Zahlungserinnerung - Rechnung {rechnungsnummer}");
       setMahnungText(einstellungen.mahnung_text || "");
+      // Neue Felder
+      setFirmaHg(einstellungen.firma_hg || "");
+      setFirmaFn(einstellungen.firma_fn || "");
+      setFirmaUid(einstellungen.firma_uid || "");
+      setBankName(einstellungen.bank_name || "");
+      setBankIban(einstellungen.bank_iban || "");
+      setBankBic(einstellungen.bank_bic || "");
+      setZahlungskonditionText(einstellungen.zahlungskondition_text || "Zahlungsfrist: {zahlungsfrist_tage} Tage netto");
     }
   }, [einstellungen]);
 
@@ -95,6 +128,14 @@ export function RechnungseinstellungenDialog({
       mahnung_nach_tagen: mahnungNach,
       mahnung_betreff: mahnungBetreff || null,
       mahnung_text: mahnungText || null,
+      // Neue Felder
+      firma_hg: firmaHg || null,
+      firma_fn: firmaFn || null,
+      firma_uid: firmaUid || null,
+      bank_name: bankName || null,
+      bank_iban: bankIban || null,
+      bank_bic: bankBic || null,
+      zahlungskondition_text: zahlungskonditionText || null,
     });
   };
 
@@ -243,6 +284,114 @@ export function RechnungseinstellungenDialog({
                   placeholder="z.B. info@firma.at"
                 />
               </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Registerdaten */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Registerdaten
+            </h4>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firmaHg">Handelsgericht (HG)</Label>
+                <Input
+                  id="firmaHg"
+                  value={firmaHg}
+                  onChange={(e) => setFirmaHg(e.target.value)}
+                  placeholder="z.B. Salzburg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="firmaFn">Firmenbuchnummer (FN)</Label>
+                <Input
+                  id="firmaFn"
+                  value={firmaFn}
+                  onChange={(e) => setFirmaFn(e.target.value)}
+                  placeholder="z.B. 123456a"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="firmaUid">UID-Nummer</Label>
+                <Input
+                  id="firmaUid"
+                  value={firmaUid}
+                  onChange={(e) => setFirmaUid(e.target.value)}
+                  placeholder="z.B. ATU12345678"
+                />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Bankverbindung */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium flex items-center gap-2">
+              <Landmark className="h-4 w-4" />
+              Bankverbindung (für QR-Code)
+            </h4>
+            
+            <div className="space-y-2">
+              <Label htmlFor="bankName">Bank Name</Label>
+              <Input
+                id="bankName"
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                placeholder="z.B. Volksbank"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="bankIban">IBAN</Label>
+                <Input
+                  id="bankIban"
+                  value={bankIban}
+                  onChange={(e) => setBankIban(e.target.value)}
+                  placeholder="z.B. AT024501012100025688"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bankBic">BIC</Label>
+                <Input
+                  id="bankBic"
+                  value={bankBic}
+                  onChange={(e) => setBankBic(e.target.value)}
+                  placeholder="z.B. VBOEATWWSAL"
+                />
+              </div>
+            </div>
+            
+            <p className="text-xs text-muted-foreground">
+              Mit diesen Daten wird ein EPC-QR-Code auf der Rechnung generiert, den Kunden mit Banking-Apps scannen können.
+            </p>
+          </div>
+
+          <Separator />
+
+          {/* Zahlungskondition */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Zahlungskondition
+            </h4>
+            
+            <div className="space-y-2">
+              <Label htmlFor="zahlungskonditionText">Konditionstext</Label>
+              <Input
+                id="zahlungskonditionText"
+                value={zahlungskonditionText}
+                onChange={(e) => setZahlungskonditionText(e.target.value)}
+                placeholder="z.B. Zahlungsfrist: {zahlungsfrist_tage} Tage netto"
+              />
+              <p className="text-xs text-muted-foreground">
+                Platzhalter: {"{zahlungsfrist_tage}"}
+              </p>
             </div>
           </div>
 

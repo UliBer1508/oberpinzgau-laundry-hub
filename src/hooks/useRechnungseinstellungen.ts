@@ -17,6 +17,14 @@ export type Rechnungseinstellungen = {
   mahnung_nach_tagen: number;
   mahnung_betreff: string | null;
   mahnung_text: string | null;
+  // Neue Felder
+  firma_hg: string | null;
+  firma_fn: string | null;
+  firma_uid: string | null;
+  bank_name: string | null;
+  bank_iban: string | null;
+  bank_bic: string | null;
+  zahlungskondition_text: string | null;
 };
 
 // Einstellungen abrufen
@@ -56,6 +64,14 @@ export function useUpdateRechnungseinstellungen() {
       mahnung_nach_tagen?: number;
       mahnung_betreff?: string | null;
       mahnung_text?: string | null;
+      // Neue Felder
+      firma_hg?: string | null;
+      firma_fn?: string | null;
+      firma_uid?: string | null;
+      bank_name?: string | null;
+      bank_iban?: string | null;
+      bank_bic?: string | null;
+      zahlungskondition_text?: string | null;
     }) => {
       const { id, ...updateData } = data;
       const { data: result, error } = await supabase

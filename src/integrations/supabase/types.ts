@@ -337,6 +337,9 @@ export type Database = {
           kunde_ort: string | null
           kunde_plz: string | null
           kunde_strasse: string | null
+          lieferadresse_ort: string | null
+          lieferadresse_plz: string | null
+          lieferadresse_strasse: string | null
           mahnung_anzahl: number | null
           mahnung_gesendet_am: string | null
           mwst_betrag: number
@@ -364,6 +367,9 @@ export type Database = {
           kunde_ort?: string | null
           kunde_plz?: string | null
           kunde_strasse?: string | null
+          lieferadresse_ort?: string | null
+          lieferadresse_plz?: string | null
+          lieferadresse_strasse?: string | null
           mahnung_anzahl?: number | null
           mahnung_gesendet_am?: string | null
           mwst_betrag: number
@@ -391,6 +397,9 @@ export type Database = {
           kunde_ort?: string | null
           kunde_plz?: string | null
           kunde_strasse?: string | null
+          lieferadresse_ort?: string | null
+          lieferadresse_plz?: string | null
+          lieferadresse_strasse?: string | null
           mahnung_anzahl?: number | null
           mahnung_gesendet_am?: string | null
           mwst_betrag?: number
@@ -421,14 +430,20 @@ export type Database = {
       }
       rechnungseinstellungen: {
         Row: {
+          bank_bic: string | null
+          bank_iban: string | null
+          bank_name: string | null
           bearbeitungsgebuehr: number
           firma_bezeichnung: string | null
           firma_email: string | null
+          firma_fn: string | null
+          firma_hg: string | null
           firma_name: string | null
           firma_ort: string | null
           firma_plz: string | null
           firma_strasse: string | null
           firma_telefon: string | null
+          firma_uid: string | null
           id: string
           mahnung_betreff: string | null
           mahnung_email_absender: string | null
@@ -437,16 +452,23 @@ export type Database = {
           mwst_satz: number
           updated_at: string
           zahlungsfrist_tage: number
+          zahlungskondition_text: string | null
         }
         Insert: {
+          bank_bic?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
           bearbeitungsgebuehr?: number
           firma_bezeichnung?: string | null
           firma_email?: string | null
+          firma_fn?: string | null
+          firma_hg?: string | null
           firma_name?: string | null
           firma_ort?: string | null
           firma_plz?: string | null
           firma_strasse?: string | null
           firma_telefon?: string | null
+          firma_uid?: string | null
           id?: string
           mahnung_betreff?: string | null
           mahnung_email_absender?: string | null
@@ -455,16 +477,23 @@ export type Database = {
           mwst_satz?: number
           updated_at?: string
           zahlungsfrist_tage?: number
+          zahlungskondition_text?: string | null
         }
         Update: {
+          bank_bic?: string | null
+          bank_iban?: string | null
+          bank_name?: string | null
           bearbeitungsgebuehr?: number
           firma_bezeichnung?: string | null
           firma_email?: string | null
+          firma_fn?: string | null
+          firma_hg?: string | null
           firma_name?: string | null
           firma_ort?: string | null
           firma_plz?: string | null
           firma_strasse?: string | null
           firma_telefon?: string | null
+          firma_uid?: string | null
           id?: string
           mahnung_betreff?: string | null
           mahnung_email_absender?: string | null
@@ -473,6 +502,7 @@ export type Database = {
           mwst_satz?: number
           updated_at?: string
           zahlungsfrist_tage?: number
+          zahlungskondition_text?: string | null
         }
         Relationships: []
       }

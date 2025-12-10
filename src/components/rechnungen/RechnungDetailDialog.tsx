@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,25 +15,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Rechnung, RechnungStatus, useRechnungPositionen, useUpdateMahnungStatus } from "@/hooks/useRechnungen";
 import { useRechnungseinstellungen } from "@/hooks/useRechnungseinstellungen";
 import { RechnungStatusBadge } from "./RechnungStatusBadge";
+import { RechnungDruckansicht } from "./RechnungDruckansicht";
 import { formatPreis } from "@/lib/formatPreis";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { CheckCircle, AlertTriangle, XCircle, Phone, Mail, Send } from "lucide-react";
+import { CheckCircle, AlertTriangle, XCircle, Send, Printer, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface RechnungDetailDialogProps {
@@ -54,10 +46,10 @@ export function RechnungDetailDialog({
   const { data: einstellungen } = useRechnungseinstellungen();
   const updateMahnung = useUpdateMahnungStatus();
   const [mahnungConfirmOpen, setMahnungConfirmOpen] = useState(false);
+  const [showPrintView, setShowPrintView] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
 
   if (!rechnung) return null;
-
-  const hasFirmaData = einstellungen?.firma_name || einstellungen?.firma_bezeichnung;
 
   // Prüfen ob Rechnung überfällig ist
   const isOverdue = rechnung.status === 'offen' && 
@@ -120,280 +112,236 @@ export function RechnungDetailDialog({
     );
   };
 
+  const handlePrint = () => {
+    const printContent = printRef.current;
+    if (!printContent) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Rechnung ${rechnung.rechnungsnummer}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; font-size: 12px; line-height: 1.4; }
+            @page { size: A4; margin: 15mm; }
+            @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              Rechnung {rechnung.rechnungsnummer}
-              <RechnungStatusBadge status={rechnung.status} />
-              {isOverdue && (
-                <Badge variant="destructive" className="text-xs">
-                  Überfällig
-                </Badge>
-              )}
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-3">
+                Rechnung {rechnung.rechnungsnummer}
+                <RechnungStatusBadge status={rechnung.status} />
+                {isOverdue && (
+                  <Badge variant="destructive" className="text-xs">
+                    Überfällig
+                  </Badge>
+                )}
+              </DialogTitle>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowPrintView(!showPrintView)}
+                >
+                  {showPrintView ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
+                  {showPrintView ? "Bearbeiten" : "Vorschau"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrint}
+                >
+                  <Printer className="h-4 w-4 mr-1" />
+                  Drucken
+                </Button>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className="space-y-6">
-            {/* Briefkopf: Kunde links, Firma rechts */}
-            <div className="grid grid-cols-2 gap-8">
-              {/* Linke Seite: Kundendaten */}
-              <div className="space-y-3">
-                {/* Kundennummer Hinweis */}
-                {rechnung.kunde_kundennummer && (
-                  <div className="text-xs space-y-0.5">
-                    <p className="font-semibold">Kunden-Nr. {rechnung.kunde_kundennummer}</p>
-                    <p className="text-muted-foreground italic">
-                      (Bei Zahlung/Rücksendung/Gutschrift bitte unbedingt angeben!)
-                    </p>
-                  </div>
-                )}
-
-                {/* Kundenadresse */}
-                <div className="border rounded-md p-3 text-sm">
-                  {rechnung.kunde_firma && <p className="font-medium">{rechnung.kunde_firma}</p>}
-                  <p>{rechnung.kunde_name}</p>
-                  {rechnung.kunde_strasse && <p>{rechnung.kunde_strasse}</p>}
-                  {(rechnung.kunde_plz || rechnung.kunde_ort) && (
-                    <p>
-                      {rechnung.kunde_plz} {rechnung.kunde_ort}
-                    </p>
-                  )}
-                  {rechnung.kunde_email && (
-                    <p className="text-muted-foreground mt-1 flex items-center gap-1">
-                      <Mail className="h-3 w-3" />
-                      {rechnung.kunde_email}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Rechte Seite: Firmendaten */}
-              <div className="text-right text-sm">
-                {hasFirmaData ? (
-                  <div className="space-y-1">
-                    {einstellungen?.firma_bezeichnung && (
-                      <p className="font-semibold">{einstellungen.firma_bezeichnung}</p>
-                    )}
-                    {einstellungen?.firma_name && (
-                      <p>{einstellungen.firma_name}</p>
-                    )}
-                    {einstellungen?.firma_strasse && (
-                      <p>{einstellungen.firma_strasse}</p>
-                    )}
-                    {(einstellungen?.firma_plz || einstellungen?.firma_ort) && (
-                      <p>
-                        {einstellungen.firma_plz} {einstellungen.firma_ort}
-                      </p>
-                    )}
-                    <div className="pt-2 text-muted-foreground space-y-0.5">
-                      {einstellungen?.firma_telefon && (
-                        <p className="flex items-center justify-end gap-1">
-                          <Phone className="h-3 w-3" />
-                          {einstellungen.firma_telefon}
-                        </p>
-                      )}
-                      {einstellungen?.firma_email && (
-                        <p className="flex items-center justify-end gap-1">
-                          <Mail className="h-3 w-3" />
-                          {einstellungen.firma_email}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground italic">
-                    Firmendaten nicht hinterlegt
-                  </p>
-                )}
-              </div>
+          {showPrintView ? (
+            /* Druckansicht nach Vorlage */
+            <div ref={printRef} className="border rounded-lg overflow-hidden">
+              <RechnungDruckansicht
+                rechnung={rechnung}
+                positionen={positionen}
+                einstellungen={einstellungen || null}
+              />
             </div>
-
-            <Separator />
-
-            {/* Rechnungsdaten */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Rechnungsdatum</p>
-                <p className="font-medium">
-                  {format(new Date(rechnung.rechnungsdatum), "dd.MM.yyyy", { locale: de })}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Fällig am</p>
-                <p className={`font-medium ${isOverdue ? 'text-destructive' : ''}`}>
-                  {rechnung.faelligkeitsdatum
-                    ? format(new Date(rechnung.faelligkeitsdatum), "dd.MM.yyyy", { locale: de })
-                    : "-"}
-                </p>
-              </div>
-              {rechnung.bezahlt_am && (
-                <div>
-                  <p className="text-muted-foreground">Bezahlt am</p>
-                  <p className="font-medium">
-                    {format(new Date(rechnung.bezahlt_am), "dd.MM.yyyy", { locale: de })}
-                  </p>
-                </div>
-              )}
-              <div>
-                <p className="text-muted-foreground">Bestellung</p>
-                <p className="font-medium">{rechnung.bestellnummer}</p>
-              </div>
-            </div>
-
-            {/* Mahnungs-Info */}
-            {(rechnung.mahnung_anzahl ?? 0) > 0 && (
-              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md p-3 text-sm">
-                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-                  <AlertTriangle className="h-4 w-4" />
-                  <span className="font-medium">
-                    {rechnung.mahnung_anzahl} Mahnung{(rechnung.mahnung_anzahl ?? 0) > 1 ? "en" : ""} gesendet
-                  </span>
-                  {rechnung.mahnung_gesendet_am && (
-                    <span className="text-muted-foreground">
-                      (zuletzt: {format(new Date(rechnung.mahnung_gesendet_am), "dd.MM.yyyy HH:mm", { locale: de })})
+          ) : (
+            /* Standard-Bearbeitungsansicht */
+            <div className="space-y-6">
+              {/* Mahnungs-Info */}
+              {(rechnung.mahnung_anzahl ?? 0) > 0 && (
+                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md p-3 text-sm">
+                  <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span className="font-medium">
+                      {rechnung.mahnung_anzahl} Mahnung{(rechnung.mahnung_anzahl ?? 0) > 1 ? "en" : ""} gesendet
                     </span>
-                  )}
+                    {rechnung.mahnung_gesendet_am && (
+                      <span className="text-muted-foreground">
+                        (zuletzt: {format(new Date(rechnung.mahnung_gesendet_am), "dd.MM.yyyy HH:mm", { locale: de })})
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Rechnungsdaten */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Rechnungsdatum</p>
+                  <p className="font-medium">
+                    {format(new Date(rechnung.rechnungsdatum), "dd.MM.yyyy", { locale: de })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Fällig am</p>
+                  <p className={`font-medium ${isOverdue ? 'text-destructive' : ''}`}>
+                    {rechnung.faelligkeitsdatum
+                      ? format(new Date(rechnung.faelligkeitsdatum), "dd.MM.yyyy", { locale: de })
+                      : "-"}
+                  </p>
+                </div>
+                {rechnung.bezahlt_am && (
+                  <div>
+                    <p className="text-muted-foreground">Bezahlt am</p>
+                    <p className="font-medium">
+                      {format(new Date(rechnung.bezahlt_am), "dd.MM.yyyy", { locale: de })}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-muted-foreground">Bestellung</p>
+                  <p className="font-medium">{rechnung.bestellnummer}</p>
                 </div>
               </div>
-            )}
 
-            <Separator />
+              <Separator />
 
-            {/* Positionen */}
-            <div>
-              <p className="text-sm text-muted-foreground mb-2">Positionen</p>
-              {isLoading ? (
-                <p className="text-muted-foreground text-sm">Lade Positionen...</p>
-              ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Art.-Nr.</TableHead>
-                        <TableHead>Bezeichnung</TableHead>
-                        <TableHead className="text-right">Menge</TableHead>
-                        <TableHead className="text-right">E-Preis</TableHead>
-                        <TableHead className="text-right">Gesamt</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {positionen.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={5} className="text-center text-muted-foreground">
-                            Keine Positionen
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        positionen.map((pos) => (
-                          <TableRow key={pos.id}>
-                            <TableCell className="font-mono text-sm">{pos.artikelnummer}</TableCell>
-                            <TableCell>{pos.bezeichnung}</TableCell>
-                            <TableCell className="text-right">{pos.menge}</TableCell>
-                            <TableCell className="text-right">{formatPreis(pos.einzelpreis)}</TableCell>
-                            <TableCell className="text-right">{formatPreis(pos.gesamtpreis)}</TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                    <TableFooter>
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-right">
-                          Netto
-                        </TableCell>
-                        <TableCell className="text-right">{formatPreis(rechnung.nettobetrag)}</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-right">
-                          MwSt ({rechnung.mwst_satz}%)
-                        </TableCell>
-                        <TableCell className="text-right">{formatPreis(rechnung.mwst_betrag)}</TableCell>
-                      </TableRow>
-                      {Number(rechnung.bearbeitungsgebuehr) > 0 && (
-                        <TableRow>
-                          <TableCell colSpan={4} className="text-right">
-                            Bearbeitungsgebühr
-                          </TableCell>
-                          <TableCell className="text-right">{formatPreis(rechnung.bearbeitungsgebuehr)}</TableCell>
-                        </TableRow>
-                      )}
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-right font-bold">
-                          Brutto
-                        </TableCell>
-                        <TableCell className="text-right font-bold">
-                          {formatPreis(rechnung.bruttobetrag)}
-                        </TableCell>
-                      </TableRow>
-                    </TableFooter>
-                  </Table>
-                </div>
-              )}
-            </div>
+              {/* Kunde */}
+              <div className="text-sm">
+                <p className="text-muted-foreground mb-1">Kunde</p>
+                <p className="font-medium">
+                  {rechnung.kunde_firma && `${rechnung.kunde_firma} - `}
+                  {rechnung.kunde_name}
+                  {rechnung.kunde_kundennummer && ` (${rechnung.kunde_kundennummer})`}
+                </p>
+                {(rechnung.kunde_strasse || rechnung.kunde_plz || rechnung.kunde_ort) && (
+                  <p className="text-muted-foreground">
+                    {rechnung.kunde_strasse}, {rechnung.kunde_plz} {rechnung.kunde_ort}
+                  </p>
+                )}
+              </div>
 
-            {/* Notizen */}
-            {rechnung.notizen && (
-              <>
-                <Separator />
+              <Separator />
+
+              {/* Beträge */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">Notizen</p>
-                  <p className="text-sm">{rechnung.notizen}</p>
+                  <p className="text-muted-foreground">Netto</p>
+                  <p className="font-medium">{formatPreis(rechnung.nettobetrag)}</p>
                 </div>
-              </>
-            )}
+                <div>
+                  <p className="text-muted-foreground">MwSt ({rechnung.mwst_satz}%)</p>
+                  <p className="font-medium">{formatPreis(rechnung.mwst_betrag)}</p>
+                </div>
+                {Number(rechnung.bearbeitungsgebuehr) > 0 && (
+                  <div>
+                    <p className="text-muted-foreground">Bearbeitungsgebühr</p>
+                    <p className="font-medium">{formatPreis(rechnung.bearbeitungsgebuehr)}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-muted-foreground">Brutto</p>
+                  <p className="font-bold text-lg">{formatPreis(rechnung.bruttobetrag)}</p>
+                </div>
+              </div>
 
-            {/* Aktionen */}
-            <Separator />
-            <div className="flex gap-2 justify-end flex-wrap">
-              {(rechnung.status === 'offen' || rechnung.status === 'mahnung') && rechnung.kunde_email && (
-                <Button
-                  variant="outline"
-                  onClick={handleSendMahnung}
-                >
-                  <Send className="mr-2 h-4 w-4" />
-                  Mahnung per E-Mail
-                </Button>
+              {/* Notizen */}
+              {rechnung.notizen && (
+                <>
+                  <Separator />
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Notizen</p>
+                    <p className="text-sm">{rechnung.notizen}</p>
+                  </div>
+                </>
               )}
-              {rechnung.status !== 'bezahlt' && (
-                <Button
-                  variant="default"
-                  onClick={() => {
-                    onStatusChange(rechnung.id, 'bezahlt');
-                    onOpenChange(false);
-                  }}
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Als bezahlt markieren
-                </Button>
-              )}
-              {rechnung.status === 'offen' && (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    onStatusChange(rechnung.id, 'mahnung');
-                    onOpenChange(false);
-                  }}
-                >
-                  <AlertTriangle className="mr-2 h-4 w-4" />
-                  Mahnung
-                </Button>
-              )}
-              {rechnung.status !== 'storniert' && (
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    onStatusChange(rechnung.id, 'storniert');
-                    onOpenChange(false);
-                  }}
-                >
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Stornieren
-                </Button>
-              )}
+
+              {/* Aktionen */}
+              <Separator />
+              <div className="flex gap-2 justify-end flex-wrap">
+                {(rechnung.status === 'offen' || rechnung.status === 'mahnung') && rechnung.kunde_email && (
+                  <Button
+                    variant="outline"
+                    onClick={handleSendMahnung}
+                  >
+                    <Send className="mr-2 h-4 w-4" />
+                    Mahnung per E-Mail
+                  </Button>
+                )}
+                {rechnung.status !== 'bezahlt' && (
+                  <Button
+                    variant="default"
+                    onClick={() => {
+                      onStatusChange(rechnung.id, 'bezahlt');
+                      onOpenChange(false);
+                    }}
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Als bezahlt markieren
+                  </Button>
+                )}
+                {rechnung.status === 'offen' && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      onStatusChange(rechnung.id, 'mahnung');
+                      onOpenChange(false);
+                    }}
+                  >
+                    <AlertTriangle className="mr-2 h-4 w-4" />
+                    Mahnung
+                  </Button>
+                )}
+                {rechnung.status !== 'storniert' && (
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      onStatusChange(rechnung.id, 'storniert');
+                      onOpenChange(false);
+                    }}
+                  >
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Stornieren
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </DialogContent>
       </Dialog>
 
