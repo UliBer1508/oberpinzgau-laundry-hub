@@ -67,12 +67,12 @@ serve(async (req) => {
 
     console.log(`create-invoice: Bestellung ${bestellung.bestellnummer} geladen`);
 
-    // Positionen mit Artikelpreisen laden
+    // Positionen mit Artikelpreisen und Farbe laden
     const { data: positionen, error: positionenError } = await supabase
       .from("bestellpositionen")
       .select(`
         *,
-        waescheartikel (artikelnummer, name, preis)
+        waescheartikel (artikelnummer, name, preis, farbe)
       `)
       .eq("bestellung_id", bestellung_id);
 
@@ -93,6 +93,7 @@ serve(async (req) => {
       return {
         artikelnummer: pos.waescheartikel?.artikelnummer || "-",
         bezeichnung: pos.waescheartikel?.name || "-",
+        farbe: pos.waescheartikel?.farbe || null,
         menge: pos.menge,
         einzelpreis,
         gesamtpreis

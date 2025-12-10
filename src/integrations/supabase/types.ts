@@ -511,6 +511,7 @@ export type Database = {
           artikelnummer: string
           bezeichnung: string
           einzelpreis: number
+          farbe: string | null
           gesamtpreis: number
           id: string
           menge: number
@@ -520,6 +521,7 @@ export type Database = {
           artikelnummer: string
           bezeichnung: string
           einzelpreis: number
+          farbe?: string | null
           gesamtpreis: number
           id?: string
           menge: number
@@ -529,6 +531,7 @@ export type Database = {
           artikelnummer?: string
           bezeichnung?: string
           einzelpreis?: number
+          farbe?: string | null
           gesamtpreis?: number
           id?: string
           menge?: number

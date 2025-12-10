@@ -41,6 +41,7 @@ export type RechnungPosition = {
   rechnung_id: string;
   artikelnummer: string;
   bezeichnung: string;
+  farbe?: string | null;
   menge: number;
   einzelpreis: number;
   gesamtpreis: number;
