@@ -1,6 +1,3 @@
-import { useEffect, useState } from "react";
-import QRCode from "qrcode";
-
 interface EpcQrCodeParams {
   bic: string;
   empfaenger: string;
@@ -10,7 +7,7 @@ interface EpcQrCodeParams {
 }
 
 /**
- * Generiert einen EPC-QR-Code (European Payments Council) für SEPA-Überweisungen
+ * Generiert EPC-QR-Code Daten (European Payments Council) für SEPA-Überweisungen
  */
 export function generateEpcData(params: EpcQrCodeParams): string {
   const { bic, empfaenger, iban, betrag, verwendungszweck } = params;
@@ -37,32 +34,4 @@ export function generateEpcData(params: EpcQrCodeParams): string {
   return epcLines.join('\n');
 }
 
-export function useEpcQrCode(params: EpcQrCodeParams | null): string | null {
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!params || !params.iban || !params.empfaenger || params.betrag <= 0) {
-      setQrCodeDataUrl(null);
-      return;
-    }
-
-    const epcData = generateEpcData(params);
-
-    QRCode.toDataURL(epcData, {
-      errorCorrectionLevel: 'M',
-      margin: 2,
-      width: 150,
-      color: {
-        dark: '#000000',
-        light: '#ffffff',
-      },
-    })
-      .then((url) => setQrCodeDataUrl(url))
-      .catch((err) => {
-        console.error('QR-Code Generierung fehlgeschlagen:', err);
-        setQrCodeDataUrl(null);
-      });
-  }, [params?.bic, params?.empfaenger, params?.iban, params?.betrag, params?.verwendungszweck]);
-
-  return qrCodeDataUrl;
-}
+export type { EpcQrCodeParams };

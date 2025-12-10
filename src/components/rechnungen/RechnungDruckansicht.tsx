@@ -1,9 +1,10 @@
 import { Rechnung, RechnungPosition } from "@/hooks/useRechnungen";
 import { Rechnungseinstellungen } from "@/hooks/useRechnungseinstellungen";
-import { useEpcQrCode } from "@/hooks/useEpcQrCode";
+import { generateEpcData } from "@/hooks/useEpcQrCode";
 import { formatPreis } from "@/lib/formatPreis";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { QRCodeSVG } from "qrcode.react";
 
 interface RechnungDruckansichtProps {
   rechnung: Rechnung;
@@ -16,18 +17,16 @@ export function RechnungDruckansicht({
   positionen,
   einstellungen,
 }: RechnungDruckansichtProps) {
-  // EPC-QR-Code generieren
-  const qrCodeUrl = useEpcQrCode(
-    einstellungen?.bank_iban
-      ? {
-          bic: einstellungen.bank_bic || "",
-          empfaenger: einstellungen.firma_bezeichnung || einstellungen.firma_name || "",
-          iban: einstellungen.bank_iban,
-          betrag: Number(rechnung.bruttobetrag),
-          verwendungszweck: `Rechnung ${rechnung.rechnungsnummer}`,
-        }
-      : null
-  );
+  // EPC-QR-Code Data generieren
+  const epcData = einstellungen?.bank_iban
+    ? generateEpcData({
+        bic: einstellungen.bank_bic || "",
+        empfaenger: einstellungen.firma_bezeichnung || einstellungen.firma_name || "",
+        iban: einstellungen.bank_iban,
+        betrag: Number(rechnung.bruttobetrag),
+        verwendungszweck: `Rechnung ${rechnung.rechnungsnummer}`,
+      })
+    : null;
 
   const formatDate = (date: string) => format(new Date(date), "dd.MM.yyyy", { locale: de });
 
@@ -180,9 +179,9 @@ export function RechnungDruckansicht({
       <div className="mt-8 pt-6 border-t border-gray-300 flex items-start justify-between">
         {/* QR-Code */}
         <div className="flex items-start gap-4">
-          {qrCodeUrl ? (
-            <div className="border border-gray-300 p-1">
-              <img src={qrCodeUrl} alt="EPC QR-Code für Zahlung" className="w-32 h-32" />
+          {epcData ? (
+            <div className="border border-gray-300 p-1 bg-white">
+              <QRCodeSVG value={epcData} size={128} level="M" />
             </div>
           ) : (
             <div className="w-32 h-32 border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-400 text-xs text-center p-2">
