@@ -30,6 +30,10 @@ export type Rechnung = {
   created_at: string;
   updated_at: string;
   bestellnummer?: string;
+  // Lieferadresse-Snapshot
+  lieferadresse_strasse?: string | null;
+  lieferadresse_plz?: string | null;
+  lieferadresse_ort?: string | null;
 };
 
 export type RechnungPosition = {
