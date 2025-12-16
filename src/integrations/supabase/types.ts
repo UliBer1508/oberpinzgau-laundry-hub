@@ -909,7 +909,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_bestellnummer: { Args: never; Returns: string }
     }
     Enums: {
       app_role: "admin" | "waeschekraft" | "kunde"
