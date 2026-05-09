@@ -320,7 +320,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Lieferdatum */}
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Popover open={isLieferOpen} onOpenChange={setIsLieferOpen}>
           <PopoverTrigger asChild>
             <Button
