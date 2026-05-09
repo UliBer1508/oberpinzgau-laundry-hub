@@ -1,0 +1,1 @@
+ALTER TABLE public.objekte ADD COLUMN IF NOT EXISTS schnellbestellung_set_id uuid NULL;
