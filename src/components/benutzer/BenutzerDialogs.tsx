@@ -116,19 +116,12 @@ export function BenutzerEditDialog({ open, onOpenChange, benutzer, onSave, isPen
   const [name, setName] = useState("");
   const [telefon, setTelefon] = useState("");
 
-  // Sync when opened
-  useState(() => {
-    if (benutzer) {
+  useEffect(() => {
+    if (open && benutzer) {
       setName(benutzer.name);
       setTelefon(benutzer.telefon ?? "");
     }
-  });
-
-  // reset on open change
-  if (open && benutzer && name === "" && telefon === "" && benutzer.name) {
-    setName(benutzer.name);
-    setTelefon(benutzer.telefon ?? "");
-  }
+  }, [open, benutzer]);
 
   return (
     <Dialog
