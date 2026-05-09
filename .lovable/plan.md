@@ -1,42 +1,26 @@
 ## Ziel
-Bestellungen-Liste neu gestalten: Klick auf eine Bestellung öffnet direkt den Bearbeiten-Dialog, und das Layout wird moderner und übersichtlicher (keine horizontale Scrollleiste mehr).
+Auf der Bestellungen-Seite einen Button "Excel-Export" hinzufügen, der die aktuell gefilterten Bestellungen als `.xlsx`-Datei herunterlädt.
 
 ## Änderungen
 
-### 1. `src/pages/Bestellungen.tsx`
-- `onViewDetails` der Tabelle so umverdrahten, dass beim Zeilen-Klick `handleEditBestellung` (Bearbeiten-Dialog) aufgerufen wird statt des Detail-Dialogs.
-- Detail-Dialog bleibt verfügbar, aber nicht mehr per Zeilenklick (wird über separaten Button "Details" zugänglich gemacht).
+### 1. Dependency
+- `xlsx` (SheetJS) hinzufügen — leichtgewichtig, läuft komplett im Browser, kein Backend nötig.
 
-### 2. `src/components/bestellungen/BestellungenTable.tsx` – komplettes Redesign
-Statt klassischer breiter Tabelle mit 10 Spalten → moderne **Card-/Listen-Ansicht**:
+### 2. Neue Datei: `src/lib/exportBestellungen.ts`
+Hilfsfunktion `exportBestellungenToExcel(bestellungen: Bestellung[])`:
+- Mappt jede Bestellung auf ein Zeilenobjekt mit deutschen Spaltenüberschriften:
+  Bestellnr., Kunde, Objekt, Status, Lieferdatum, Lieferzeit, Abholdatum, Wäschekraft, Positionen, Betrag (€), Rechnungsnr., Zahlungsstatus, Gastname, Personen, Check-in, Check-out, Priorität, Notizen, Erstellt am.
+- Daten werden mit `date-fns` als `dd.MM.yyyy` formatiert, Preise als Zahlen (Excel-Währungsformat).
+- Erstellt Workbook via `XLSX.utils.json_to_sheet` + `XLSX.utils.book_append_sheet`.
+- Spaltenbreiten setzen für gute Lesbarkeit.
+- Dateiname: `bestellungen_YYYY-MM-DD.xlsx` via `XLSX.writeFile`.
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│ B0001  ●Ausgeliefert  [⚡Priorität]                  ⋮ Menü   │
-│ Uli Berresheim · Chalet Wald                                    │
-│ 🛏 3× Bettlaken weiß  · 2× Handtuch grau  +2 weitere            │
-│ ─────────────────────────────────────────────────────────────── │
-│ 📅 19.12.25 10:23   👤 Maria K.   💶 86,40 €   🧾 Ausstehend   │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-Pro Zeile:
-- **Kopfzeile**: Bestellnummer (mono, fett), Status-Badge, ggf. Prioritäts-Badge, rechts ein Dropdown-Menü (⋮) mit "Bearbeiten", "Details ansehen", "Status ändern", "Löschen".
-- **Kunde / Objekt** als zweite Zeile (Kunde fett, Objekt muted).
-- **Positionen-Vorschau**: erste 3 Artikel als kleine Badges, "+N weitere" wenn mehr.
-- **Footer-Zeile** mit Icons: Lieferdatum + Zeit, Wäschekraft, Betrag, Zahlungsstatus.
-
-Karten sind klickbar (gesamte Karte) → öffnet Bearbeiten-Dialog. Aktions-Menü stoppt Event-Propagation.
-
-Vorteile gegenüber der aktuellen Tabelle:
-- Kein horizontales Scrollen mehr (passt in 994 px Viewport).
-- Mobile-freundlich, da vertikal gestapelt.
-- Wichtige Infos stärker gewichtet (Status & Bestellnr. oben, Geld & Datum unten).
-- Konsistent mit dem Stil der bestehenden Dashboard-Bestellkarten (`BestellungenDashboard.tsx`).
-
-### 3. Daten / Hooks
-Keine Änderungen am Datenmodell oder den Hooks nötig — `useBestellungen` liefert bereits alle benötigten Felder. Positions-Vorschau lässt sich aus dem bestehenden `bestellungen[].positionen` (analog zum Dashboard) ziehen; falls nicht vorhanden, lediglich aus `useBestellungenMitDetails` ergänzen.
+### 3. `src/pages/Bestellungen.tsx`
+- Button "Excel-Export" (Icon `Download` aus lucide-react) im Header neben "Bestellung erstellen", `variant="outline"`.
+- onClick ruft `exportBestellungenToExcel(filteredBestellungen)` auf, zeigt `toast.success` mit Anzahl.
+- Disabled wenn `filteredBestellungen.length === 0`.
 
 ## Außerhalb des Scope
-- Filter, Stats-Widgets, Detail-Dialog selbst, Form-Dialog: bleiben unverändert.
-- Keine DB-/Backend-Änderungen.
+- Keine serverseitige Generierung, keine PDF-Variante.
+- Keine separaten Sheets pro Status (eine flache Liste).
+- Bestellpositionen-Details (Artikel-Aufschlüsselung) werden nicht je Zeile exportiert — nur die Anzahl. Falls gewünscht, später nachrüstbar.
