@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/external/client";
+import { supabase } from "@/integrations/supabase/client";
 import type { BestellungStatus } from "./useBestellungen";
 
 export interface BestellungMitDetails {
