@@ -241,7 +241,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       )}
     >
       {/* Drag Handle */}
-      <TableCell className="w-[40px]">
+      <TableCell className="w-[40px]" onClick={(e) => e.stopPropagation()}>
         <button
           className="cursor-grab touch-none p-1 text-muted-foreground hover:text-foreground"
           {...attributes}
@@ -252,7 +252,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Priorität */}
-      <TableCell className="w-[50px]">
+      <TableCell className="w-[50px]" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="text-lg hover:scale-110 transition-transform">
