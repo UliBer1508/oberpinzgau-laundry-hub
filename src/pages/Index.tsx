@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
 
 import { QuickActionsUpdated } from "@/components/dashboard/QuickActionsUpdated";
 import { useDashboardStats } from "@/hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
-import { Package, Users, ListTodo, Truck, FileText } from "lucide-react";
+import { Package, Users, ListTodo, Truck, FileText, ChevronDown } from "lucide-react";
 
 const Index = () => {
   const today = new Date().toLocaleDateString("de-AT", {
@@ -17,6 +20,7 @@ const Index = () => {
 
   const { data: stats } = useDashboardStats();
   const navigate = useNavigate();
+  const [statsOpen, setStatsOpen] = useState(true);
 
   return (
     <SidebarProvider>
@@ -35,48 +39,63 @@ const Index = () => {
 
           <div className="p-4 md:p-6 space-y-6">
             {/* Übersichts-Kacheln */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
-              <StatCard
-                title="Bestellungen"
-                value={stats?.bestellungen?.total ?? 0}
-                subtitle={`${stats?.bestellungen?.neu ?? 0} neu`}
-                icon={Package}
-                variant="info"
-                onClick={() => navigate("/bestellungen")}
-              />
-              <StatCard
-                title="Kunden & Objekte"
-                value={stats?.kunden?.total ?? 0}
-                subtitle={`${stats?.kunden?.aktiv ?? 0} aktiv`}
-                icon={Users}
-                variant="primary"
-                onClick={() => navigate("/kunden")}
-              />
-              <StatCard
-                title="Arbeitsaufträge"
-                value={stats?.arbeitsauftraege?.offen ?? 0}
-                subtitle="offen"
-                icon={ListTodo}
-                variant="warning"
-                onClick={() => navigate("/bestellungen/management")}
-              />
-              <StatCard
-                title="Liefertouren"
-                value={stats?.liefertouren?.heute ?? 0}
-                subtitle={`heute · ${stats?.liefertouren?.total ?? 0} gesamt`}
-                icon={Truck}
-                variant="success"
-                onClick={() => navigate("/liefertouren")}
-              />
-              <StatCard
-                title="Rechnungen"
-                value={stats?.rechnungen?.offen ?? 0}
-                subtitle={`offen · ${stats?.rechnungen?.total ?? 0} gesamt`}
-                icon={FileText}
-                variant="default"
-                onClick={() => navigate("/rechnungen")}
-              />
-            </div>
+            <Collapsible open={statsOpen} onOpenChange={setStatsOpen} className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-muted-foreground">Übersicht</h2>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-1 h-8">
+                    <span className="text-xs">{statsOpen ? "Einklappen" : "Ausklappen"}</span>
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${statsOpen ? "rotate-180" : ""}`}
+                    />
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              <CollapsibleContent>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
+                  <StatCard
+                    title="Bestellungen"
+                    value={stats?.bestellungen?.total ?? 0}
+                    subtitle={`${stats?.bestellungen?.neu ?? 0} neu`}
+                    icon={Package}
+                    variant="info"
+                    onClick={() => navigate("/bestellungen")}
+                  />
+                  <StatCard
+                    title="Kunden & Objekte"
+                    value={stats?.kunden?.total ?? 0}
+                    subtitle={`${stats?.kunden?.aktiv ?? 0} aktiv`}
+                    icon={Users}
+                    variant="primary"
+                    onClick={() => navigate("/kunden")}
+                  />
+                  <StatCard
+                    title="Arbeitsaufträge"
+                    value={stats?.arbeitsauftraege?.offen ?? 0}
+                    subtitle="offen"
+                    icon={ListTodo}
+                    variant="warning"
+                    onClick={() => navigate("/bestellungen/management")}
+                  />
+                  <StatCard
+                    title="Liefertouren"
+                    value={stats?.liefertouren?.heute ?? 0}
+                    subtitle={`heute · ${stats?.liefertouren?.total ?? 0} gesamt`}
+                    icon={Truck}
+                    variant="success"
+                    onClick={() => navigate("/liefertouren")}
+                  />
+                  <StatCard
+                    title="Rechnungen"
+                    value={stats?.rechnungen?.offen ?? 0}
+                    subtitle={`offen · ${stats?.rechnungen?.total ?? 0} gesamt`}
+                    icon={FileText}
+                    variant="default"
+                    onClick={() => navigate("/rechnungen")}
+                  />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <div className="grid gap-6">
               <QuickActionsUpdated />
