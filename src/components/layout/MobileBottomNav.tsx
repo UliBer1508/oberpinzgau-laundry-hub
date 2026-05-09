@@ -1,10 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Building2, ShoppingCart, FileText, Layers } from "lucide-react";
+import { LayoutDashboard, Users, ShoppingCart, FileText, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { title: "Start", url: "/", icon: LayoutDashboard, end: true },
-  { title: "Objekte", url: "/objekte", icon: Building2 },
+  { title: "Kunden", url: "/kunden", icon: Users },
   { title: "Bestellen", url: "/bestellungen", icon: ShoppingCart },
   { title: "Rechnungen", url: "/rechnungen", icon: FileText },
   { title: "Sets", url: "/waeschesets", icon: Layers },

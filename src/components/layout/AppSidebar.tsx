@@ -33,8 +33,7 @@ import {
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Kunden", url: "/kunden", icon: Users },
-  { title: "Objekte", url: "/objekte", icon: Building2 },
+  { title: "Kunden & Objekte", url: "/kunden", icon: Users },
   { title: "Bestellungen-Übersicht", url: "/bestellungen", icon: ClipboardList },
   { title: "Arbeitsverwaltung", url: "/bestellungen/management", icon: ListTodo },
   { title: "Liefertouren", url: "/liefertouren", icon: Truck },
