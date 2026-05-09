@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { ManagementHeader } from "@/components/management/ManagementHeader";
 import { ManagementFilterBar } from "@/components/management/ManagementFilterBar";
