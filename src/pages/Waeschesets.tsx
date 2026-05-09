@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Plus, Layers } from "lucide-react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -144,7 +144,7 @@ export default function Waeschesets() {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-4 md:p-6 overflow-x-hidden min-w-0">
             <div className="text-center text-destructive">
               Fehler beim Laden der Daten
             </div>
@@ -158,8 +158,12 @@ export default function Waeschesets() {
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <main className="flex-1 overflow-auto">
-          <div className="container py-6">
+        <main className="flex-1 overflow-x-hidden min-w-0">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:hidden">
+            <SidebarTrigger className="h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
+            <h1 className="text-base font-semibold">Wäschesets</h1>
+          </header>
+          <div className="container py-4 md:py-6">
             {/* Header */}
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">

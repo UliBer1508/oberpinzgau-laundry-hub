@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { ManagementHeader } from "@/components/management/ManagementHeader";
 import { ManagementFilterBar } from "@/components/management/ManagementFilterBar";
@@ -95,13 +95,14 @@ export default function BestellungsManagement() {
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <SidebarInset className="flex-1">
-          <header className="flex h-14 items-center gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6">
+          <header className="flex h-14 items-center gap-3 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6">
+            <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
             <div className="flex-1">
               <h1 className="text-lg font-semibold">Arbeitsverwaltung</h1>
             </div>
           </header>
 
-          <main className="flex-1 p-6 space-y-4">
+          <main className="flex-1 p-4 md:p-6 space-y-4 overflow-x-hidden min-w-0">
             <ManagementHeader
               selectedDate={selectedDate}
               onDateChange={setSelectedDate}
