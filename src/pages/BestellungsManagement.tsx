@@ -15,6 +15,7 @@ export default function BestellungsManagement() {
   const [waeschekraftFilter, setWaeschekraftFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   const { data: bestellungen, isLoading } = useManagementBestellungen();
 
