@@ -396,7 +396,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Abholdatum */}
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Popover open={isAbholOpen} onOpenChange={setIsAbholOpen}>
           <PopoverTrigger asChild>
             <Button
