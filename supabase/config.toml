@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.external-order-import]
 verify_jwt = false
+
+[functions.get-external-api-key]
+verify_jwt = false
