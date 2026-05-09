@@ -1,49 +1,50 @@
 ## Ziel
 
-Auf `/bestellungen/management` die aktuellen "Gesamt" / "Offen" Info-Badges durch das gleiche **klickbare StatCard-Widget-Layout** ersetzen, das schon in Liefertouren und Kunden verwendet wird (2 Spalten mobil, 4 Spalten ab `lg`).
+Die "Schnellaktionen"-Karte auf dem Dashboard durch **4 größere, klickbare Widget-Karten** im 2×2-Raster (mobil 2 Spalten, Desktop bis zu 4 Spalten) ersetzen. Jede Karte führt direkt in den entsprechenden Erstellungs-Flow.
+
+## Widgets
+
+| Widget | Icon | Variant | Zielroute | Aktion auf Zielseite |
+|---|---|---|---|---|
+| Neue Bestellung | `ShoppingCart` | primary | `/bestellungen?neu=1` | Bestellungs-Formular-Dialog öffnet automatisch |
+| Arbeitsauftrag erstellen | `ClipboardList` | warning | `/bestellungen/management` | Direkt in die Arbeitsverwaltung |
+| Tour planen | `Truck` | info | `/liefertouren?neu=1` | Tour-Erstellungs-Dialog öffnet automatisch |
+| Rechnung erstellen | `Receipt` | success | `/rechnungen?neu=1` | Rechnungs-Erstellungs-Flow öffnet automatisch |
+
+Klick auf das gesamte Widget triggert die Navigation. Größeres Format mit Icon oben/links, Titel groß darunter, optional kurze Sub-Beschreibung.
 
 ## Änderungen
 
-### 1. Neue Komponente `src/components/management/ManagementStats.tsx`
-Analog zu `LiefertourenStats.tsx`, basierend auf `StatCard` aus `@/components/dashboard/StatCard`.
+### 1. Neue Komponente `src/components/dashboard/QuickActionCard.tsx`
+- Klickbare Card mit Icon (groß, in farbigem Badge-Kreis), Titel und Beschreibung
+- Variants: `primary | info | warning | success`
+- Hover-Effekt (Schatten + leichtes Skalieren), Cursor pointer
+- `min-h-[120px]` für deutlich größere Touch-Fläche als bisher
 
-Vier Widgets, jeweils klickbar (toggelt `statusFilter`):
+### 2. `src/components/dashboard/QuickActionsUpdated.tsx` (umschreiben)
+- 2×2 Grid: `grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4`
+- Vier `QuickActionCard`-Einträge gemäß Tabelle oben
+- CardHeader "Schnellaktionen" bleibt
+- Card-Wrapper bleibt, damit Layout in `Index.tsx` konsistent ist
 
-| Widget | Quelle | Variant | Filter |
-|---|---|---|---|
-| Gesamt | `bestellungen.length` | primary | `statusFilter = "all"` |
-| Neu | `status === "neu"` | info | `statusFilter = "neu"` |
-| In Bearbeitung | `status === "in_bearbeitung"` | warning | `statusFilter = "in_bearbeitung"` |
-| Ausgeliefert | `status === "ausgeliefert"` | success | `statusFilter = "ausgeliefert"` |
+### 3. Deep-Link-Unterstützung auf den Zielseiten
 
-Klick auf eine bereits aktive Karte setzt den Filter zurück auf `"all"` (gleiches Verhalten wie in Liefertouren/Kunden).
+**`src/pages/Bestellungen.tsx`**
+- `useSearchParams` lesen
+- `useEffect`: wenn `?neu=1`, `handleAddBestellung()` aufrufen und Param entfernen
 
-Props:
-```ts
-{
-  bestellungen: ManagementBestellung[];
-  statusFilter: string;
-  onStatusChange: (s: string) => void;
-}
-```
+**`src/pages/Liefertouren.tsx`**
+- `useSearchParams` lesen
+- `useEffect`: wenn `?neu=1`, vorhandenen "Tour erstellen"-Dialog öffnen (State auf `true`) und Param entfernen
 
-### 2. `src/pages/BestellungsManagement.tsx`
-- Import von `ManagementStats`
-- Direkt unter `<ManagementHeader />` einfügen:
-  ```tsx
-  <ManagementStats
-    bestellungen={filteredBestellungen}
-    statusFilter={statusFilter}
-    onStatusChange={setStatusFilter}
-  />
-  ```
+**`src/pages/Rechnungen.tsx`**
+- `useSearchParams` lesen
+- `useEffect`: wenn `?neu=1`, vorhandenen Rechnungs-Erstellungs-Dialog/Flow öffnen und Param entfernen
+- Falls aktuell kein expliziter "Rechnung erstellen"-Dialog existiert: Auto-Fokus auf die bestehende Erstellungs-Aktion bzw. Hinweis-Toast
 
-### 3. `src/components/management/ManagementHeader.tsx`
-- Die beiden Info-Boxen "Gesamt:" und "Offen:" entfernen (werden durch die neuen Widgets ersetzt)
-- `totalCount` / `openCount` Props entfernen
-- Aufrufer in `BestellungsManagement.tsx` entsprechend anpassen
-- Datums-Navigation und Heute/7 Tage/Alle bleiben unverändert
+**Arbeitsauftrag-Widget** benötigt keinen Deep-Link — `/bestellungen/management` ist die Arbeitsauftragsseite selbst.
 
-## Out of scope
-- Keine Änderungen an Filter-Bar, Tabelle, Daten-Hook oder Business-Logik
-- Keine Style-Änderungen am bestehenden StatCard-Komponent
+## Out of Scope
+- Keine Änderungen an der Daten-Schicht oder den Erstellungs-Mutations
+- Keine Anpassung der StatCards oben auf dem Dashboard
+- Keine neuen Routen
