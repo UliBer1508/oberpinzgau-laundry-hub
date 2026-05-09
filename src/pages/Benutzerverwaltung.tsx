@@ -278,6 +278,8 @@ export default function Benutzerverwaltung() {
                 </Table>
               )}
             </div>
+              </TabsContent>
+            </Tabs>
           </main>
         </SidebarInset>
       </div>
