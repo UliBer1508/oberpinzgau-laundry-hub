@@ -14,6 +14,17 @@ export interface DashboardStats {
     aktiv: number;
     heute: number;
   };
+  kunden: {
+    total: number;
+    aktiv: number;
+  };
+  arbeitsauftraege: {
+    offen: number;
+  };
+  rechnungen: {
+    total: number;
+    offen: number;
+  };
 }
 
 export interface DashboardBestellung {
