@@ -48,6 +48,7 @@ const managementNavItems = [
   { title: "Wäschesets", url: "/waeschesets", icon: Layers, resource: "waeschesets" },
   { title: "Rechnungseinstellungen", url: "/rechnungseinstellungen", icon: FileText, resource: "rechnungen" },
   { title: "Benutzerverwaltung", url: "/benutzer", icon: Settings, resource: "benutzer" },
+  { title: "API & Integrationen", url: "/integrationen", icon: Plug, resource: "benutzer" },
 ];
 
 export function AppSidebar() {
