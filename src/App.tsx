@@ -45,6 +45,7 @@ const App = () => (
             <Route path="/rechnungseinstellungen" element={<RequireAccess resource="rechnungen"><Rechnungseinstellungen /></RequireAccess>} />
             <Route path="/waeschekraefte" element={<RequireAccess resource="waeschekraefte"><Waeschekraefte /></RequireAccess>} />
             <Route path="/benutzer" element={<RequireAccess resource="benutzer"><Benutzerverwaltung /></RequireAccess>} />
+            <Route path="/integrationen" element={<RequireAccess resource="benutzer"><Integrationen /></RequireAccess>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
