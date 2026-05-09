@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Layers, Power, PowerOff } from "lucide-react";
+import { MoreHorizontal, Pencil, Layers, Power, PowerOff, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Objekt } from "@/hooks/useObjekte";
 
