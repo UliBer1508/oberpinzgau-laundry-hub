@@ -43,122 +43,166 @@ const typVariants: Record<string, "default" | "secondary" | "outline" | "destruc
 export function ObjekteTable({ objekte, onEdit, onManageSets, onToggleAktiv }: ObjekteTableProps) {
   const navigate = useNavigate();
 
-  return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[64px]"></TableHead>
-            <TableHead className="w-[100px]">Obj-Nr.</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Kunde</TableHead>
-            <TableHead className="hidden md:table-cell">Typ</TableHead>
-            <TableHead className="hidden sm:table-cell">Ort</TableHead>
-            <TableHead className="text-center">Status</TableHead>
-            <TableHead className="w-[60px]"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {objekte.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                Keine Objekte gefunden.
-              </TableCell>
-            </TableRow>
+  const renderActions = (objekt: Objekt, mobile = false) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={(e) => e.stopPropagation()}
+          className={mobile ? "" : "opacity-0 group-hover:opacity-100 transition-opacity"}
+        >
+          <MoreHorizontal className="h-4 w-4" />
+          <span className="sr-only">Aktionen</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onClick={() => onEdit(objekt)}>
+          <Pencil className="mr-2 h-4 w-4" />
+          Bearbeiten
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onManageSets(objekt)}>
+          <Layers className="mr-2 h-4 w-4" />
+          Wäschesets verwalten
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => onToggleAktiv(objekt)}>
+          {objekt.aktiv ? (
+            <><PowerOff className="mr-2 h-4 w-4" />Deaktivieren</>
           ) : (
-            objekte.map((objekt) => (
-              <TableRow key={objekt.id} className="group">
-                <TableCell>
-                  <div className="h-12 w-12 rounded-md border bg-muted flex items-center justify-center overflow-hidden">
-                    {objekt.bild_url ? (
-                      <img src={objekt.bild_url} alt={objekt.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <Building2 className="h-5 w-5 text-muted-foreground" />
-                    )}
+            <><Power className="mr-2 h-4 w-4" />Aktivieren</>
+          )}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  return (
+    <>
+      {/* Mobile */}
+      <div className="md:hidden space-y-3">
+        {objekte.length === 0 ? (
+          <div className="rounded-md border p-6 text-center text-muted-foreground">Keine Objekte gefunden.</div>
+        ) : (
+          objekte.map((objekt) => (
+            <div
+              key={objekt.id}
+              role="button"
+              onClick={() => onEdit(objekt)}
+              className="rounded-lg border bg-card p-4 shadow-sm active:bg-muted/50 transition-colors flex gap-3"
+            >
+              <div className="h-14 w-14 shrink-0 rounded-md border bg-muted flex items-center justify-center overflow-hidden">
+                {objekt.bild_url ? (
+                  <img src={objekt.bild_url} alt={objekt.name} className="h-full w-full object-cover" />
+                ) : (
+                  <Building2 className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="font-semibold truncate">{objekt.name}</div>
+                    <div className="font-mono text-xs text-muted-foreground">{objekt.objektnummer}</div>
                   </div>
-                </TableCell>
-                <TableCell className="font-mono text-sm">{objekt.objektnummer}</TableCell>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{objekt.name}</span>
-                    {objekt.ansprechpartner && (
-                      <span className="text-sm text-muted-foreground">
-                        {objekt.ansprechpartner}
-                      </span>
-                    )}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Badge variant={objekt.aktiv ? "default" : "secondary"} className="text-xs">
+                      {objekt.aktiv ? "Aktiv" : "Inaktiv"}
+                    </Badge>
+                    {renderActions(objekt, true)}
                   </div>
-                </TableCell>
-                <TableCell>
-                  <button
-                    onClick={() => navigate(`/kunden?search=${objekt.kundeName}`)}
-                    className="text-left hover:underline"
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-medium">{objekt.kundeName}</span>
-                      {objekt.kundeFirma && (
-                        <span className="text-sm text-muted-foreground">
-                          {objekt.kundeFirma}
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <Badge variant={typVariants[objekt.typ]}>
+                </div>
+                <div className="mt-1 text-sm text-muted-foreground truncate">{objekt.kundeName}</div>
+                <div className="mt-1 flex items-center justify-between gap-2 text-xs">
+                  <Badge variant={typVariants[objekt.typ]} className="text-xs">
                     {typLabels[objekt.typ] || objekt.typ}
                   </Badge>
-                </TableCell>
-                <TableCell className="hidden sm:table-cell text-muted-foreground">
-                  {objekt.ort ? `${objekt.plz} ${objekt.ort}` : "-"}
-                </TableCell>
-                <TableCell className="text-center">
-                  <Badge variant={objekt.aktiv ? "default" : "secondary"}>
-                    {objekt.aktiv ? "Aktiv" : "Inaktiv"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Aktionen</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit(objekt)}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Bearbeiten
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onManageSets(objekt)}>
-                        <Layers className="mr-2 h-4 w-4" />
-                        Wäschesets verwalten
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => onToggleAktiv(objekt)}>
-                        {objekt.aktiv ? (
-                          <>
-                            <PowerOff className="mr-2 h-4 w-4" />
-                            Deaktivieren
-                          </>
-                        ) : (
-                          <>
-                            <Power className="mr-2 h-4 w-4" />
-                            Aktivieren
-                          </>
-                        )}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <span className="text-muted-foreground truncate">
+                    {objekt.ort ? `${objekt.plz ?? ""} ${objekt.ort}` : ""}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop */}
+      <div className="hidden md:block overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[64px]"></TableHead>
+              <TableHead className="w-[100px]">Obj-Nr.</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Kunde</TableHead>
+              <TableHead className="hidden md:table-cell">Typ</TableHead>
+              <TableHead className="hidden sm:table-cell">Ort</TableHead>
+              <TableHead className="text-center">Status</TableHead>
+              <TableHead className="w-[60px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {objekte.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                  Keine Objekte gefunden.
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
+            ) : (
+              objekte.map((objekt) => (
+                <TableRow key={objekt.id} className="group">
+                  <TableCell>
+                    <div className="h-12 w-12 rounded-md border bg-muted flex items-center justify-center overflow-hidden">
+                      {objekt.bild_url ? (
+                        <img src={objekt.bild_url} alt={objekt.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <Building2 className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-mono text-sm">{objekt.objektnummer}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{objekt.name}</span>
+                      {objekt.ansprechpartner && (
+                        <span className="text-sm text-muted-foreground">{objekt.ansprechpartner}</span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <button
+                      onClick={() => navigate(`/kunden?search=${objekt.kundeName}`)}
+                      className="text-left hover:underline"
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-medium">{objekt.kundeName}</span>
+                        {objekt.kundeFirma && (
+                          <span className="text-sm text-muted-foreground">{objekt.kundeFirma}</span>
+                        )}
+                      </div>
+                    </button>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <Badge variant={typVariants[objekt.typ]}>
+                      {typLabels[objekt.typ] || objekt.typ}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell text-muted-foreground">
+                    {objekt.ort ? `${objekt.plz} ${objekt.ort}` : "-"}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant={objekt.aktiv ? "default" : "secondary"}>
+                      {objekt.aktiv ? "Aktiv" : "Inaktiv"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{renderActions(objekt)}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
 }
+

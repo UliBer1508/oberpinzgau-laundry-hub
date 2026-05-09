@@ -118,68 +118,105 @@ export function RoutenvorlagenTab() {
           </Button>
         </div>
       ) : (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Beschreibung</TableHead>
-                <TableHead className="text-center">Kunden</TableHead>
-                <TableHead className="text-center">Status</TableHead>
-                <TableHead className="text-right">Aktionen</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {vorlagen.map((vorlage) => (
-                <TableRow key={vorlage.id}>
-                  <TableCell className="font-medium">{vorlage.name}</TableCell>
-                  <TableCell className="text-muted-foreground max-w-xs truncate">
-                    {vorlage.beschreibung || "-"}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant="secondary">
-                      {vorlage.kundenCount} Kunden
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant={vorlage.aktiv ? "default" : "outline"}>
-                      {vorlage.aktiv ? "Aktiv" : "Inaktiv"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleManageKunden(vorlage)}
-                        title="Kunden verwalten"
-                      >
-                        <Users className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(vorlage)}
-                        title="Bearbeiten"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteId(vorlage.id)}
-                        className="text-destructive hover:text-destructive"
-                        title="Löschen"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+        <>
+          {/* Mobile */}
+          <div className="md:hidden space-y-3">
+            {vorlagen.map((vorlage) => (
+              <div
+                key={vorlage.id}
+                role="button"
+                onClick={() => handleEdit(vorlage)}
+                className="rounded-lg border bg-card p-4 shadow-sm active:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="font-semibold truncate">{vorlage.name}</div>
+                    {vorlage.beschreibung && (
+                      <div className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
+                        {vorlage.beschreibung}
+                      </div>
+                    )}
+                  </div>
+                  <Badge variant={vorlage.aktiv ? "default" : "outline"} className="text-xs shrink-0">
+                    {vorlage.aktiv ? "Aktiv" : "Inaktiv"}
+                  </Badge>
+                </div>
+                <div className="mt-3 flex items-center justify-between">
+                  <Badge variant="secondary">{vorlage.kundenCount} Kunden</Badge>
+                  <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" onClick={() => handleManageKunden(vorlage)} title="Kunden verwalten">
+                      <Users className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(vorlage)} title="Bearbeiten">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setDeleteId(vorlage.id)}
+                      className="text-destructive hover:text-destructive"
+                      title="Löschen"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop */}
+          <div className="hidden md:block rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Beschreibung</TableHead>
+                  <TableHead className="text-center">Kunden</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                  <TableHead className="text-right">Aktionen</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {vorlagen.map((vorlage) => (
+                  <TableRow key={vorlage.id}>
+                    <TableCell className="font-medium">{vorlage.name}</TableCell>
+                    <TableCell className="text-muted-foreground max-w-xs truncate">
+                      {vorlage.beschreibung || "-"}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="secondary">{vorlage.kundenCount} Kunden</Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant={vorlage.aktiv ? "default" : "outline"}>
+                        {vorlage.aktiv ? "Aktiv" : "Inaktiv"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => handleManageKunden(vorlage)} title="Kunden verwalten">
+                          <Users className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(vorlage)} title="Bearbeiten">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeleteId(vorlage.id)}
+                          className="text-destructive hover:text-destructive"
+                          title="Löschen"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
 
       <RoutenvorlageFormDialog

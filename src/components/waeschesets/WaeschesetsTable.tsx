@@ -43,72 +43,101 @@ export function WaeschesetsTable({
     );
   }
 
+  const renderActions = (set: Waescheset) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onClick={() => onManageArtikel(set)}>
+          <Package className="mr-2 h-4 w-4" />Artikel verwalten
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onEdit(set)}>
+          <Pencil className="mr-2 h-4 w-4" />Bearbeiten
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onToggleAktiv(set)}>
+          <Power className="mr-2 h-4 w-4" />
+          {set.aktiv ? "Deaktivieren" : "Aktivieren"}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
-    <div className="rounded-lg border bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Kunde</TableHead>
-            <TableHead>Objekt</TableHead>
-            <TableHead>Beschreibung</TableHead>
-            <TableHead className="text-center">Artikel</TableHead>
-            <TableHead className="text-right">Preis</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="w-[80px]">Aktionen</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sets.map((set) => (
-            <TableRow key={set.id}>
-              <TableCell className="font-medium">{set.name}</TableCell>
-              <TableCell>
-                <span className="text-sm">{set.kundeName}</span>
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline">{set.objektName}</Badge>
-              </TableCell>
-              <TableCell className="max-w-[200px] truncate text-muted-foreground">
-                {set.beschreibung || "-"}
-              </TableCell>
-              <TableCell className="text-center">
-                <Badge variant="secondary">{set.artikelCount}</Badge>
-              </TableCell>
-              <TableCell className="text-right font-medium">
-                {formatPreis(set.gesamtpreis)}
-              </TableCell>
-              <TableCell>
-                <Badge variant={set.aktiv ? "default" : "secondary"}>
+    <>
+      {/* Mobile */}
+      <div className="md:hidden space-y-3">
+        {sets.map((set) => (
+          <div
+            key={set.id}
+            role="button"
+            onClick={() => onEdit(set)}
+            className="rounded-lg border bg-card p-4 shadow-sm active:bg-muted/50 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-semibold truncate">{set.name}</div>
+                <div className="text-sm text-muted-foreground truncate">{set.kundeName}</div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Badge variant={set.aktiv ? "default" : "secondary"} className="text-xs">
                   {set.aktiv ? "Aktiv" : "Inaktiv"}
                 </Badge>
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onManageArtikel(set)}>
-                      <Package className="mr-2 h-4 w-4" />
-                      Artikel verwalten
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onEdit(set)}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Bearbeiten
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onToggleAktiv(set)}>
-                      <Power className="mr-2 h-4 w-4" />
-                      {set.aktiv ? "Deaktivieren" : "Aktivieren"}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+                {renderActions(set)}
+              </div>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+              <Badge variant="outline">{set.objektName}</Badge>
+              <Badge variant="secondary">{set.artikelCount} Artikel</Badge>
+              <span className="ml-auto font-medium">{formatPreis(set.gesamtpreis)}</span>
+            </div>
+            {set.beschreibung && (
+              <div className="mt-2 text-xs text-muted-foreground line-clamp-2">{set.beschreibung}</div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop */}
+      <div className="hidden md:block rounded-lg border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Kunde</TableHead>
+              <TableHead>Objekt</TableHead>
+              <TableHead>Beschreibung</TableHead>
+              <TableHead className="text-center">Artikel</TableHead>
+              <TableHead className="text-right">Preis</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="w-[80px]">Aktionen</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {sets.map((set) => (
+              <TableRow key={set.id}>
+                <TableCell className="font-medium">{set.name}</TableCell>
+                <TableCell><span className="text-sm">{set.kundeName}</span></TableCell>
+                <TableCell><Badge variant="outline">{set.objektName}</Badge></TableCell>
+                <TableCell className="max-w-[200px] truncate text-muted-foreground">
+                  {set.beschreibung || "-"}
+                </TableCell>
+                <TableCell className="text-center"><Badge variant="secondary">{set.artikelCount}</Badge></TableCell>
+                <TableCell className="text-right font-medium">{formatPreis(set.gesamtpreis)}</TableCell>
+                <TableCell>
+                  <Badge variant={set.aktiv ? "default" : "secondary"}>
+                    {set.aktiv ? "Aktiv" : "Inaktiv"}
+                  </Badge>
+                </TableCell>
+                <TableCell>{renderActions(set)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
 }
+
