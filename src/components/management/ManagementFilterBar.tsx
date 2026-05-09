@@ -33,57 +33,59 @@ export function ManagementFilterBar({
   const { data: waeschekraefte } = useWaeschekraefteForSelect();
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3">
-      <div className="relative flex-1 min-w-[200px]">
+    <div className="flex flex-col gap-2 rounded-lg border bg-card p-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+      <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Suche nach Bestellnummer, Kunde, Objekt..."
+          placeholder="Suche nach Bestellnr, Kunde, Objekt..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-9"
         />
       </div>
 
-      <Select value={statusFilter} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Alle Status</SelectItem>
-          <SelectItem value="neu">Neu</SelectItem>
-          <SelectItem value="in_bearbeitung">In Bearbeitung</SelectItem>
-          <SelectItem value="ausgeliefert">Ausgeliefert</SelectItem>
-          <SelectItem value="abgeholt">Abgeholt</SelectItem>
-          <SelectItem value="abgeschlossen">Abgeschlossen</SelectItem>
-          <SelectItem value="storniert">Storniert</SelectItem>
-        </SelectContent>
-      </Select>
+      <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-3">
+        <Select value={statusFilter} onValueChange={onStatusChange}>
+          <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Alle Status</SelectItem>
+            <SelectItem value="neu">Neu</SelectItem>
+            <SelectItem value="in_bearbeitung">In Bearbeitung</SelectItem>
+            <SelectItem value="ausgeliefert">Ausgeliefert</SelectItem>
+            <SelectItem value="abgeholt">Abgeholt</SelectItem>
+            <SelectItem value="abgeschlossen">Abgeschlossen</SelectItem>
+            <SelectItem value="storniert">Storniert</SelectItem>
+          </SelectContent>
+        </Select>
 
-      <Select value={waeschekraftFilter} onValueChange={onWaeschekraftChange}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Wäschekraft" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Alle Wäschekräfte</SelectItem>
-          {waeschekraefte?.map((wk) => (
-            <SelectItem key={wk.id} value={wk.id}>
-              {wk.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <Select value={waeschekraftFilter} onValueChange={onWaeschekraftChange}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Wäschekraft" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Alle Wäschekräfte</SelectItem>
+            {waeschekraefte?.map((wk) => (
+              <SelectItem key={wk.id} value={wk.id}>
+                {wk.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Select value={priorityFilter} onValueChange={onPriorityChange}>
-        <SelectTrigger className="w-[140px]">
-          <SelectValue placeholder="Priorität" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Alle</SelectItem>
-          <SelectItem value="2">🔴 Dringend</SelectItem>
-          <SelectItem value="1">🟡 Hoch</SelectItem>
-          <SelectItem value="0">⚪ Normal</SelectItem>
-        </SelectContent>
-      </Select>
+        <Select value={priorityFilter} onValueChange={onPriorityChange}>
+          <SelectTrigger className="w-full sm:w-[140px]">
+            <SelectValue placeholder="Priorität" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Alle</SelectItem>
+            <SelectItem value="2">🔴 Dringend</SelectItem>
+            <SelectItem value="1">🟡 Hoch</SelectItem>
+            <SelectItem value="0">⚪ Normal</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }
