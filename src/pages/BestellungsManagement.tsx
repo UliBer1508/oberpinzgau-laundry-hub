@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
-import { ManagementHeader } from "@/components/management/ManagementHeader";
+
 import { ManagementStats } from "@/components/management/ManagementStats";
 import { ManagementFilterBar } from "@/components/management/ManagementFilterBar";
 import { ManagementTable } from "@/components/management/ManagementTable";
@@ -122,13 +122,6 @@ export default function BestellungsManagement() {
           </header>
 
           <main className="flex-1 p-3 pb-24 md:p-6 md:pb-6 space-y-3 md:space-y-4 overflow-x-hidden min-w-0">
-            <ManagementHeader
-              selectedDate={selectedDate}
-              onDateChange={setSelectedDate}
-              dateRange={dateRange}
-              onDateRangeChange={setDateRange}
-            />
-
             <ManagementStats
               bestellungen={filteredBestellungen}
               statusFilter={statusFilter}
