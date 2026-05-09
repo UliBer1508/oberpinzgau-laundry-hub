@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/external/client";
+import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/external/types";
 
 export type Waescheartikel = Tables<"waescheartikel">;
 export type WaescheartikelInsert = TablesInsert<"waescheartikel">;

@@ -10,7 +10,7 @@ import { BestellungenTable } from "@/components/bestellungen/BestellungenTable";
 import { BestellungFormDialog, type BestellungFormData } from "@/components/bestellungen/BestellungFormDialog";
 import { BestellungPositionenDialog } from "@/components/bestellungen/BestellungPositionenDialog";
 import { BestellungDetailDialog } from "@/components/bestellungen/BestellungDetailDialog";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/external/client";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertDialog,
