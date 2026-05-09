@@ -125,7 +125,7 @@ export default function Waescheartikel() {
         <AppSidebar />
         <main className="flex-1 p-4 md:p-6 overflow-x-hidden min-w-0">
           <div className="flex items-center gap-3 mb-6">
-            <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
+            <SidebarTrigger className="hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
             <div className="flex-1">
               <h1 className="text-2xl font-bold">Wäscheartikel</h1>
               <p className="text-muted-foreground">

@@ -1,27 +1,38 @@
-## Mint-Hintergrund für die gesamte App
+Ziel: Auf dem Handy keinen Überlauf nach rechts mehr, und die wichtigsten Bereiche über eine feste Bottom-Navigation erreichbar machen (wie im Referenzbild). Die Sidebar bleibt auf Tablet/Desktop wie bisher.
 
-### Ziel
-Das aktuelle Blue/Gray-Design-System auf ein professionelles Mint-Theme umstellen.
+## Was geändert wird
 
-### Änderungen
+1. Neue Bottom-Navigation für Mobile
+   - Neue Komponente `MobileBottomNav` mit 5 festen Einträgen: Start, Objekte, Bestellen, Rechnungen, Sets.
+   - Fixiert am unteren Rand, volle Breite, mit Safe-Area-Padding für iPhones.
+   - Aktiver Eintrag wird im Mint-Akzent hervorgehoben (Pille hinter dem Icon, farbiger Text), inaktive grau – analog zum Referenzbild.
+   - Nur sichtbar < `md` Breakpoint (Mobile). Auf Tablet/Desktop bleibt die Sidebar.
 
-**1. `src/index.css` — Design-Token anpassen**
-- `--background`: Hellmint statt Hellgrau (HSL ca. 150–160, 30–40%, 95–97%)
-- `--primary`: Dunkles Mint/Teal statt Blau (HSL ca. 160–170, 70%, 35–40%)
-- `--accent`: Subtiler Mint-Ton statt Blau-Ton
-- `--sidebar-background`: Dunkles Mint/Slate statt Dunkelblau
-- `--sidebar-primary`, `--sidebar-accent`, `--sidebar-ring`: Passend zu Mint harmonisieren
-- Alle weiteren abgeleiteten Tokens (Secondary, Muted, Border, Input, Ring) auf Mint-Palette abstimmen
+2. Sidebar mobil ausblenden
+   - Auf Mobile wird die Sidebar inkl. Hamburger-Trigger im Header ausgeblendet, da Navigation jetzt über Bottom-Nav läuft.
+   - Sidebar-Overlay-Modus auf Mobile bleibt deaktiviert; ab `md` funktioniert die Sidebar wie gewohnt.
+   - Header zeigt auf Mobile nur noch Titel/Datum, ohne Sidebar-Toggle.
 
-**2. Kontrast & Lesbarkeit**
-- Sicherstellen, dass `--foreground` auf `--background` ausreichend Kontrast bietet
-- `--sidebar-foreground` und `--sidebar-accent-foreground` prüfen
+3. Layout-Padding für Bottom-Nav
+   - Haupt-Content (`main`) bekommt unten zusätzliches Padding (`pb-20`) auf Mobile, damit Inhalte nicht von der Bottom-Nav verdeckt werden.
+   - Wird zentral über das Layout aller betroffenen Seiten angewandt (Dashboard, Kunden, Objekte, Bestellungen, Bestellungs­management, Liefertouren, Rechnungen, Wäscheartikel, Wäschesets, Wäschekräfte).
 
-**3. Verifikation**
-- Screenshot der Objekte-Seite nach den Änderungen zur visuellen Prüfung
+4. Überlauf nach rechts beheben
+   - Dashboard-Bestellkarten: rechte Spalte (Datum + Pfeil) auf Mobile unterhalb statt daneben, lange Tags brechen sauber um.
+   - Tabs „Neu / In Bearbeitung / Versandbereit“ werden auf Mobile horizontal scrollbar, statt 3 Spalten zu erzwingen.
+   - Container und Cards bekommen durchgängig `min-w-0` und `max-w-full`, damit Inhalte nie über den Viewport hinauslaufen.
+   - Padding-Reduktion in `StatCard` (`p-6` → `p-4 sm:p-6`) und Karten generell auf Mobile.
 
-### Technische Details
-- Keine neuen Dependencies nötig
-- Reine CSS-Variablen-Änderung in `index.css`
-- Tailwind-Klassen bleiben unverändert (verwenden die Tokens automatisch)
-- Keine Dateien außer `src/index.css` werden angefasst
+5. Mobile-Verifikation
+   - Nach dem Umbau bei 390px Breite die Hauptseiten prüfen: keine horizontale Scrollbar, Bottom-Nav vorhanden, Inhalte komplett sichtbar.
+
+## Bottom-Nav Einträge
+
+Vorgeschlagene 5 Tabs (passen zur täglichen Nutzung am Handy):
+
+```text
+[ Start ]  [ Objekte ]  [ Bestellen ]  [ Rechnungen ]  [ Sets ]
+   /         /objekte     /bestellungen   /rechnungen    /waeschesets
+```
+
+Falls du andere 5 Einträge bevorzugst (z. B. „Touren“ statt „Sets“ oder „Arbeit“ statt „Objekte“), sag kurz Bescheid – sonst gehe ich mit obiger Auswahl live.

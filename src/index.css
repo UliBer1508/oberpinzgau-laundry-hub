@@ -116,6 +116,13 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
+
+  /* Reserve space for the mobile bottom navigation */
+  @media (max-width: 767px) {
+    body {
+      padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+    }
+  }
 }
 
 /* Custom scrollbar for professional look */
