@@ -1,19 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, addDays, subDays } from "date-fns";
 import { de } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 
 interface ManagementHeaderProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   dateRange: "today" | "week" | "all";
   onDateRangeChange: (range: "today" | "week" | "all") => void;
-  totalCount: number;
-  openCount: number;
 }
 
 export function ManagementHeader({
@@ -21,8 +17,6 @@ export function ManagementHeader({
   onDateChange,
   dateRange,
   onDateRangeChange,
-  totalCount,
-  openCount,
 }: ManagementHeaderProps) {
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -97,23 +91,6 @@ export function ManagementHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-1.5">
-          <span className="text-xs sm:text-sm text-muted-foreground">Gesamt:</span>
-          <Badge variant="secondary" className="font-mono">
-            {totalCount}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-1.5">
-          <span className="text-xs sm:text-sm text-muted-foreground">Offen:</span>
-          <Badge variant={openCount > 0 ? "default" : "secondary"} className={cn(
-            "font-mono",
-            openCount > 0 && "bg-amber-500 hover:bg-amber-600"
-          )}>
-            {openCount}
-          </Badge>
-        </div>
-      </div>
     </div>
   );
 }

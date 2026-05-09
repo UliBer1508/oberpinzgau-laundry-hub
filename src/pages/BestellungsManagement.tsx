@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { ManagementHeader } from "@/components/management/ManagementHeader";
+import { ManagementStats } from "@/components/management/ManagementStats";
 import { ManagementFilterBar } from "@/components/management/ManagementFilterBar";
 import { ManagementTable } from "@/components/management/ManagementTable";
 import { BestellungDetailDialog } from "@/components/bestellungen/BestellungDetailDialog";
@@ -126,8 +127,12 @@ export default function BestellungsManagement() {
               onDateChange={setSelectedDate}
               dateRange={dateRange}
               onDateRangeChange={setDateRange}
-              totalCount={filteredBestellungen.length}
-              openCount={filteredBestellungen.filter(b => b.status === "neu" || b.status === "in_bearbeitung").length}
+            />
+
+            <ManagementStats
+              bestellungen={filteredBestellungen}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
             />
 
             <ManagementFilterBar
