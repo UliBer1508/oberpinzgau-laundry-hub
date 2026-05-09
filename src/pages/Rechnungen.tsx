@@ -174,7 +174,9 @@ export default function Rechnungen() {
               </div>
             </div>
             <Button
-              variant="secondary"
+              variant="outline"
+              size="sm"
+              className="gap-2"
               onClick={() => {
                 if (filteredRechnungen.length === 0) {
                   toast({
@@ -191,8 +193,8 @@ export default function Rechnungen() {
                 });
               }}
             >
-              <Download className="mr-2 h-4 w-4" />
-              Excel Export
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Excel-Export</span>
             </Button>
           </header>
 
