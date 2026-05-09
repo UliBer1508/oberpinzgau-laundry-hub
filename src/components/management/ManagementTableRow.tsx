@@ -272,9 +272,15 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
         </DropdownMenu>
       </TableCell>
 
-      {/* Bestellnummer */}
+      {/* Bestellnummer (klickbar zum Anzeigen/Bearbeiten) */}
       <TableCell className="font-mono font-medium">
-        {bestellung.bestellnummer}
+        <button
+          type="button"
+          onClick={() => onViewDetails?.(bestellung.id)}
+          className="text-left hover:text-primary hover:underline transition-colors"
+        >
+          {bestellung.bestellnummer}
+        </button>
       </TableCell>
 
       {/* Kunde */}
