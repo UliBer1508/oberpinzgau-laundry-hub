@@ -232,8 +232,9 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
     <TableRow
       ref={setNodeRef}
       style={style}
+      onClick={() => onViewDetails?.(bestellung.id)}
       className={cn(
-        "group transition-colors",
+        "group transition-colors cursor-pointer hover:bg-muted/40",
         statusRowColors[status] || "",
         isDragging && "opacity-50 bg-muted",
         isSelected && "bg-primary/5 border-l-2 border-l-primary"
