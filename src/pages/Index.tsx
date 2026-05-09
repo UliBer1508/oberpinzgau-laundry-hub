@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { QuickActionsUpdated } from "@/components/dashboard/QuickActionsUpdated";
 import { useDashboardStats } from "@/hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
-import { Package, Users, ListTodo, Truck, FileText, ChevronDown } from "lucide-react";
+import { Package, Users, ListTodo, Truck, FileText, ChevronDown, Settings } from "lucide-react";
 
 const Index = () => {
   const today = new Date().toLocaleDateString("de-AT", {
