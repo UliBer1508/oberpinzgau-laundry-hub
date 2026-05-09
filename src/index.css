@@ -48,16 +48,16 @@
 
     --radius: 0.5rem;
 
-    /* Sidebar - Darker Mint */
-    --sidebar-background: 168 45% 22%;
-    --sidebar-foreground: 160 25% 92%;
-    --sidebar-primary: 158 65% 55%;
+    /* Sidebar & Header - Lighter Mint */
+    --sidebar-background: 162 38% 32%;
+    --sidebar-foreground: 160 30% 95%;
+    --sidebar-primary: 158 65% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 168 40% 30%;
-    --sidebar-accent-foreground: 160 30% 96%;
-    --sidebar-border: 168 35% 30%;
-    --sidebar-ring: 158 65% 55%;
-    --sidebar-muted: 165 18% 70%;
+    --sidebar-accent: 162 35% 40%;
+    --sidebar-accent-foreground: 160 35% 97%;
+    --sidebar-border: 162 30% 40%;
+    --sidebar-ring: 158 65% 60%;
+    --sidebar-muted: 160 20% 78%;
   }
 
   .dark {
