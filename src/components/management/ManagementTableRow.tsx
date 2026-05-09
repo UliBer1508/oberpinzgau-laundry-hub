@@ -24,7 +24,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { GripVertical, CalendarIcon, Clock } from "lucide-react";
+import { GripVertical, CalendarIcon, Clock, Eye } from "lucide-react";
 import { format, isBefore, addHours, isWithinInterval } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -35,6 +35,7 @@ import { toast } from "sonner";
 interface ManagementTableRowProps {
   bestellung: ManagementBestellung;
   isSelected: boolean;
+  onViewDetails?: (id: string) => void;
 }
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive"; className?: string }> = {
@@ -61,7 +62,7 @@ const priorityConfig: Record<number, { icon: string; color: string }> = {
   2: { icon: "🔴", color: "text-red-500" },
 };
 
-export function ManagementTableRow({ bestellung, isSelected }: ManagementTableRowProps) {
+export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: ManagementTableRowProps) {
   // Deadline state
   const [deadlineDate, setDeadlineDate] = useState<Date | undefined>(
     bestellung.bearbeitung_deadline ? new Date(bestellung.bearbeitung_deadline) : undefined
@@ -271,9 +272,15 @@ export function ManagementTableRow({ bestellung, isSelected }: ManagementTableRo
         </DropdownMenu>
       </TableCell>
 
-      {/* Bestellnummer */}
+      {/* Bestellnummer (klickbar zum Anzeigen/Bearbeiten) */}
       <TableCell className="font-mono font-medium">
-        {bestellung.bestellnummer}
+        <button
+          type="button"
+          onClick={() => onViewDetails?.(bestellung.id)}
+          className="text-left hover:text-primary hover:underline transition-colors"
+        >
+          {bestellung.bestellnummer}
+        </button>
       </TableCell>
 
       {/* Kunde */}
@@ -569,6 +576,19 @@ export function ManagementTableRow({ bestellung, isSelected }: ManagementTableRo
             ))
           )}
         </div>
+      </TableCell>
+
+      {/* Aktion: Anzeigen/Bearbeiten */}
+      <TableCell className="w-[60px] text-right">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => onViewDetails?.(bestellung.id)}
+          title="Anzeigen / Bearbeiten"
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
       </TableCell>
     </TableRow>
   );

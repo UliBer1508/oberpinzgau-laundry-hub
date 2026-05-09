@@ -21,9 +21,10 @@ import { toast } from "sonner";
 
 interface ManagementTableProps {
   bestellungen: ManagementBestellung[];
+  onViewDetails?: (id: string) => void;
 }
 
-export function ManagementTable({ bestellungen }: ManagementTableProps) {
+export function ManagementTable({ bestellungen, onViewDetails }: ManagementTableProps) {
   const [items, setItems] = useState(bestellungen);
   const updateReihenfolge = useUpdateReihenfolge();
 
@@ -100,6 +101,7 @@ export function ManagementTable({ bestellungen }: ManagementTableProps) {
               <TableHead className="w-[130px]">Bis</TableHead>
               <TableHead className="w-[160px]">Wäschekraft</TableHead>
               <TableHead className="min-w-[180px]">Artikel</TableHead>
+              <TableHead className="w-[60px] text-right">Aktion</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -112,6 +114,7 @@ export function ManagementTable({ bestellungen }: ManagementTableProps) {
                   key={bestellung.id}
                   bestellung={bestellung}
                   isSelected={false}
+                  onViewDetails={onViewDetails}
                 />
               ))}
             </SortableContext>
