@@ -232,15 +232,16 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
     <TableRow
       ref={setNodeRef}
       style={style}
+      onClick={() => onViewDetails?.(bestellung.id)}
       className={cn(
-        "group transition-colors",
+        "group transition-colors cursor-pointer hover:bg-muted/40",
         statusRowColors[status] || "",
         isDragging && "opacity-50 bg-muted",
         isSelected && "bg-primary/5 border-l-2 border-l-primary"
       )}
     >
       {/* Drag Handle */}
-      <TableCell className="w-[40px]">
+      <TableCell className="w-[40px]" onClick={(e) => e.stopPropagation()}>
         <button
           className="cursor-grab touch-none p-1 text-muted-foreground hover:text-foreground"
           {...attributes}
@@ -251,7 +252,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Priorität */}
-      <TableCell className="w-[50px]">
+      <TableCell className="w-[50px]" onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="text-lg hover:scale-110 transition-transform">
@@ -298,7 +299,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Status */}
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Select value={status} onValueChange={handleStatusChange}>
           <SelectTrigger className="h-8 text-sm border-0 p-0">
             <Badge 
@@ -319,7 +320,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Lieferdatum */}
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Popover open={isLieferOpen} onOpenChange={setIsLieferOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -395,7 +396,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Abholdatum */}
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Popover open={isAbholOpen} onOpenChange={setIsAbholOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -471,7 +472,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Bearbeitung Deadline */}
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Popover open={isDeadlineOpen} onOpenChange={setIsDeadlineOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -540,7 +541,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Wäschekraft */}
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Select
           value={bestellung.waeschekraft_id || "none"}
           onValueChange={handleWaeschekraftChange}
