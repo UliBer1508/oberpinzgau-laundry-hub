@@ -162,21 +162,22 @@ export default function Rechnungen() {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <main className="flex-1 p-6">
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+        <main className="flex-1 overflow-auto">
+          {/* Header */}
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6">
+            <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-3xl font-bold tracking-tight">Rechnungen</h1>
-                <p className="text-muted-foreground">
-                  Übersicht aller Rechnungen
-                </p>
+                <h1 className="text-xl font-semibold text-sidebar-foreground">Rechnungen</h1>
+                <p className="text-sm text-sidebar-foreground/80">Übersicht aller Rechnungen</p>
               </div>
-              <Button variant="outline" disabled>
-                <FileText className="mr-2 h-4 w-4" />
-                Export (bald verfügbar)
-              </Button>
             </div>
+            <Button variant="outline" disabled>
+              <FileText className="mr-2 h-4 w-4" />
+              Export (bald verfügbar)
+            </Button>
+          </header>
+
+          <div className="p-6 space-y-6">
 
             {/* Stats */}
             <RechnungenStats stats={stats} />
