@@ -62,7 +62,7 @@ const priorityConfig: Record<number, { icon: string; color: string }> = {
   2: { icon: "🔴", color: "text-red-500" },
 };
 
-export function ManagementTableRow({ bestellung, isSelected }: ManagementTableRowProps) {
+export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: ManagementTableRowProps) {
   // Deadline state
   const [deadlineDate, setDeadlineDate] = useState<Date | undefined>(
     bestellung.bearbeitung_deadline ? new Date(bestellung.bearbeitung_deadline) : undefined
