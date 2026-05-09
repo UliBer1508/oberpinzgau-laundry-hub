@@ -38,23 +38,23 @@ const Index = () => {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               <StatCard
                 title="Bestellungen"
-                value={stats?.bestellungen.total ?? 0}
-                subtitle={`${stats?.bestellungen.neu ?? 0} neu`}
+                value={stats?.bestellungen?.total ?? 0}
+                subtitle={`${stats?.bestellungen?.neu ?? 0} neu`}
                 icon={Package}
                 variant="info"
                 onClick={() => navigate("/bestellungen")}
               />
               <StatCard
                 title="Kunden & Objekte"
-                value={stats?.kunden.total ?? 0}
-                subtitle={`${stats?.kunden.aktiv ?? 0} aktiv`}
+                value={stats?.kunden?.total ?? 0}
+                subtitle={`${stats?.kunden?.aktiv ?? 0} aktiv`}
                 icon={Users}
                 variant="primary"
                 onClick={() => navigate("/kunden")}
               />
               <StatCard
                 title="Arbeitsaufträge"
-                value={stats?.arbeitsauftraege.offen ?? 0}
+                value={stats?.arbeitsauftraege?.offen ?? 0}
                 subtitle="offen"
                 icon={ListTodo}
                 variant="warning"
@@ -62,16 +62,16 @@ const Index = () => {
               />
               <StatCard
                 title="Liefertouren"
-                value={stats?.liefertouren.heute ?? 0}
-                subtitle={`heute · ${stats?.liefertouren.total ?? 0} gesamt`}
+                value={stats?.liefertouren?.heute ?? 0}
+                subtitle={`heute · ${stats?.liefertouren?.total ?? 0} gesamt`}
                 icon={Truck}
                 variant="success"
                 onClick={() => navigate("/liefertouren")}
               />
               <StatCard
                 title="Rechnungen"
-                value={stats?.rechnungen.offen ?? 0}
-                subtitle={`offen · ${stats?.rechnungen.total ?? 0} gesamt`}
+                value={stats?.rechnungen?.offen ?? 0}
+                subtitle={`offen · ${stats?.rechnungen?.total ?? 0} gesamt`}
                 icon={FileText}
                 variant="default"
                 onClick={() => navigate("/rechnungen")}
