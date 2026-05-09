@@ -47,6 +47,11 @@ export function ObjektFormDialog({
   isSaving,
   kunden,
 }: ObjektFormDialogProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [bildUrl, setBildUrl] = useState<string | null>(null);
+  const uploadBild = useUploadObjektBild();
+  const deleteBild = useDeleteObjektBild();
+
   const { register, handleSubmit, reset, setValue, watch } = useForm({
     defaultValues: {
       objektnummer: "",
