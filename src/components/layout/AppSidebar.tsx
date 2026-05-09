@@ -12,6 +12,7 @@ import {
   FileText,
   ClipboardList,
   ListTodo,
+  Plug,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
