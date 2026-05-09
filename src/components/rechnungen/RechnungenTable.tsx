@@ -123,7 +123,7 @@ export function RechnungenTable({
                     <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
