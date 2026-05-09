@@ -235,7 +235,38 @@ const Kunden = () => {
           </header>
 
           <div className="p-4 md:p-6 space-y-6">
-            <KundenStats {...stats} />
+            <KundenStats
+              {...stats}
+              activeFilter={
+                searchTerm.toLowerCase() === "hotel"
+                  ? "hotels"
+                  : searchTerm.toLowerCase() === "ferienwohnung"
+                  ? "apartments"
+                  : nurAktive && !searchTerm && bestellartFilter === "alle"
+                  ? "aktiv"
+                  : !searchTerm && bestellartFilter === "alle" && !nurAktive
+                  ? "alle"
+                  : "alle"
+              }
+              onResetFilters={() => {
+                setSearchTerm("");
+                setBestellartFilter("alle");
+                setNurAktive(false);
+              }}
+              onToggleAktiv={() => {
+                setSearchTerm("");
+                setBestellartFilter("alle");
+                setNurAktive(true);
+              }}
+              onFilterHotels={() => {
+                setSearchTerm("hotel");
+                setNurAktive(false);
+              }}
+              onFilterApartments={() => {
+                setSearchTerm("ferienwohnung");
+                setNurAktive(false);
+              }}
+            />
 
             <Card>
               <CardHeader className="pb-4">
