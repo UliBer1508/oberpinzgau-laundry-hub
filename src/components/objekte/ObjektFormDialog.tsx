@@ -211,6 +211,55 @@ export function ObjektFormDialog({
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label>Objektbild</Label>
+            <div className="flex items-center gap-4">
+              <div className="h-24 w-24 rounded-md border bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                {bildUrl ? (
+                  <img src={bildUrl} alt="Objekt" className="h-full w-full object-cover" />
+                ) : (
+                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadBild.isPending}
+                >
+                  {uploadBild.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="mr-2 h-4 w-4" />
+                  )}
+                  {bildUrl ? "Bild ersetzen" : "Bild hochladen"}
+                </Button>
+                {bildUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveBild}
+                    disabled={deleteBild.isPending}
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    Entfernen
+                  </Button>
+                )}
+                <p className="text-xs text-muted-foreground">JPG, PNG, WEBP · max. 5 MB</p>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-4">
             <h4 className="text-sm font-medium text-muted-foreground">Adresse</h4>
             <div className="grid gap-4 sm:grid-cols-3">
