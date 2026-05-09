@@ -577,6 +577,19 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
           )}
         </div>
       </TableCell>
+
+      {/* Aktion: Anzeigen/Bearbeiten */}
+      <TableCell className="w-[60px] text-right">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => onViewDetails?.(bestellung.id)}
+          title="Anzeigen / Bearbeiten"
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+      </TableCell>
     </TableRow>
   );
 }
