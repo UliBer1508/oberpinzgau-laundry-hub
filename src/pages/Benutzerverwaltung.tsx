@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { Plus, Trash2, Pencil, Search, Loader2, ShieldAlert } from "lucide-react";
+import { Plus, Trash2, Pencil, Search, Loader2, ShieldAlert, Users, ShieldCheck } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RollenTab } from "@/components/benutzer/RollenTab";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -137,6 +139,21 @@ export default function Benutzerverwaltung() {
           </header>
 
           <main className="flex-1 p-4 md:p-6 space-y-4">
+            <Tabs defaultValue="benutzer" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="benutzer" className="gap-2">
+                  <Users className="h-4 w-4" /> Benutzer
+                </TabsTrigger>
+                <TabsTrigger value="rollen" className="gap-2">
+                  <ShieldCheck className="h-4 w-4" /> Rollen & Rechte
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="rollen" className="space-y-4">
+                <RollenTab />
+              </TabsContent>
+
+              <TabsContent value="benutzer" className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -261,6 +278,8 @@ export default function Benutzerverwaltung() {
                 </Table>
               )}
             </div>
+              </TabsContent>
+            </Tabs>
           </main>
         </SidebarInset>
       </div>

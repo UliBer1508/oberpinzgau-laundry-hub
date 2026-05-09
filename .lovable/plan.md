@@ -1,58 +1,84 @@
 ## Ziel
 
-Die Sidebar verlinkt `/benutzer`, aber es existiert keine Seite – derzeit landet man auf "Not Found". Wir bauen eine vollständige Benutzerverwaltung, die nur Admins benutzen dürfen.
+In der Benutzerverwaltung (`/benutzer`) wird ein neuer Bereich ergänzt, in dem Admins **Rollen** und deren **Zugriffsrechte** auf die einzelnen Bereiche der App zentral definieren können. Bisher sind die Rollen (`admin`, `waeschekraft`, `kunde`) hartkodiert und Berechtigungen über die App verteilt — danach gibt es eine zentrale Stelle.
 
-## Datenbank
+## UI-Aufbau
 
-Bestehende Tabellen werden genutzt:
-- `profiles` (id, email, name, telefon)
-- `user_roles` (user_id, role) mit Enum `app_role`: `admin`, `waeschekraft`, `kunde`
+Die Seite `/benutzer` bekommt **Tabs**:
 
-Migration:
-- Security-Definer-Funktion `public.has_role(_user_id uuid, _role app_role)` anlegen (falls nicht vorhanden), um Rollen rekursionssicher zu prüfen.
-- RLS auf `profiles` und `user_roles` aktivieren mit Policies:
-  - Jeder eingeloggte User darf seine eigenen Daten lesen/aktualisieren.
-  - Admins (`has_role(auth.uid(), 'admin')`) dürfen alles lesen, ändern, löschen.
-- Die "Rollen definieren"-Anforderung wird so umgesetzt, dass die drei vorhandenen Rollen (`admin`, `waeschekraft`, `kunde`) als feste Auswahl angeboten werden. Neue Rollen-Werte würden eine Schema-Erweiterung des Enums erfordern – das machen wir nur, falls du tatsächlich zusätzliche Rollen möchtest.
+1. **Benutzer** (bisheriger Inhalt — Liste, anlegen, löschen, Rolle zuweisen)
+2. **Rollen & Rechte** (NEU)
 
-## Edge Functions (Service-Role-Zugriff nötig)
+### Tab „Rollen & Rechte"
 
-`auth.users` lässt sich nur mit Service-Role anlegen/löschen, deshalb zwei Functions:
+```text
+┌─ Rollen ──────────────┐  ┌─ Rechte für Rolle: [Admin ▾] ───────────────┐
+│ ● Admin               │  │ Bereich            Anzeigen  Bearbeiten     │
+│ ○ Wäschekraft         │  │ Dashboard            ☑          ☑           │
+│ ○ Kunde               │  │ Kunden               ☑          ☑           │
+│ ○ Fahrer  (custom)    │  │ Objekte              ☑          ☑           │
+│                       │  │ Wäscheartikel        ☑          ☑           │
+│ [+ Neue Rolle]        │  │ Wäsche-Sets          ☑          ☑           │
+│                       │  │ Bestellungen (CRUD)  ☑          ☑           │
+│                       │  │ Bestellungen Mgmt.   ☑          ☑           │
+│                       │  │ Liefertouren         ☑          ☑           │
+│                       │  │ Rechnungen           ☑          ☑           │
+│                       │  │ Wäschekräfte         ☑          ☑           │
+│                       │  │ Benutzerverwaltung   ☑          ☑           │
+│                       │  │ Einstellungen        ☑          ☑           │
+│                       │  │                                              │
+│                       │  │              [Abbrechen] [Speichern]         │
+└───────────────────────┘  └──────────────────────────────────────────────┘
+```
 
-1. `admin-create-user` – Input: email, password, name, role
-   - Prüft per JWT, dass Aufrufer Admin ist (`has_role`)
-   - Legt Auth-User mit `auth.admin.createUser({ email_confirm: true })` an
-   - Profil-Eintrag entsteht automatisch via bestehendem Trigger `handle_new_user`
-   - Fügt Eintrag in `user_roles` ein
+- Linke Spalte: Liste aller Rollen, „Neue Rolle" anlegen, Rolle umbenennen/löschen (Systemrollen `admin`, `waeschekraft`, `kunde` schreibgeschützt).
+- Rechte Spalte: Matrix aller App-Bereiche × Aktionen (`view`, `edit`). Änderungen werden gesammelt gespeichert.
 
-2. `admin-delete-user` – Input: user_id
-   - Prüft Admin-Rechte
-   - Löscht Auth-User; Profile/Rollen werden via FK-Cascade entfernt (FK ggf. in Migration ergänzen)
+### Tab „Benutzer"
 
-Rollen-Updates (Zuweisung/Wechsel) laufen ohne Edge Function direkt über die `user_roles`-Tabelle (Admin-RLS-Policy erlaubt das).
+- Im Rollen-Dropdown pro Benutzer erscheinen jetzt **alle definierten Rollen** (System + eigene), nicht mehr nur die Enum-Werte.
 
-## Frontend
+## Datenbank-Modell
 
-Neue Seite `src/pages/Benutzerverwaltung.tsx`, in `App.tsx` als Route `/benutzer` registriert.
+Neue Tabellen:
 
-Aufbau analog zu bestehenden Verwaltungs-Seiten (Sidebar + Header + Card-Layout):
+- **`roles`** — `id`, `key` (slug, z.B. `fahrer`), `label`, `is_system` (bool), `description`
+  - Vorbefüllt mit `admin`, `waeschekraft`, `kunde` (alle `is_system = true`).
+- **`role_permissions`** — `role_id`, `resource` (z.B. `kunden`, `bestellungen`, `rechnungen`, …), `action` (`view`, `edit`), unique zusammen.
+- **`user_roles`** wird erweitert: zusätzlich zu `role` (enum) bekommt es eine optionale `role_id` → `roles.id`. Migration befüllt `role_id` aus dem bestehenden Enum-Wert. Mittelfristig wird die Logik auf `role_id` umgestellt; das Enum bleibt für Abwärtskompatibilität bestehen.
 
-- Header mit Titel "Benutzerverwaltung" und Button "Neuer Benutzer".
-- Such-/Filterleiste (Name, E-Mail, Rolle).
-- Tabelle: Avatar/Initialen, Name, E-Mail, Rolle (Select-Badge), Erstellt am, Aktionen (Bearbeiten, Löschen).
-- Dialog `BenutzerFormDialog` zum Anlegen (E-Mail, Passwort, Name, Rolle) und Bearbeiten (Name, Telefon, Rolle).
-- Rollen-Wechsel direkt in der Zeile per Select – speichert sofort.
-- Lösch-Bestätigungs-Dialog.
+Zugriffsregeln:
+- Nur Admins dürfen `roles` und `role_permissions` lesen/ändern (RLS via `has_role(auth.uid(), 'admin')`).
+- Eingeloggte User dürfen ihre **eigenen** effektiven Rechte lesen (View `my_permissions`).
 
-Hooks: `useBenutzer`, `useCreateBenutzer`, `useUpdateBenutzer`, `useDeleteBenutzer`, `useUpdateRolle` (React Query).
+## Frontend-Integration
 
-## Zugriffsschutz
+- **Hook `usePermissions()`** liefert für den eingeloggten User ein Set `{resource}:{action}`.
+- **Helper `can(resource, action)`** für Inline-Checks (z.B. „Bearbeiten"-Button verstecken).
+- **`<RequireAccess resource="..." action="view">`** als Route-Wrapper in `App.tsx`. Fehlt das Recht → Redirect auf `/` mit Toast.
+- **AppSidebar** zeigt nur Menüpunkte, für die `view` erlaubt ist.
+- Während Dev-Modus (`RLS disabled`) kann ein „Dev-Bypass"-Flag gesetzt werden, damit niemand ausgesperrt wird.
 
-- `useCurrentUserRole`-Hook: liest aus `user_roles` für `auth.uid()`.
-- Auf `/benutzer`: Falls Rolle ≠ `admin`, Redirect auf `/` mit Toast "Keine Berechtigung".
-- Sidebar-Eintrag "Benutzerverwaltung" wird für Nicht-Admins ausgeblendet.
+## Bereiche (Resources) initial
 
-## Hinweise
+`dashboard`, `kunden`, `objekte`, `waescheartikel`, `waeschesets`, `bestellungen`, `bestellungen_management`, `liefertouren`, `rechnungen`, `waeschekraefte`, `benutzer`, `einstellungen`.
 
-- Da im Dev-Modus aktuell RLS deaktiviert und Auth offen ist, erstellen wir die Policies trotzdem – sie greifen sobald RLS reaktiviert wird. Für die Schutzlogik im Frontend brauchen wir aber einen eingeloggten Admin, sonst kommt niemand auf die Seite. Falls du die Seite vorerst auch ohne Login erreichen willst, sag Bescheid – dann lassen wir den Rolle-Check weg.
-- Erster Admin: muss einmalig manuell in `user_roles` eingetragen werden (via SQL). Ich kann das nach dem Migrations-Schritt für deinen vorhandenen Account erledigen, wenn du mir die User-ID nennst.
+Standard-Defaults nach Migration:
+- **admin**: alle Bereiche, `view` + `edit`.
+- **waeschekraft**: `dashboard`, `bestellungen_management`, `liefertouren` → `view` + `edit`; sonst nichts.
+- **kunde**: `dashboard`, `bestellungen` → `view`; `bestellungen` zusätzlich `edit` (nur eigene — feinere Filterung läuft weiter über RLS).
+
+## Technische Details
+
+- Migration: `roles`, `role_permissions`, RLS-Policies, Seed System-Rollen + Default-Permissions, `role_id`-Spalte in `user_roles` + Backfill.
+- Neue Komponenten: `src/components/benutzer/RollenTab.tsx`, `RolleFormDialog.tsx`, `RechteMatrix.tsx`.
+- Neue Hooks: `useRoles`, `useRolePermissions`, `usePermissions`.
+- Neuer Wrapper: `src/components/auth/RequireAccess.tsx`.
+- `App.tsx`: alle geschützten Routes mit `<RequireAccess resource="..." />` umschließen.
+- `AppSidebar.tsx`: Menüpunkte per `can('xxx','view')` filtern (statt aktueller Rollen-Hardcheck).
+
+## Was nicht enthalten ist
+
+- Feingranulare Feld-Permissions (z.B. „Preis sehen, aber nicht bearbeiten") — bleibt für später.
+- Eigene Permissions pro einzelnem User (nur über Rolle).
+- Anpassung der Datenbank-RLS auf alle anderen Tabellen — bleibt Dev-State (RLS disabled). Frontend-Schutz greift dennoch sofort.

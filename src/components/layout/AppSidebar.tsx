@@ -16,7 +16,8 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCurrentUserRole } from "@/hooks/useBenutzer";
+
+import { useCan } from "@/hooks/useRoles";
 import {
   Sidebar,
   SidebarContent,
@@ -33,29 +34,29 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNavItems = [
-  { title: "Kunden & Objekte", url: "/kunden", icon: Users },
-  { title: "Bestellungen-Übersicht", url: "/bestellungen", icon: ClipboardList },
-  { title: "Arbeitsverwaltung", url: "/bestellungen/management", icon: ListTodo },
-  { title: "Liefertouren", url: "/liefertouren", icon: Truck },
-  { title: "Rechnungen", url: "/rechnungen", icon: FileText },
+  { title: "Kunden & Objekte", url: "/kunden", icon: Users, resource: "kunden" },
+  { title: "Bestellungen-Übersicht", url: "/bestellungen", icon: ClipboardList, resource: "bestellungen" },
+  { title: "Arbeitsverwaltung", url: "/bestellungen/management", icon: ListTodo, resource: "bestellungen_management" },
+  { title: "Liefertouren", url: "/liefertouren", icon: Truck, resource: "liefertouren" },
+  { title: "Rechnungen", url: "/rechnungen", icon: FileText, resource: "rechnungen" },
 ];
 
 const managementNavItems = [
-  { title: "Wäschekräfte/Fahrer", url: "/waeschekraefte", icon: UserCheck },
-  { title: "Wäscheartikel", url: "/waescheartikel", icon: Package },
-  { title: "Wäschesets", url: "/waeschesets", icon: Layers },
-  { title: "Benutzerverwaltung", url: "/benutzer", icon: Settings },
+  { title: "Wäschekräfte/Fahrer", url: "/waeschekraefte", icon: UserCheck, resource: "waeschekraefte" },
+  { title: "Wäscheartikel", url: "/waescheartikel", icon: Package, resource: "waescheartikel" },
+  { title: "Wäschesets", url: "/waeschesets", icon: Layers, resource: "waeschesets" },
+  { title: "Benutzerverwaltung", url: "/benutzer", icon: Settings, resource: "benutzer" },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const { user, profile, signOut } = useAuth();
-  const { data: currentRole } = useCurrentUserRole();
-  const isAdmin = currentRole === "admin";
-  const visibleManagementItems = managementNavItems.filter(
-    (item) => item.url !== "/benutzer" || isAdmin
-  );
+  const can = useCan();
+  // Wenn niemand eingeloggt ist (Dev-Modus), alles zeigen.
+  const showAll = !user;
+  const visibleMainItems = mainNavItems.filter((item) => showAll || can(item.resource, "view"));
+  const visibleManagementItems = managementNavItems.filter((item) => showAll || can(item.resource, "view"));
   const navigate = useNavigate();
 
   const getInitials = () => {
@@ -124,7 +125,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => (
+              {visibleMainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink
