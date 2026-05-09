@@ -1,50 +1,37 @@
 ## Ziel
 
-Die "Schnellaktionen"-Karte auf dem Dashboard durch **4 größere, klickbare Widget-Karten** im 2×2-Raster (mobil 2 Spalten, Desktop bis zu 4 Spalten) ersetzen. Jede Karte führt direkt in den entsprechenden Erstellungs-Flow.
+Klick auf das Verwaltungs-Icon im Dashboard-Header soll nicht mehr direkt zur Benutzerverwaltung führen, sondern zu einer **Verwaltungs-Übersichtsseite**, auf der alle Verwaltungs-Bereiche als große, klickbare Widgets angezeigt werden.
 
-## Widgets
+## Verwaltungs-Bereiche (6 Widgets)
 
-| Widget | Icon | Variant | Zielroute | Aktion auf Zielseite |
-|---|---|---|---|---|
-| Neue Bestellung | `ShoppingCart` | primary | `/bestellungen?neu=1` | Bestellungs-Formular-Dialog öffnet automatisch |
-| Arbeitsauftrag erstellen | `ClipboardList` | warning | `/bestellungen/management` | Direkt in die Arbeitsverwaltung |
-| Tour planen | `Truck` | info | `/liefertouren?neu=1` | Tour-Erstellungs-Dialog öffnet automatisch |
-| Rechnung erstellen | `Receipt` | success | `/rechnungen?neu=1` | Rechnungs-Erstellungs-Flow öffnet automatisch |
+Identisch zu den Einträgen in der Sidebar-Sektion "Verwaltung":
 
-Klick auf das gesamte Widget triggert die Navigation. Größeres Format mit Icon oben/links, Titel groß darunter, optional kurze Sub-Beschreibung.
+| Widget | Route | Icon | Variant |
+|---|---|---|---|
+| Wäschekräfte/Fahrer | `/waeschekraefte` | `UserCheck` | primary |
+| Wäscheartikel | `/waescheartikel` | `Package` | info |
+| Wäschesets | `/waeschesets` | `Layers` | success |
+| Rechnungseinstellungen | `/rechnungseinstellungen` | `FileText` | warning |
+| Benutzerverwaltung | `/benutzer` | `Settings` | primary |
+| API & Integrationen | `/integrationen` | `Plug` | info |
 
 ## Änderungen
 
-### 1. Neue Komponente `src/components/dashboard/QuickActionCard.tsx`
-- Klickbare Card mit Icon (groß, in farbigem Badge-Kreis), Titel und Beschreibung
-- Variants: `primary | info | warning | success`
-- Hover-Effekt (Schatten + leichtes Skalieren), Cursor pointer
-- `min-h-[120px]` für deutlich größere Touch-Fläche als bisher
+### 1. Neue Seite `src/pages/Verwaltung.tsx`
+- Layout analog zu `/` (SidebarProvider + AppSidebar + Header)
+- Header: "Verwaltung" mit Untertitel "Stammdaten und Einstellungen"
+- Inhalt: 2-spaltiges Grid (mobil) bzw. 3-spaltig ab `lg` mit den 6 Widgets
+- Wiederverwendung der bestehenden `QuickActionCard`-Komponente — gleiche Optik wie Dashboard-Schnellaktionen, Konsistenz gewährleistet
+- Jedes Widget mit Titel + kurzer Beschreibung, navigiert per Klick zur jeweiligen Route
 
-### 2. `src/components/dashboard/QuickActionsUpdated.tsx` (umschreiben)
-- 2×2 Grid: `grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4`
-- Vier `QuickActionCard`-Einträge gemäß Tabelle oben
-- CardHeader "Schnellaktionen" bleibt
-- Card-Wrapper bleibt, damit Layout in `Index.tsx` konsistent ist
+### 2. `src/App.tsx`
+- Neue Route: `<Route path="/verwaltung" element={<RequireAccess resource="benutzer"><Verwaltung /></RequireAccess>} />`
+- Import der neuen Seite
 
-### 3. Deep-Link-Unterstützung auf den Zielseiten
-
-**`src/pages/Bestellungen.tsx`**
-- `useSearchParams` lesen
-- `useEffect`: wenn `?neu=1`, `handleAddBestellung()` aufrufen und Param entfernen
-
-**`src/pages/Liefertouren.tsx`**
-- `useSearchParams` lesen
-- `useEffect`: wenn `?neu=1`, vorhandenen "Tour erstellen"-Dialog öffnen (State auf `true`) und Param entfernen
-
-**`src/pages/Rechnungen.tsx`**
-- `useSearchParams` lesen
-- `useEffect`: wenn `?neu=1`, vorhandenen Rechnungs-Erstellungs-Dialog/Flow öffnen und Param entfernen
-- Falls aktuell kein expliziter "Rechnung erstellen"-Dialog existiert: Auto-Fokus auf die bestehende Erstellungs-Aktion bzw. Hinweis-Toast
-
-**Arbeitsauftrag-Widget** benötigt keinen Deep-Link — `/bestellungen/management` ist die Arbeitsauftragsseite selbst.
+### 3. `src/pages/Index.tsx`
+- Settings-Icon im Dashboard-Header: `navigate("/benutzer")` → `navigate("/verwaltung")`
 
 ## Out of Scope
-- Keine Änderungen an der Daten-Schicht oder den Erstellungs-Mutations
-- Keine Anpassung der StatCards oben auf dem Dashboard
-- Keine neuen Routen
+- Keine Änderungen an den einzelnen Verwaltungs-Seiten selbst
+- Keine Änderung an der Sidebar (Einträge bleiben unverändert)
+- Keine Berechtigungs-Filterung pro Widget (Route ist via RequireAccess geschützt)
