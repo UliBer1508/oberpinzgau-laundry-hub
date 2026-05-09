@@ -97,7 +97,7 @@ export default function BestellungsManagement() {
         <SidebarInset className="flex-1">
           <header className="flex h-14 items-center gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6">
             <div className="flex-1">
-              <h1 className="text-lg font-semibold">Bestellverwaltung</h1>
+              <h1 className="text-lg font-semibold">Arbeitsverwaltung</h1>
             </div>
           </header>
 
