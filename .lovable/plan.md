@@ -1,27 +1,50 @@
+# Plan: Objektbilder hinzufügen
+
 ## Ziel
+Objekte können mit einem Foto hinterlegt werden (z.B. Gebäudeansicht, Hausfassade). Bild wird im Dialog hochgeladen, als Thumbnail in der Liste angezeigt.
 
-Das Wäscheportal wieder auf seine eigene, dedizierte Lovable-Cloud-Datenbank (`pkpnowevagxmhyqlawng`) umstellen. Die Verbindung zur Kundenportal-DB (`uzworhojxcxbtsbttstp`) wird vollständig entfernt.
+## Datenbank-Änderungen
 
-## Schritte
+1. **Spalte ergänzen**
+   - `ALTER TABLE public.objekte ADD COLUMN IF NOT EXISTS bild_url text;`
 
-### 1. Externen Client und Typen entfernen
-- Datei `src/integrations/external/client.ts` löschen
-- Datei `src/integrations/external/types.ts` löschen
-- Verzeichnis `src/integrations/external/` entfernen
+2. **Storage-Bucket erstellen**
+   - Bucket `objekt-bilder`, public = true
+   - RLS-Policies: Lesen öffentlich, Hochladen/Aktualisieren/Löschen nur für authentifizierte Nutzer
 
-### 2. Imports zurück auf den Lovable-Cloud-Client
-In allen betroffenen Dateien Import von `@/integrations/external/client` → `@/integrations/supabase/client` zurückändern, sowie `@/integrations/external/types` → `@/integrations/supabase/types`. Betroffen:
-- `src/contexts/AuthContext.tsx`
-- `src/pages/Bestellungen.tsx`
-- `src/hooks/useKunden.ts`, `useObjekte.ts`, `useWaescheartikel.ts`, `useWaeschesets.ts`, `useBestellungen.ts`, `useBestellungDetail.ts`, `useBestellungenMitDetails.ts`, `useManagementBestellungen.ts`, `useLiefertouren.ts`, `useRoutenvorlagen.ts`, `useRechnungen.ts`, `useRechnungseinstellungen.ts`, `useWaeschekraefte.ts`, `useDashboard.ts`
+## UI-Änderungen
 
-### 3. Verifikation
-- TypeScript-Check (`tsc --noEmit`) muss grün sein
-- App lädt, Network-Tab zeigt Requests an `pkpnowevagxmhyqlawng.supabase.co`
-- Kundenliste zeigt die ursprünglich in dieser App angelegten Datensätze
+### 1. ObjektFormDialog – Bild-Upload
+- Neuer Abschnitt "Objektbild" im Dialog
+- Bild-Vorschau falls `bild_url` vorhanden
+- Upload-Button: Datei wählen → hochladen zu `objekt-bilder/{objekt_id}/{filename}`
+- Löschen-Button um Bild zu entfernen
+- Upload-State (Lade-Spinner) während Hochladen
 
-## Hinweise
+### 2. ObjekteTable – Thumbnail-Spalte
+- Neue erste Spalte mit Bild-Thumbnail (z.B. 48x48, rounded)
+- Fallback-Icon (Building2) wenn kein Bild vorhanden
+- Bild bleibt responsiv, ohne die Tabelle zu sprengen
 
-- Die ursprüngliche Lovable-Cloud-DB war die ganze Zeit aktiv und enthält alle Daten und Tabellen wie zuvor – nichts ist verloren.
-- Verwaltung der DB erfolgt über den **Cloud**-Tab im Lovable-Editor (Tabellen, Users, Storage, Edge Functions, Secrets).
-- Beide Apps (Kundenportal und Wäscheportal) sind danach datentechnisch komplett getrennt. Falls später ein Datenaustausch gewünscht ist (z. B. Bestellungen aus dem Kundenportal automatisch ins Wäscheportal), kann dafür die bestehende Edge Function `external-order-import` genutzt werden – das wäre eine eigene Folgeaufgabe.
+### 3. Hooks – Upload-Logik
+- `useObjekte.ts`: Upload-Funktion `uploadObjektBild(objektId, file)`
+- Lösch-Funktion `deleteObjektBild(objektId, bildUrl)`
+- Beide nutzen Supabase Storage Client
+
+### 4. TypeScript-Types
+- `Objekt` Type erweitern um `bild_url?: string | null`
+- Automatisch via Supabase-Types nach Migration
+
+## Technische Details
+
+- **Speicherpfad:** `objekt-bilder/{objekt_id}/{timestamp}_{filename}`
+- **Cache-Invalidation:** Nach Upload/Delete `queryClient.invalidateQueries(['objekte'])`
+- **Fehlerbehandlung:** Toast bei Upload-Fehlern, Dateigrößen-Limit (5MB), nur Bild-Dateitypen (jpg, png, webp)
+- **Keine Breaking Changes:** `bild_url` ist nullable, bestehende Objekte funktionieren unverändert
+
+## Dateien, die geändert werden
+
+- `src/components/objekte/ObjektFormDialog.tsx`
+- `src/components/objekte/ObjekteTable.tsx`
+- `src/hooks/useObjekte.ts`
+- Datenbank-Migration (separater Schritt)

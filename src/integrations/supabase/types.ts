@@ -238,6 +238,7 @@ export type Database = {
         Row: {
           aktiv: boolean | null
           ansprechpartner: string | null
+          bild_url: string | null
           created_at: string
           id: string
           kunde_id: string
@@ -254,6 +255,7 @@ export type Database = {
         Insert: {
           aktiv?: boolean | null
           ansprechpartner?: string | null
+          bild_url?: string | null
           created_at?: string
           id?: string
           kunde_id: string
@@ -270,6 +272,7 @@ export type Database = {
         Update: {
           aktiv?: boolean | null
           ansprechpartner?: string | null
+          bild_url?: string | null
           created_at?: string
           id?: string
           kunde_id?: string
