@@ -159,7 +159,11 @@ export default function Waeschesets() {
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <main className="flex-1 overflow-x-hidden min-w-0">
-          <div className="container py-6">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:hidden">
+            <SidebarTrigger className="h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
+            <h1 className="text-base font-semibold">Wäschesets</h1>
+          </header>
+          <div className="container py-4 md:py-6">
             {/* Header */}
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
