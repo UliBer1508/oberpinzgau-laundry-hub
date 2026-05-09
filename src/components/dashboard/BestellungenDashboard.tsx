@@ -1,19 +1,18 @@
-import { useState } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Package, Clock, Truck, ChevronRight, AlertCircle } from "lucide-react";
+import { ChevronRight, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
-import { useDashboardBestellungen, type DashboardBestellung } from "@/hooks/useDashboard";
+import { useDashboardBestellungen, type DashboardBestellung, type DashboardFilter } from "@/hooks/useDashboard";
 
-const STATUS_CONFIG = {
-  neu: { label: "Neu", icon: Package, color: "text-info" },
-  in_bearbeitung: { label: "In Bearbeitung", icon: Clock, color: "text-warning" },
-  ausgeliefert: { label: "Versandbereit", icon: Truck, color: "text-success" },
-} as const;
+const FILTER_LABELS: Record<DashboardFilter, string> = {
+  neu: "Neue Bestellungen",
+  in_bearbeitung: "In Bearbeitung",
+  ausgeliefert: "Versandbereit",
+  heute: "Heute auszuliefern",
+};
 
 function BestellungCard({ bestellung }: { bestellung: DashboardBestellung }) {
   const navigate = useNavigate();
@@ -65,61 +64,41 @@ function BestellungCard({ bestellung }: { bestellung: DashboardBestellung }) {
   );
 }
 
-export function BestellungenDashboard() {
+interface BestellungenDashboardProps {
+  filter: DashboardFilter;
+}
+
+export function BestellungenDashboard({ filter }: BestellungenDashboardProps) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("neu");
-
-  const { data: neuBestellungen = [], isLoading: neuLoading } = useDashboardBestellungen("neu");
-  const { data: inBearbeitungBestellungen = [], isLoading: inBearbeitungLoading } = useDashboardBestellungen("in_bearbeitung");
-  const { data: versandbereitBestellungen = [], isLoading: versandbereitLoading } = useDashboardBestellungen("ausgeliefert");
-
-  const tabs = [
-    { value: "neu", label: "Neu", count: neuBestellungen.length, data: neuBestellungen, loading: neuLoading },
-    { value: "in_bearbeitung", label: "In Bearbeitung", count: inBearbeitungBestellungen.length, data: inBearbeitungBestellungen, loading: inBearbeitungLoading },
-    { value: "ausgeliefert", label: "Versandbereit", count: versandbereitBestellungen.length, data: versandbereitBestellungen, loading: versandbereitLoading },
-  ];
-
-  const activeTabData = tabs.find((t) => t.value === activeTab);
+  const { data: bestellungen = [], isLoading } = useDashboardBestellungen(filter);
 
   return (
     <Card className="flex-1 min-w-0 max-w-full">
-      <CardHeader className="flex flex-row items-center justify-between pb-3 px-4 sm:px-6">
-        <CardTitle className="text-base font-semibold">Bestellungen</CardTitle>
-        <Button variant="ghost" size="sm" onClick={() => navigate("/bestellungen")}>
+      <CardHeader className="flex flex-row items-center justify-between pb-3 px-4 sm:px-6 gap-2">
+        <div className="min-w-0">
+          <CardTitle className="text-base font-semibold truncate">
+            Bestellungen
+          </CardTitle>
+          <p className="text-xs text-muted-foreground truncate mt-0.5">
+            {FILTER_LABELS[filter]}
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => navigate("/bestellungen")} className="shrink-0">
           Alle anzeigen
         </Button>
       </CardHeader>
-      <CardContent className="px-4 sm:px-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-4 h-auto">
-            {tabs.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value} className="text-[11px] sm:text-sm px-1 sm:px-3 py-1.5 flex-wrap gap-1">
-                <span className="truncate">{tab.label}</span>
-                {tab.count > 0 && (
-                  <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                    {tab.count}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {tabs.map((tab) => (
-            <TabsContent key={tab.value} value={tab.value} className="space-y-3 mt-0">
-              {tab.loading ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">Laden...</div>
-              ) : tab.data.length === 0 ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">
-                  Keine Bestellungen
-                </div>
-              ) : (
-                tab.data.map((bestellung) => (
-                  <BestellungCard key={bestellung.id} bestellung={bestellung} />
-                ))
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
+      <CardContent className="px-4 sm:px-6 space-y-3">
+        {isLoading ? (
+          <div className="py-8 text-center text-sm text-muted-foreground">Laden...</div>
+        ) : bestellungen.length === 0 ? (
+          <div className="py-8 text-center text-sm text-muted-foreground">
+            Keine Bestellungen
+          </div>
+        ) : (
+          bestellungen.map((bestellung) => (
+            <BestellungCard key={bestellung.id} bestellung={bestellung} />
+          ))
+        )}
       </CardContent>
     </Card>
   );

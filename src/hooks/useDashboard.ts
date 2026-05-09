@@ -75,21 +75,34 @@ export function useDashboardStats() {
   });
 }
 
-export function useDashboardBestellungen(status: "neu" | "in_bearbeitung" | "ausgeliefert" | "abgeholt" | "abgeschlossen" | "storniert") {
+export type DashboardFilter = "neu" | "in_bearbeitung" | "ausgeliefert" | "heute";
+
+export function useDashboardBestellungen(filter: DashboardFilter) {
   return useQuery({
-    queryKey: ["dashboard_bestellungen", status],
+    queryKey: ["dashboard_bestellungen", filter],
     queryFn: async (): Promise<DashboardBestellung[]> => {
-      const { data, error } = await supabase
+      const today = new Date().toISOString().split("T")[0];
+
+      let query = supabase
         .from("waeschebestellungen")
         .select(`
           id, bestellnummer, status, lieferdatum, created_at, prioritaet,
           kunden (name),
           objekte (name)
-        `)
-        .eq("status", status)
+        `);
+
+      if (filter === "heute") {
+        query = query
+          .eq("lieferdatum", today)
+          .not("status", "in", "(abgeschlossen,storniert)");
+      } else {
+        query = query.eq("status", filter);
+      }
+
+      const { data, error } = await query
         .order("prioritaet", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false })
-        .limit(10);
+        .limit(20);
 
       if (error) throw error;
 

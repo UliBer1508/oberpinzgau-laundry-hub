@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -5,6 +6,7 @@ import { BestellungenDashboard } from "@/components/dashboard/BestellungenDashbo
 import { TodayLiefertouren } from "@/components/dashboard/TodayLiefertouren";
 import { QuickActionsUpdated } from "@/components/dashboard/QuickActionsUpdated";
 import { useDashboardStats } from "@/hooks/useDashboard";
+import type { DashboardFilter } from "@/hooks/useDashboard";
 import { Package, Clock, Truck, CalendarCheck } from "lucide-react";
 
 const Index = () => {
@@ -16,6 +18,7 @@ const Index = () => {
   });
 
   const { data: stats } = useDashboardStats();
+  const [filter, setFilter] = useState<DashboardFilter>("neu");
 
   return (
     <SidebarProvider>
@@ -35,25 +38,31 @@ const Index = () => {
 
           {/* Content */}
           <div className="p-4 md:p-6 space-y-6">
-            {/* Stats Grid - Order focused */}
+            {/* Stats Grid - clickable filters */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard
                 title="Neue Bestellungen"
                 value={stats?.bestellungen.neu ?? 0}
                 icon={Package}
                 variant="info"
+                onClick={() => setFilter("neu")}
+                active={filter === "neu"}
               />
               <StatCard
                 title="In Bearbeitung"
                 value={stats?.bestellungen.inBearbeitung ?? 0}
                 icon={Clock}
                 variant="warning"
+                onClick={() => setFilter("in_bearbeitung")}
+                active={filter === "in_bearbeitung"}
               />
               <StatCard
                 title="Versandbereit"
                 value={stats?.bestellungen.versandbereit ?? 0}
                 icon={Truck}
                 variant="success"
+                onClick={() => setFilter("ausgeliefert")}
+                active={filter === "ausgeliefert"}
               />
               <StatCard
                 title="Heute auszuliefern"
@@ -61,6 +70,8 @@ const Index = () => {
                 subtitle={`${stats?.liefertouren.heute ?? 0} Touren geplant`}
                 icon={CalendarCheck}
                 variant="primary"
+                onClick={() => setFilter("heute")}
+                active={filter === "heute"}
               />
             </div>
 
@@ -68,7 +79,7 @@ const Index = () => {
             <div className="grid gap-6 lg:grid-cols-3">
               {/* Left column - Bestellungen (takes 2 cols) */}
               <div className="lg:col-span-2">
-                <BestellungenDashboard />
+                <BestellungenDashboard filter={filter} />
               </div>
 
               {/* Right column - Touren & Quick Actions */}
