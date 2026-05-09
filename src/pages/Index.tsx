@@ -39,7 +39,7 @@ const Index = () => {
               variant="ghost"
               size="icon"
               className="h-9 w-9 shrink-0 text-sidebar-foreground hover:bg-sidebar-accent"
-              onClick={() => navigate("/benutzer")}
+              onClick={() => navigate("/verwaltung")}
               aria-label="Verwaltung"
               title="Verwaltung"
             >
