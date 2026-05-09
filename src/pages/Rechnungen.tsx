@@ -183,12 +183,8 @@ export default function Rechnungen() {
             {/* Stats */}
             <RechnungenStats stats={stats} />
 
-            {/* Einstellungen */}
-            <RechnungseinstellungenCard
-              einstellungen={einstellungen}
-              isLoading={einstellungenLoading}
-              onEdit={() => setEinstellungenDialogOpen(true)}
-            />
+            {/* Einstellungen wurden in die Verwaltung verschoben */}
+
 
             {/* Filter */}
             <RechnungenFilter
