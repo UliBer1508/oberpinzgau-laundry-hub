@@ -78,8 +78,7 @@ const Index = () => {
               />
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              <TodayLiefertouren />
+            <div className="grid gap-6">
               <QuickActionsUpdated />
             </div>
           </div>
