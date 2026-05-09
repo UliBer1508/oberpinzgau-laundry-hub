@@ -105,6 +105,19 @@ export default function BestellungsManagement() {
             <div className="flex-1">
               <h1 className="text-lg font-semibold">Arbeitsverwaltung</h1>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={sortedBestellungen.length === 0}
+              onClick={() => {
+                exportArbeitsauftraegeToExcel(sortedBestellungen);
+                toast.success("Excel-Export erstellt");
+              }}
+            >
+              <Download className="h-4 w-4" />
+              Excel-Export
+            </Button>
           </header>
 
           <main className="flex-1 p-4 md:p-6 space-y-4 overflow-x-hidden min-w-0">
