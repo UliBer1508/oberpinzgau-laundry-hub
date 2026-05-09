@@ -193,7 +193,7 @@ export default function Bestellungen() {
             <div className="flex flex-1 items-center justify-between">
               <div>
                 <h1 className="text-2xl font-semibold">Bestellungen</h1>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-sidebar-foreground/80">
                   Verwalten Sie alle Wäschebestellungen
                 </p>
               </div>

@@ -167,8 +167,8 @@ const Kunden = () => {
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6">
             <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-xl font-semibold text-foreground">Kunden</h1>
-                <p className="text-sm text-muted-foreground">
+                <h1 className="text-xl font-semibold text-sidebar-foreground">Kunden</h1>
+                <p className="text-sm text-sidebar-foreground/80">
                   Verwalten Sie Ihre Kunden und deren Objekte
                 </p>
               </div>
