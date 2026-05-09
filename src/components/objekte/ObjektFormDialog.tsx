@@ -86,6 +86,7 @@ export function ObjektFormDialog({
         notizen: objekt.notizen || "",
         aktiv: objekt.aktiv ?? true,
       });
+      setBildUrl(objekt.bild_url || null);
     } else {
       const newObjektnummer = `O${Date.now().toString().slice(-6)}`;
       reset({
@@ -101,11 +102,44 @@ export function ObjektFormDialog({
         notizen: "",
         aktiv: true,
       });
+      setBildUrl(null);
     }
   }, [objekt, reset]);
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Ungültiger Dateityp", description: "Bitte ein Bild wählen.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Datei zu groß", description: "Maximal 5 MB.", variant: "destructive" });
+      return;
+    }
+    try {
+      const url = await uploadBild.mutateAsync(file);
+      if (bildUrl) {
+        try { await deleteBild.mutateAsync(bildUrl); } catch {}
+      }
+      setBildUrl(url);
+    } catch (err: any) {
+      toast({ title: "Upload fehlgeschlagen", description: err.message, variant: "destructive" });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveBild = async () => {
+    if (!bildUrl) return;
+    try {
+      await deleteBild.mutateAsync(bildUrl);
+    } catch {}
+    setBildUrl(null);
+  };
+
   const onSubmit = (data: any) => {
-    onSave(data);
+    onSave({ ...data, bild_url: bildUrl });
   };
 
   return (
