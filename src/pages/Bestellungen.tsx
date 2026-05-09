@@ -68,14 +68,13 @@ export default function Bestellungen() {
   }, [bestellungen, searchTerm, selectedStatus, selectedKunde]);
 
   const stats = useMemo(() => {
-    const gesamtumsatz = bestellungen.reduce((sum, b) => sum + (b.gesamtpreis || 0), 0);
     return {
       gesamt: bestellungen.length,
-      inBearbeitung: bestellungen.filter((b) => 
-        b.status === "neu" || b.status === "in_bearbeitung" || b.status === "ausgeliefert"
+      inBearbeitung: bestellungen.filter((b) =>
+        b.status === "neu" || b.status === "in_bearbeitung"
       ).length,
+      ausgeliefert: bestellungen.filter((b) => b.status === "ausgeliefert").length,
       abgeschlossen: bestellungen.filter((b) => b.status === "abgeschlossen").length,
-      gesamtumsatz,
     };
   }, [bestellungen]);
 
