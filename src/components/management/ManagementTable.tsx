@@ -101,6 +101,7 @@ export function ManagementTable({ bestellungen, onViewDetails }: ManagementTable
               <TableHead className="w-[130px]">Bis</TableHead>
               <TableHead className="w-[160px]">Wäschekraft</TableHead>
               <TableHead className="min-w-[180px]">Artikel</TableHead>
+              <TableHead className="w-[60px] text-right">Aktion</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -113,6 +114,7 @@ export function ManagementTable({ bestellungen, onViewDetails }: ManagementTable
                   key={bestellung.id}
                   bestellung={bestellung}
                   isSelected={false}
+                  onViewDetails={onViewDetails}
                 />
               ))}
             </SortableContext>
