@@ -171,7 +171,7 @@ export default function Rechnungen() {
                 <p className="text-sm text-sidebar-foreground/80">Übersicht aller Rechnungen</p>
               </div>
             </div>
-            <Button variant="outline" disabled>
+            <Button variant="secondary" disabled className="disabled:opacity-100 disabled:bg-sidebar-accent disabled:text-sidebar-accent-foreground">
               <FileText className="mr-2 h-4 w-4" />
               Export (bald verfügbar)
             </Button>
