@@ -6,30 +6,30 @@
 
 @layer base {
   :root {
-    /* Professional Blue/Gray Theme */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* Professional Mint/Teal Theme */
+    --background: 160 35% 96%;
+    --foreground: 170 30% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 170 30% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 170 30% 12%;
 
-    /* Professional Blue Primary */
-    --primary: 213 80% 45%;
+    /* Professional Mint Primary */
+    --primary: 165 65% 38%;
     --primary-foreground: 0 0% 100%;
 
-    /* Light Gray Secondary */
-    --secondary: 210 15% 95%;
-    --secondary-foreground: 215 25% 25%;
+    /* Light Mint Secondary */
+    --secondary: 160 25% 92%;
+    --secondary-foreground: 170 30% 22%;
 
-    --muted: 210 15% 94%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 160 20% 92%;
+    --muted-foreground: 170 12% 42%;
 
-    /* Subtle Blue Accent */
-    --accent: 213 70% 95%;
-    --accent-foreground: 213 80% 35%;
+    /* Subtle Mint Accent */
+    --accent: 160 55% 92%;
+    --accent-foreground: 165 65% 28%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -42,22 +42,22 @@
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
-    --border: 214 20% 88%;
-    --input: 214 20% 88%;
-    --ring: 213 80% 45%;
+    --border: 160 20% 85%;
+    --input: 160 20% 85%;
+    --ring: 165 65% 38%;
 
     --radius: 0.5rem;
 
-    /* Sidebar - Professional Dark Blue */
-    --sidebar-background: 215 28% 17%;
-    --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 213 80% 55%;
+    /* Sidebar - Deep Mint/Teal */
+    --sidebar-background: 175 35% 15%;
+    --sidebar-foreground: 160 20% 90%;
+    --sidebar-primary: 160 65% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 23%;
-    --sidebar-accent-foreground: 210 20% 95%;
-    --sidebar-border: 215 20% 25%;
-    --sidebar-ring: 213 80% 55%;
-    --sidebar-muted: 215 15% 60%;
+    --sidebar-accent: 175 30% 22%;
+    --sidebar-accent-foreground: 160 25% 95%;
+    --sidebar-border: 175 25% 22%;
+    --sidebar-ring: 160 65% 50%;
+    --sidebar-muted: 170 12% 60%;
   }
 
   .dark {
