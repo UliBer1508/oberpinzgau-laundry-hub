@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { ShoppingCart, ClipboardList, Truck, Receipt } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { QuickActionCard } from "./QuickActionCard";
+import { ArbeitsauftragErstellenDialog } from "@/components/management/ArbeitsauftragErstellenDialog";
 
 export function QuickActionsUpdated() {
   const navigate = useNavigate();
+  const [arbeitsauftragOpen, setArbeitsauftragOpen] = useState(false);
 
   return (
     <Card>
@@ -22,10 +25,10 @@ export function QuickActionsUpdated() {
           />
           <QuickActionCard
             label="Arbeitsauftrag"
-            description="Aufträge verwalten"
+            description="Bestellung zuweisen"
             icon={ClipboardList}
             variant="warning"
-            onClick={() => navigate("/bestellungen/management")}
+            onClick={() => setArbeitsauftragOpen(true)}
           />
           <QuickActionCard
             label="Tour planen"
@@ -43,6 +46,11 @@ export function QuickActionsUpdated() {
           />
         </div>
       </CardContent>
+
+      <ArbeitsauftragErstellenDialog
+        open={arbeitsauftragOpen}
+        onOpenChange={setArbeitsauftragOpen}
+      />
     </Card>
   );
 }
