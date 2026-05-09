@@ -16,6 +16,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentUserRole } from "@/hooks/useBenutzer";
 import {
   Sidebar,
   SidebarContent,
