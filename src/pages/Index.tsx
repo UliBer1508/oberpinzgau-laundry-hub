@@ -1,7 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { TodayLiefertouren } from "@/components/dashboard/TodayLiefertouren";
+
 import { QuickActionsUpdated } from "@/components/dashboard/QuickActionsUpdated";
 import { useDashboardStats } from "@/hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
