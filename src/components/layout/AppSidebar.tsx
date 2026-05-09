@@ -51,6 +51,11 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const { user, profile, signOut } = useAuth();
+  const { data: currentRole } = useCurrentUserRole();
+  const isAdmin = currentRole === "admin";
+  const visibleManagementItems = managementNavItems.filter(
+    (item) => item.url !== "/benutzer" || isAdmin
+  );
   const navigate = useNavigate();
 
   const getInitials = () => {
