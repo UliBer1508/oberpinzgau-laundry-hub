@@ -16,6 +16,7 @@ import {
 } from "@dnd-kit/sortable";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ManagementTableRow } from "./ManagementTableRow";
+import { ManagementMobileList } from "./ManagementMobileList";
 import { type ManagementBestellung, useUpdateReihenfolge } from "@/hooks/useManagementBestellungen";
 import { toast } from "sonner";
 
