@@ -81,12 +81,12 @@ export function ArbeitsauftragErstellenDialog({
       if (!bestellungId || !waeschekraftId) {
         throw new Error("Bestellung und Wäschekraft auswählen");
       }
-      const update: Record<string, unknown> = {
+      const update = {
         waeschekraft_id: waeschekraftId,
-        status: "in_bearbeitung",
+        status: "in_bearbeitung" as const,
         prioritaet: parseInt(prioritaet, 10) || 0,
+        ...(deadline ? { bearbeitung_deadline: deadline.toISOString() } : {}),
       };
-      if (deadline) update.bearbeitung_deadline = deadline.toISOString();
 
       const { error } = await supabase
         .from("waeschebestellungen")
