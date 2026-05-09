@@ -21,9 +21,10 @@ import { toast } from "sonner";
 
 interface ManagementTableProps {
   bestellungen: ManagementBestellung[];
+  onViewDetails?: (id: string) => void;
 }
 
-export function ManagementTable({ bestellungen }: ManagementTableProps) {
+export function ManagementTable({ bestellungen, onViewDetails }: ManagementTableProps) {
   const [items, setItems] = useState(bestellungen);
   const updateReihenfolge = useUpdateReihenfolge();
 
