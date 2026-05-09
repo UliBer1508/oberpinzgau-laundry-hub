@@ -202,13 +202,14 @@ export default function Bestellungen() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="gap-2"
                   onClick={() => {
                     exportBestellungenToExcel(filteredBestellungen);
                     toast.success(`${filteredBestellungen.length} Bestellungen exportiert`);
                   }}
                   disabled={filteredBestellungen.length === 0}
                 >
-                  <Download className="h-4 w-4 sm:mr-2" />
+                  <Download className="h-4 w-4" />
                   <span className="hidden sm:inline">Excel-Export</span>
                 </Button>
                 <Button size="sm" onClick={handleAddBestellung}>
