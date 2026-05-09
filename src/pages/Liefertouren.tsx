@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -25,6 +26,18 @@ export default function Liefertouren() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isStoppsOpen, setIsStoppsOpen] = useState(false);
   const [selectedTour, setSelectedTour] = useState<Liefertour | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("neu") === "1") {
+      setSelectedTour(null);
+      setIsFormOpen(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete("neu");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: touren = [], isLoading } = useLiefertouren();
   const createTour = useCreateLiefertour();
