@@ -48,16 +48,16 @@
 
     --radius: 0.5rem;
 
-    /* Sidebar - Deep Mint/Teal */
-    --sidebar-background: 175 35% 15%;
-    --sidebar-foreground: 160 20% 90%;
-    --sidebar-primary: 160 65% 50%;
+    /* Sidebar - Darker Mint */
+    --sidebar-background: 168 45% 22%;
+    --sidebar-foreground: 160 25% 92%;
+    --sidebar-primary: 158 65% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 175 30% 22%;
-    --sidebar-accent-foreground: 160 25% 95%;
-    --sidebar-border: 175 25% 22%;
-    --sidebar-ring: 160 65% 50%;
-    --sidebar-muted: 170 12% 60%;
+    --sidebar-accent: 168 40% 30%;
+    --sidebar-accent-foreground: 160 30% 96%;
+    --sidebar-border: 168 35% 30%;
+    --sidebar-ring: 158 65% 55%;
+    --sidebar-muted: 165 18% 70%;
   }
 
   .dark {
