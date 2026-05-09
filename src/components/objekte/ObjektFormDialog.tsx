@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Dialog,
@@ -19,8 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
-import type { Objekt } from "@/hooks/useObjekte";
+import { Loader2, Upload, X, Image as ImageIcon } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { useUploadObjektBild, useDeleteObjektBild, type Objekt } from "@/hooks/useObjekte";
 
 interface ObjektFormDialogProps {
   open: boolean;
