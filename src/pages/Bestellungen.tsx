@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Download } from "lucide-react";
+import { exportBestellungenToExcel } from "@/lib/exportBestellungen";
 import { toast } from "sonner";
 import { BestellungenStats } from "@/components/bestellungen/BestellungenStats";
 import { BestellungenFilter } from "@/components/bestellungen/BestellungenFilter";
@@ -197,10 +198,23 @@ export default function Bestellungen() {
                   Verwalten Sie alle Wäschebestellungen
                 </p>
               </div>
-              <Button onClick={handleAddBestellung}>
-                <Plus className="mr-2 h-4 w-4" />
-                Bestellung erstellen
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    exportBestellungenToExcel(filteredBestellungen);
+                    toast.success(`${filteredBestellungen.length} Bestellungen exportiert`);
+                  }}
+                  disabled={filteredBestellungen.length === 0}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Excel-Export
+                </Button>
+                <Button onClick={handleAddBestellung}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Bestellung erstellen
+                </Button>
+              </div>
             </div>
           </header>
 
