@@ -189,7 +189,7 @@ export default function Bestellungen() {
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <main className="flex-1 overflow-x-hidden min-w-0">
-          <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6 py-4">">
+          <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6 py-4">
             <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0"/>
             <div className="flex flex-1 items-center justify-between">
               <div>
