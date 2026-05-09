@@ -48,6 +48,7 @@ export function ObjekteTable({ objekte, onEdit, onManageSets, onToggleAktiv }: O
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[64px]"></TableHead>
             <TableHead className="w-[100px]">Obj-Nr.</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Kunde</TableHead>
