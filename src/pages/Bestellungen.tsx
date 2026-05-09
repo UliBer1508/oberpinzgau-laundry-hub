@@ -191,35 +191,41 @@ export default function Bestellungen() {
         <main className="flex-1 overflow-x-hidden min-w-0">
           <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6 py-4">
             <SidebarTrigger className="hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0"/>
-            <div className="flex flex-1 items-center justify-between">
-              <div>
+            <div className="flex flex-1 flex-col gap-3 min-w-0 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
                 <h1 className="text-2xl font-semibold">Bestellungen</h1>
                 <p className="text-sm text-sidebar-foreground/80">
                   Verwalten Sie alle Wäschebestellungen
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => {
                     exportBestellungenToExcel(filteredBestellungen);
                     toast.success(`${filteredBestellungen.length} Bestellungen exportiert`);
                   }}
                   disabled={filteredBestellungen.length === 0}
                 >
-                  <Download className="mr-2 h-4 w-4" />
-                  Excel-Export
+                  <Download className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Excel-Export</span>
                 </Button>
-                <Button onClick={handleAddBestellung}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Bestellung erstellen
+                <Button size="sm" onClick={handleAddBestellung}>
+                  <Plus className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Bestellung erstellen</span>
+                  <span className="sm:hidden">Neu</span>
                 </Button>
               </div>
             </div>
           </header>
 
-          <div className="space-y-6 p-6">
-            <BestellungenStats stats={stats} />
+          <div className="space-y-6 p-4 md:p-6">
+            <BestellungenStats
+              stats={stats}
+              selectedStatus={selectedStatus}
+              onSelectStatus={setSelectedStatus}
+            />
 
             <BestellungenFilter
               searchTerm={searchTerm}
