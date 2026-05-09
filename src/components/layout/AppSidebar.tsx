@@ -35,7 +35,7 @@ import {
 
 const mainNavItems = [
   { title: "Kunden & Objekte", url: "/kunden", icon: Users, resource: "kunden" },
-  { title: "Bestellungen-Übersicht", url: "/bestellungen", icon: ClipboardList, resource: "bestellungen" },
+  { title: "Bestellungen", url: "/bestellungen", icon: ClipboardList, resource: "bestellungen" },
   { title: "Arbeitsverwaltung", url: "/bestellungen/management", icon: ListTodo, resource: "bestellungen_management" },
   { title: "Liefertouren", url: "/liefertouren", icon: Truck, resource: "liefertouren" },
   { title: "Rechnungen", url: "/rechnungen", icon: FileText, resource: "rechnungen" },
