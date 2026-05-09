@@ -12,6 +12,8 @@ interface StatCardProps {
     isPositive: boolean;
   };
   variant?: "default" | "primary" | "success" | "warning" | "info";
+  onClick?: () => void;
+  active?: boolean;
 }
 
 const variantStyles = {
@@ -20,6 +22,14 @@ const variantStyles = {
   success: "bg-success/5 border-success/20",
   warning: "bg-warning/5 border-warning/20",
   info: "bg-info/5 border-info/20",
+};
+
+const activeRingStyles = {
+  default: "ring-2 ring-foreground/40",
+  primary: "ring-2 ring-primary",
+  success: "ring-2 ring-success",
+  warning: "ring-2 ring-warning",
+  info: "ring-2 ring-info",
 };
 
 const iconVariantStyles = {
@@ -37,9 +47,32 @@ export function StatCard({
   icon: Icon,
   trend,
   variant = "default",
+  onClick,
+  active = false,
 }: StatCardProps) {
+  const interactive = !!onClick;
   return (
-    <Card className={cn("transition-shadow hover:shadow-md min-w-0 max-w-full", variantStyles[variant])}>
+    <Card
+      onClick={onClick}
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onKeyDown={
+        interactive
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
+      className={cn(
+        "transition-all min-w-0 max-w-full",
+        variantStyles[variant],
+        interactive && "cursor-pointer hover:shadow-md",
+        active && activeRingStyles[variant]
+      )}
+    >
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1 min-w-0">
