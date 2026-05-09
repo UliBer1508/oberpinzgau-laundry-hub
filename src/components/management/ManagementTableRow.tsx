@@ -24,7 +24,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { GripVertical, CalendarIcon, Clock } from "lucide-react";
+import { GripVertical, CalendarIcon, Clock, Eye } from "lucide-react";
 import { format, isBefore, addHours, isWithinInterval } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
