@@ -541,7 +541,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Wäschekraft */}
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Select
           value={bestellung.waeschekraft_id || "none"}
           onValueChange={handleWaeschekraftChange}
