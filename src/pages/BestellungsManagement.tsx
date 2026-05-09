@@ -130,11 +130,20 @@ export default function BestellungsManagement() {
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <ManagementTable bestellungen={sortedBestellungen} />
+              <ManagementTable
+                bestellungen={sortedBestellungen}
+                onViewDetails={setDetailId}
+              />
             )}
           </main>
         </SidebarInset>
       </div>
+
+      <BestellungDetailDialog
+        open={!!detailId}
+        onOpenChange={(open) => !open && setDetailId(null)}
+        bestellungId={detailId}
+      />
     </SidebarProvider>
   );
 }
