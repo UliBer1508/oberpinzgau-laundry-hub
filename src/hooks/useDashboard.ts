@@ -14,6 +14,17 @@ export interface DashboardStats {
     aktiv: number;
     heute: number;
   };
+  kunden: {
+    total: number;
+    aktiv: number;
+  };
+  arbeitsauftraege: {
+    offen: number;
+  };
+  rechnungen: {
+    total: number;
+    offen: number;
+  };
 }
 
 export interface DashboardBestellung {
@@ -48,19 +59,26 @@ export function useDashboardStats() {
     queryFn: async (): Promise<DashboardStats> => {
       const today = new Date().toISOString().split("T")[0];
 
-      const [bestellungenResult, liefertourenResult] = await Promise.all([
+      const [bestellungenResult, liefertourenResult, kundenResult, rechnungenResult] = await Promise.all([
         supabase.from("waeschebestellungen").select("id, status, lieferdatum"),
         supabase.from("liefertouren").select("id, status, datum"),
+        supabase.from("kunden").select("id, aktiv"),
+        supabase.from("rechnungen").select("id, status"),
       ]);
 
       const bestellungen = bestellungenResult.data || [];
       const touren = liefertourenResult.data || [];
+      const kunden = kundenResult.data || [];
+      const rechnungen = rechnungenResult.data || [];
+
+      const neuCount = bestellungen.filter((b) => b.status === "neu").length;
+      const inBearbCount = bestellungen.filter((b) => b.status === "in_bearbeitung").length;
 
       return {
         bestellungen: {
           total: bestellungen.length,
-          neu: bestellungen.filter((b) => b.status === "neu").length,
-          inBearbeitung: bestellungen.filter((b) => b.status === "in_bearbeitung").length,
+          neu: neuCount,
+          inBearbeitung: inBearbCount,
           versandbereit: bestellungen.filter((b) => b.status === "ausgeliefert").length,
           heuteAuszuliefern: bestellungen.filter((b) => b.lieferdatum === today && b.status !== "abgeschlossen" && b.status !== "storniert").length,
         },
@@ -68,6 +86,17 @@ export function useDashboardStats() {
           total: touren.length,
           aktiv: touren.filter((t) => t.status === "aktiv" || t.status === "in_durchfuehrung").length,
           heute: touren.filter((t) => t.datum === today).length,
+        },
+        kunden: {
+          total: kunden.length,
+          aktiv: kunden.filter((k) => k.aktiv !== false).length,
+        },
+        arbeitsauftraege: {
+          offen: neuCount + inBearbCount,
+        },
+        rechnungen: {
+          total: rechnungen.length,
+          offen: rechnungen.filter((r) => r.status === "offen").length,
         },
       };
     },
