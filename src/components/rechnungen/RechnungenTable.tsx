@@ -74,7 +74,11 @@ export function RechnungenTable({
             </TableRow>
           ) : (
             rechnungen.map((rechnung) => (
-              <TableRow key={rechnung.id}>
+              <TableRow
+                key={rechnung.id}
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => onViewDetails(rechnung)}
+              >
                 <TableCell className="font-medium">{rechnung.rechnungsnummer}</TableCell>
                 <TableCell>{rechnung.bestellnummer}</TableCell>
                 <TableCell>
@@ -119,7 +123,7 @@ export function RechnungenTable({
                     <span className="text-muted-foreground">-</span>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
