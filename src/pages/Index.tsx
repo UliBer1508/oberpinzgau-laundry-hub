@@ -23,7 +23,7 @@ const Index = () => {
         <AppSidebar />
         <main className="flex-1 overflow-auto">
           {/* Header */}
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6">
             <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
