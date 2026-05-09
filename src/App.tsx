@@ -17,6 +17,7 @@ import Rechnungseinstellungen from "./pages/Rechnungseinstellungen";
 import Waeschekraefte from "./pages/Waeschekraefte";
 import Benutzerverwaltung from "./pages/Benutzerverwaltung";
 import Integrationen from "./pages/Integrationen";
+import Verwaltung from "./pages/Verwaltung";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/waeschekraefte" element={<RequireAccess resource="waeschekraefte"><Waeschekraefte /></RequireAccess>} />
             <Route path="/benutzer" element={<RequireAccess resource="benutzer"><Benutzerverwaltung /></RequireAccess>} />
             <Route path="/integrationen" element={<RequireAccess resource="benutzer"><Integrationen /></RequireAccess>} />
+            <Route path="/verwaltung" element={<RequireAccess resource="benutzer"><Verwaltung /></RequireAccess>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
