@@ -35,7 +35,7 @@ const Index = () => {
 
           <div className="p-4 md:p-6 space-y-6">
             {/* Übersichts-Kacheln */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
               <StatCard
                 title="Bestellungen"
                 value={stats?.bestellungen?.total ?? 0}
