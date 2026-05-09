@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { QuickActionsUpdated } from "@/components/dashboard/QuickActionsUpdated";
 import { useDashboardStats } from "@/hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
-import { Package, Users, ListTodo, Truck, FileText, ChevronDown } from "lucide-react";
+import { Package, Users, ListTodo, Truck, FileText, ChevronDown, Settings } from "lucide-react";
 
 const Index = () => {
   const today = new Date().toLocaleDateString("de-AT", {
@@ -29,12 +29,22 @@ const Index = () => {
         <main className="flex-1 overflow-x-hidden min-w-0">
           <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6">
             <SidebarTrigger className="hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
-            <div className="flex items-center gap-4 min-w-0">
+            <div className="flex items-center gap-4 min-w-0 flex-1">
               <div className="min-w-0">
                 <h1 className="text-xl font-semibold text-sidebar-foreground truncate">Dashboard</h1>
                 <p className="text-sm text-sidebar-foreground/80 truncate">{today}</p>
               </div>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0 text-sidebar-foreground hover:bg-sidebar-accent"
+              onClick={() => navigate("/benutzer")}
+              aria-label="Verwaltung"
+              title="Verwaltung"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
           </header>
 
           <div className="p-4 md:p-6 space-y-6">
