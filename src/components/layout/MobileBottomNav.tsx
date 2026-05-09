@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Users, ShoppingCart, FileText, Layers } from "lucide-react";
+import { LayoutDashboard, Users, ShoppingCart, FileText, ListTodo } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -7,7 +7,7 @@ const items = [
   { title: "Kunden", url: "/kunden", icon: Users },
   { title: "Bestellungen", url: "/bestellungen", icon: ShoppingCart },
   { title: "Rechnungen", url: "/rechnungen", icon: FileText },
-  { title: "Sets", url: "/waeschesets", icon: Layers },
+  { title: "Arbeitsaufträge", url: "/bestellungen/management", icon: ListTodo },
 ];
 
 export function MobileBottomNav() {
