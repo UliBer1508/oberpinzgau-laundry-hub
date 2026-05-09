@@ -21,19 +21,20 @@ const Index = () => {
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-x-hidden min-w-0">
           {/* Header */}
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6">
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-xl font-semibold text-sidebar-foreground">Dashboard</h1>
-                <p className="text-sm text-sidebar-foreground/80">{today}</p>
+          <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6">
+            <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="min-w-0">
+                <h1 className="text-xl font-semibold text-sidebar-foreground truncate">Dashboard</h1>
+                <p className="text-sm text-sidebar-foreground/80 truncate">{today}</p>
               </div>
             </div>
           </header>
 
           {/* Content */}
-          <div className="p-6 space-y-6">
+          <div className="p-4 md:p-6 space-y-6">
             {/* Stats Grid - Order focused */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard
