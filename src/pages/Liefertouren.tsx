@@ -120,7 +120,7 @@ export default function Liefertouren() {
               </TabsList>
 
               <TabsContent value="touren" className="space-y-6">
-                <LiefertourenStats touren={touren} />
+                <LiefertourenStats touren={touren} statusFilter={statusFilter} onStatusChange={setStatusFilter} />
 
                 <LiefertourenFilter
                   searchTerm={searchTerm}
