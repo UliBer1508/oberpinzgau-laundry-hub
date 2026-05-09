@@ -15,7 +15,7 @@ export type Resource =
 export const RESOURCES: { key: Resource; label: string }[] = [
   { key: "dashboard", label: "Dashboard" },
   { key: "kunden", label: "Kunden & Objekte" },
-  { key: "bestellungen", label: "Bestellungen-Übersicht" },
+  { key: "bestellungen", label: "Bestellungen" },
   { key: "bestellungen_management", label: "Arbeitsverwaltung" },
   { key: "liefertouren", label: "Liefertouren" },
   { key: "rechnungen", label: "Rechnungen" },
