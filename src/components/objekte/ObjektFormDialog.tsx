@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Dialog,
@@ -19,8 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
-import type { Objekt } from "@/hooks/useObjekte";
+import { Loader2, Upload, X, Image as ImageIcon } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { useUploadObjektBild, useDeleteObjektBild, type Objekt } from "@/hooks/useObjekte";
 
 interface ObjektFormDialogProps {
   open: boolean;
@@ -46,6 +47,11 @@ export function ObjektFormDialog({
   isSaving,
   kunden,
 }: ObjektFormDialogProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [bildUrl, setBildUrl] = useState<string | null>(null);
+  const uploadBild = useUploadObjektBild();
+  const deleteBild = useDeleteObjektBild();
+
   const { register, handleSubmit, reset, setValue, watch } = useForm({
     defaultValues: {
       objektnummer: "",
@@ -80,6 +86,7 @@ export function ObjektFormDialog({
         notizen: objekt.notizen || "",
         aktiv: objekt.aktiv ?? true,
       });
+      setBildUrl(objekt.bild_url || null);
     } else {
       const newObjektnummer = `O${Date.now().toString().slice(-6)}`;
       reset({
@@ -95,11 +102,44 @@ export function ObjektFormDialog({
         notizen: "",
         aktiv: true,
       });
+      setBildUrl(null);
     }
   }, [objekt, reset]);
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Ungültiger Dateityp", description: "Bitte ein Bild wählen.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Datei zu groß", description: "Maximal 5 MB.", variant: "destructive" });
+      return;
+    }
+    try {
+      const url = await uploadBild.mutateAsync(file);
+      if (bildUrl) {
+        try { await deleteBild.mutateAsync(bildUrl); } catch {}
+      }
+      setBildUrl(url);
+    } catch (err: any) {
+      toast({ title: "Upload fehlgeschlagen", description: err.message, variant: "destructive" });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveBild = async () => {
+    if (!bildUrl) return;
+    try {
+      await deleteBild.mutateAsync(bildUrl);
+    } catch {}
+    setBildUrl(null);
+  };
+
   const onSubmit = (data: any) => {
-    onSave(data);
+    onSave({ ...data, bild_url: bildUrl });
   };
 
   return (
@@ -168,6 +208,55 @@ export function ObjektFormDialog({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Objektbild</Label>
+            <div className="flex items-center gap-4">
+              <div className="h-24 w-24 rounded-md border bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                {bildUrl ? (
+                  <img src={bildUrl} alt="Objekt" className="h-full w-full object-cover" />
+                ) : (
+                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadBild.isPending}
+                >
+                  {uploadBild.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="mr-2 h-4 w-4" />
+                  )}
+                  {bildUrl ? "Bild ersetzen" : "Bild hochladen"}
+                </Button>
+                {bildUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveBild}
+                    disabled={deleteBild.isPending}
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    Entfernen
+                  </Button>
+                )}
+                <p className="text-xs text-muted-foreground">JPG, PNG, WEBP · max. 5 MB</p>
+              </div>
             </div>
           </div>
 

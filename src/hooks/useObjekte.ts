@@ -93,6 +93,33 @@ export function useUpdateObjekt() {
   });
 }
 
+export function useUploadObjektBild() {
+  return useMutation({
+    mutationFn: async (file: File): Promise<string> => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('objekt-bilder')
+        .upload(fileName, file);
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from('objekt-bilder').getPublicUrl(fileName);
+      return data.publicUrl;
+    },
+  });
+}
+
+export function useDeleteObjektBild() {
+  return useMutation({
+    mutationFn: async (bildUrl: string): Promise<void> => {
+      const url = new URL(bildUrl);
+      const pathParts = url.pathname.split('/');
+      const fileName = pathParts[pathParts.length - 1];
+      const { error } = await supabase.storage.from('objekt-bilder').remove([fileName]);
+      if (error) throw error;
+    },
+  });
+}
+
 export function useToggleObjektAktiv() {
   const queryClient = useQueryClient();
 
