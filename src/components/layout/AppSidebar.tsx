@@ -52,11 +52,11 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const { user, profile, signOut } = useAuth();
-  const { data: currentRole } = useCurrentUserRole();
-  const isAdmin = currentRole === "admin";
-  const visibleManagementItems = managementNavItems.filter(
-    (item) => item.url !== "/benutzer" || isAdmin
-  );
+  const can = useCan();
+  // Wenn niemand eingeloggt ist (Dev-Modus), alles zeigen.
+  const showAll = !user;
+  const visibleMainItems = mainNavItems.filter((item) => showAll || can(item.resource, "view"));
+  const visibleManagementItems = managementNavItems.filter((item) => showAll || can(item.resource, "view"));
   const navigate = useNavigate();
 
   const getInitials = () => {
