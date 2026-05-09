@@ -18,6 +18,7 @@ import Benutzerverwaltung from "./pages/Benutzerverwaltung";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
+import { RequireAccess } from "@/components/auth/RequireAccess";
 
 const queryClient = new QueryClient();
 
