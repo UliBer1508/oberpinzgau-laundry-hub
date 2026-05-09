@@ -61,13 +61,22 @@ export function ObjekteTable({ objekte, onEdit, onManageSets, onToggleAktiv }: O
         <TableBody>
           {objekte.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+              <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                 Keine Objekte gefunden.
               </TableCell>
             </TableRow>
           ) : (
             objekte.map((objekt) => (
               <TableRow key={objekt.id} className="group">
+                <TableCell>
+                  <div className="h-12 w-12 rounded-md border bg-muted flex items-center justify-center overflow-hidden">
+                    {objekt.bild_url ? (
+                      <img src={objekt.bild_url} alt={objekt.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="font-mono text-sm">{objekt.objektnummer}</TableCell>
                 <TableCell>
                   <div className="flex flex-col">
