@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { ManagementHeader } from "@/components/management/ManagementHeader";
 import { ManagementFilterBar } from "@/components/management/ManagementFilterBar";
 import { ManagementTable } from "@/components/management/ManagementTable";
+import { BestellungDetailDialog } from "@/components/bestellungen/BestellungDetailDialog";
 import { useManagementBestellungen } from "@/hooks/useManagementBestellungen";
 import { Loader2 } from "lucide-react";
 
