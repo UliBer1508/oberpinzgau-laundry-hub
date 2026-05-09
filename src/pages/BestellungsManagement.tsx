@@ -116,11 +116,11 @@ export default function BestellungsManagement() {
               }}
             >
               <Download className="h-4 w-4" />
-              Excel-Export
+              <span className="hidden sm:inline">Excel-Export</span>
             </Button>
           </header>
 
-          <main className="flex-1 p-4 md:p-6 space-y-4 overflow-x-hidden min-w-0">
+          <main className="flex-1 p-3 pb-24 md:p-6 md:pb-6 space-y-3 md:space-y-4 overflow-x-hidden min-w-0">
             <ManagementHeader
               selectedDate={selectedDate}
               onDateChange={setSelectedDate}
