@@ -1,13 +1,11 @@
-import { useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { BestellungenDashboard } from "@/components/dashboard/BestellungenDashboard";
 import { TodayLiefertouren } from "@/components/dashboard/TodayLiefertouren";
 import { QuickActionsUpdated } from "@/components/dashboard/QuickActionsUpdated";
 import { useDashboardStats } from "@/hooks/useDashboard";
-import type { DashboardFilter } from "@/hooks/useDashboard";
-import { Package, Clock, Truck, CalendarCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Package, Users, ListTodo, Truck, FileText } from "lucide-react";
 
 const Index = () => {
   const today = new Date().toLocaleDateString("de-AT", {
@@ -18,14 +16,13 @@ const Index = () => {
   });
 
   const { data: stats } = useDashboardStats();
-  const [filter, setFilter] = useState<DashboardFilter>("neu");
+  const navigate = useNavigate();
 
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <main className="flex-1 overflow-x-hidden min-w-0">
-          {/* Header */}
           <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6">
             <SidebarTrigger className="hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
             <div className="flex items-center gap-4 min-w-0">
@@ -36,57 +33,54 @@ const Index = () => {
             </div>
           </header>
 
-          {/* Content */}
           <div className="p-4 md:p-6 space-y-6">
-            {/* Stats Grid - clickable filters */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Übersichts-Kacheln */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               <StatCard
-                title="Neue Bestellungen"
-                value={stats?.bestellungen.neu ?? 0}
+                title="Bestellungen"
+                value={stats?.bestellungen.total ?? 0}
+                subtitle={`${stats?.bestellungen.neu ?? 0} neu`}
                 icon={Package}
                 variant="info"
-                onClick={() => setFilter("neu")}
-                active={filter === "neu"}
+                onClick={() => navigate("/bestellungen")}
               />
               <StatCard
-                title="In Bearbeitung"
-                value={stats?.bestellungen.inBearbeitung ?? 0}
-                icon={Clock}
+                title="Kunden & Objekte"
+                value={stats?.kunden.total ?? 0}
+                subtitle={`${stats?.kunden.aktiv ?? 0} aktiv`}
+                icon={Users}
+                variant="primary"
+                onClick={() => navigate("/kunden")}
+              />
+              <StatCard
+                title="Arbeitsaufträge"
+                value={stats?.arbeitsauftraege.offen ?? 0}
+                subtitle="offen"
+                icon={ListTodo}
                 variant="warning"
-                onClick={() => setFilter("in_bearbeitung")}
-                active={filter === "in_bearbeitung"}
+                onClick={() => navigate("/bestellungen/management")}
               />
               <StatCard
-                title="Versandbereit"
-                value={stats?.bestellungen.versandbereit ?? 0}
+                title="Liefertouren"
+                value={stats?.liefertouren.heute ?? 0}
+                subtitle={`heute · ${stats?.liefertouren.total ?? 0} gesamt`}
                 icon={Truck}
                 variant="success"
-                onClick={() => setFilter("ausgeliefert")}
-                active={filter === "ausgeliefert"}
+                onClick={() => navigate("/liefertouren")}
               />
               <StatCard
-                title="Heute auszuliefern"
-                value={stats?.bestellungen.heuteAuszuliefern ?? 0}
-                subtitle={`${stats?.liefertouren.heute ?? 0} Touren geplant`}
-                icon={CalendarCheck}
-                variant="primary"
-                onClick={() => setFilter("heute")}
-                active={filter === "heute"}
+                title="Rechnungen"
+                value={stats?.rechnungen.offen ?? 0}
+                subtitle={`offen · ${stats?.rechnungen.total ?? 0} gesamt`}
+                icon={FileText}
+                variant="default"
+                onClick={() => navigate("/rechnungen")}
               />
             </div>
 
-            {/* Main Content Grid */}
-            <div className="grid gap-6 lg:grid-cols-3">
-              {/* Left column - Bestellungen (takes 2 cols) */}
-              <div className="lg:col-span-2">
-                <BestellungenDashboard filter={filter} />
-              </div>
-
-              {/* Right column - Touren & Quick Actions */}
-              <div className="space-y-6">
-                <TodayLiefertouren />
-                <QuickActionsUpdated />
-              </div>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <TodayLiefertouren />
+              <QuickActionsUpdated />
             </div>
           </div>
         </main>

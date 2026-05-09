@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNavItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Kunden & Objekte", url: "/kunden", icon: Users },
   { title: "Bestellungen-Übersicht", url: "/bestellungen", icon: ClipboardList },
   { title: "Arbeitsverwaltung", url: "/bestellungen/management", icon: ListTodo },
@@ -87,7 +86,7 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-sidebar-border px-4 py-5">
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <NavLink to="/" end className="flex items-center gap-3 rounded-lg hover:bg-sidebar-accent/50 transition-colors p-1 -m-1">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <Package className="h-5 w-5" />
               </div>
@@ -101,7 +100,7 @@ export function AppSidebar() {
                   </span>
                 </div>
               )}
-            </div>
+            </NavLink>
             {!isCollapsed && (
               <SidebarTrigger className="h-8 w-8 rounded-lg hover:bg-sidebar-accent" />
             )}
