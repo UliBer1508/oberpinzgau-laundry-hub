@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Kunden from "./pages/Kunden";
-import Objekte from "./pages/Objekte";
+
 import Waescheartikel from "./pages/Waescheartikel";
 import Waeschesets from "./pages/Waeschesets";
 import Bestellungen from "./pages/Bestellungen";
