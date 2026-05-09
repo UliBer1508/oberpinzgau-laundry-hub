@@ -14,6 +14,7 @@ import BestellungsManagement from "./pages/BestellungsManagement";
 import Liefertouren from "./pages/Liefertouren";
 import Rechnungen from "./pages/Rechnungen";
 import Waeschekraefte from "./pages/Waeschekraefte";
+import Benutzerverwaltung from "./pages/Benutzerverwaltung";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/liefertouren" element={<Liefertouren />} />
             <Route path="/rechnungen" element={<Rechnungen />} />
             <Route path="/waeschekraefte" element={<Waeschekraefte />} />
+            <Route path="/benutzer" element={<Benutzerverwaltung />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

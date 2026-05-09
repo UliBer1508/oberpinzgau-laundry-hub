@@ -16,6 +16,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentUserRole } from "@/hooks/useBenutzer";
 import {
   Sidebar,
   SidebarContent,
@@ -50,6 +51,11 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const { user, profile, signOut } = useAuth();
+  const { data: currentRole } = useCurrentUserRole();
+  const isAdmin = currentRole === "admin";
+  const visibleManagementItems = managementNavItems.filter(
+    (item) => item.url !== "/benutzer" || isAdmin
+  );
   const navigate = useNavigate();
 
   const getInitials = () => {
@@ -143,7 +149,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {managementNavItems.map((item) => (
+              {visibleManagementItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink
