@@ -52,14 +52,16 @@ const Index = () => {
                 variant="primary"
                 onClick={() => navigate("/kunden")}
               />
-              <StatCard
-                title="Arbeitsaufträge"
-                value={stats?.arbeitsauftraege?.offen ?? 0}
-                subtitle="offen"
-                icon={ListTodo}
-                variant="warning"
-                onClick={() => navigate("/bestellungen/management")}
-              />
+              <div className="col-span-2 lg:col-span-1">
+                <StatCard
+                  title="Arbeitsaufträge"
+                  value={stats?.arbeitsauftraege?.offen ?? 0}
+                  subtitle="offen"
+                  icon={ListTodo}
+                  variant="warning"
+                  onClick={() => navigate("/bestellungen/management")}
+                />
+              </div>
               <StatCard
                 title="Liefertouren"
                 value={stats?.liefertouren?.heute ?? 0}
