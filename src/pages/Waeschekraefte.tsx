@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { WaeschekraefteStats } from "@/components/waeschekraefte/WaeschekraefteStats";
 import { WaeschekraefteFilter } from "@/components/waeschekraefte/WaeschekraefteFilter";
@@ -117,8 +117,9 @@ export default function Waeschekraefte() {
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
-        <main className="flex-1 overflow-auto">
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6">
+        <main className="flex-1 overflow-x-hidden min-w-0">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6">
+            <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
             <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-xl font-semibold text-sidebar-foreground">Personal</h1>

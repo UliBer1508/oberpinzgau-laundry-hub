@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
@@ -148,7 +148,7 @@ export default function Rechnungen() {
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-4 md:p-6 overflow-x-hidden min-w-0">
             <div className="text-destructive">
               Fehler beim Laden der Rechnungen: {error.message}
             </div>
@@ -162,9 +162,10 @@ export default function Rechnungen() {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-x-hidden min-w-0">
           {/* Header */}
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6">
+            <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
             <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-xl font-semibold text-sidebar-foreground">Rechnungen</h1>
@@ -177,7 +178,7 @@ export default function Rechnungen() {
             </Button>
           </header>
 
-          <div className="p-6 space-y-6">
+          <div className="p-4 md:p-6 space-y-6">
 
             {/* Stats */}
             <RechnungenStats stats={stats} />

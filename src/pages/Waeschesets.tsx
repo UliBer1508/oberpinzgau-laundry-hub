@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Plus, Layers } from "lucide-react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -144,7 +144,7 @@ export default function Waeschesets() {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-4 md:p-6 overflow-x-hidden min-w-0">
             <div className="text-center text-destructive">
               Fehler beim Laden der Daten
             </div>
@@ -158,7 +158,7 @@ export default function Waeschesets() {
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-x-hidden min-w-0">
           <div className="container py-6">
             {/* Header */}
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

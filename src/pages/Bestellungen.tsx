@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -176,7 +176,7 @@ export default function Bestellungen() {
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <AppSidebar />
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-4 md:p-6 overflow-x-hidden min-w-0">
             <p className="text-destructive">Fehler beim Laden der Bestellungen.</p>
           </main>
         </div>
@@ -188,8 +188,9 @@ export default function Bestellungen() {
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <main className="flex-1 overflow-auto">
-          <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-6 py-4">
+        <main className="flex-1 overflow-x-hidden min-w-0">
+          <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6 py-4">">
+            <SidebarTrigger className="md:hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0"/>
             <div className="flex flex-1 items-center justify-between">
               <div>
                 <h1 className="text-2xl font-semibold">Bestellungen</h1>

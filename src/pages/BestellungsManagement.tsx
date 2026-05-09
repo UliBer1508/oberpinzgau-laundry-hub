@@ -101,7 +101,7 @@ export default function BestellungsManagement() {
             </div>
           </header>
 
-          <main className="flex-1 p-6 space-y-4">
+          <main className="flex-1 p-4 md:p-6 space-y-4 overflow-x-hidden min-w-0">
             <ManagementHeader
               selectedDate={selectedDate}
               onDateChange={setSelectedDate}
