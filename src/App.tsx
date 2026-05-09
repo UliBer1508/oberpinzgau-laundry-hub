@@ -13,6 +13,7 @@ import Bestellungen from "./pages/Bestellungen";
 import BestellungsManagement from "./pages/BestellungsManagement";
 import Liefertouren from "./pages/Liefertouren";
 import Rechnungen from "./pages/Rechnungen";
+import Rechnungseinstellungen from "./pages/Rechnungseinstellungen";
 import Waeschekraefte from "./pages/Waeschekraefte";
 import Benutzerverwaltung from "./pages/Benutzerverwaltung";
 import Auth from "./pages/Auth";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/bestellungen/management" element={<RequireAccess resource="bestellungen_management"><BestellungsManagement /></RequireAccess>} />
             <Route path="/liefertouren" element={<RequireAccess resource="liefertouren"><Liefertouren /></RequireAccess>} />
             <Route path="/rechnungen" element={<RequireAccess resource="rechnungen"><Rechnungen /></RequireAccess>} />
+            <Route path="/rechnungseinstellungen" element={<RequireAccess resource="rechnungen"><Rechnungseinstellungen /></RequireAccess>} />
             <Route path="/waeschekraefte" element={<RequireAccess resource="waeschekraefte"><Waeschekraefte /></RequireAccess>} />
             <Route path="/benutzer" element={<RequireAccess resource="benutzer"><Benutzerverwaltung /></RequireAccess>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
