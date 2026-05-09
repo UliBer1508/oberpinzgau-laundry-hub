@@ -247,6 +247,7 @@ export type Database = {
           objektnummer: string
           ort: string | null
           plz: string | null
+          schnellbestellung_set_id: string | null
           strasse: string | null
           telefon: string | null
           typ: Database["public"]["Enums"]["objekt_typ"]
@@ -264,6 +265,7 @@ export type Database = {
           objektnummer: string
           ort?: string | null
           plz?: string | null
+          schnellbestellung_set_id?: string | null
           strasse?: string | null
           telefon?: string | null
           typ: Database["public"]["Enums"]["objekt_typ"]
@@ -281,6 +283,7 @@ export type Database = {
           objektnummer?: string
           ort?: string | null
           plz?: string | null
+          schnellbestellung_set_id?: string | null
           strasse?: string | null
           telefon?: string | null
           typ?: Database["public"]["Enums"]["objekt_typ"]
