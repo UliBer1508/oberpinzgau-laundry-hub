@@ -16,6 +16,7 @@ import {
 } from "@dnd-kit/sortable";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ManagementTableRow } from "./ManagementTableRow";
+import { ManagementMobileList } from "./ManagementMobileList";
 import { type ManagementBestellung, useUpdateReihenfolge } from "@/hooks/useManagementBestellungen";
 import { toast } from "sonner";
 
@@ -81,46 +82,56 @@ export function ManagementTable({ bestellungen, onViewDetails }: ManagementTable
   }
 
   return (
-    <div className="rounded-lg border bg-card overflow-hidden">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50">
-              <TableHead className="w-[40px]"></TableHead>
-              <TableHead className="w-[50px]">Prio</TableHead>
-              <TableHead className="w-[100px]">Bestellnr.</TableHead>
-              <TableHead>Kunde</TableHead>
-              <TableHead>Objekt</TableHead>
-              <TableHead className="w-[130px]">Status</TableHead>
-              <TableHead className="w-[100px]">Lieferung</TableHead>
-              <TableHead className="w-[100px]">Abholung</TableHead>
-              <TableHead className="w-[130px]">Bis</TableHead>
-              <TableHead className="w-[160px]">Wäschekraft</TableHead>
-              <TableHead className="min-w-[180px]">Artikel</TableHead>
-              <TableHead className="w-[60px] text-right">Aktion</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <SortableContext
-              items={items.map((item) => item.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {items.map((bestellung) => (
-                <ManagementTableRow
-                  key={bestellung.id}
-                  bestellung={bestellung}
-                  isSelected={false}
-                  onViewDetails={onViewDetails}
-                />
-              ))}
-            </SortableContext>
-          </TableBody>
-        </Table>
-      </DndContext>
-    </div>
+    <>
+      {/* Mobile: Card-Liste */}
+      <div className="md:hidden">
+        <ManagementMobileList bestellungen={items} onViewDetails={onViewDetails} />
+      </div>
+
+      {/* Desktop: Tabelle mit Drag-and-Drop */}
+      <div className="hidden md:block rounded-lg border bg-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="w-[40px]"></TableHead>
+                  <TableHead className="w-[50px]">Prio</TableHead>
+                  <TableHead className="w-[100px]">Bestellnr.</TableHead>
+                  <TableHead>Kunde</TableHead>
+                  <TableHead>Objekt</TableHead>
+                  <TableHead className="w-[130px]">Status</TableHead>
+                  <TableHead className="w-[100px]">Lieferung</TableHead>
+                  <TableHead className="w-[100px]">Abholung</TableHead>
+                  <TableHead className="w-[130px]">Bis</TableHead>
+                  <TableHead className="w-[160px]">Wäschekraft</TableHead>
+                  <TableHead className="min-w-[180px]">Artikel</TableHead>
+                  <TableHead className="w-[60px] text-right">Aktion</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <SortableContext
+                  items={items.map((item) => item.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {items.map((bestellung) => (
+                    <ManagementTableRow
+                      key={bestellung.id}
+                      bestellung={bestellung}
+                      isSelected={false}
+                      onViewDetails={onViewDetails}
+                    />
+                  ))}
+                </SortableContext>
+              </TableBody>
+            </Table>
+          </DndContext>
+        </div>
+      </div>
+    </>
   );
 }
