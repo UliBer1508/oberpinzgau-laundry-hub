@@ -32,16 +32,16 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/kunden" element={<Kunden />} />
+            <Route path="/kunden" element={<RequireAccess resource="kunden"><Kunden /></RequireAccess>} />
             <Route path="/objekte" element={<Navigate to="/kunden" replace />} />
-            <Route path="/waescheartikel" element={<Waescheartikel />} />
-            <Route path="/waeschesets" element={<Waeschesets />} />
-            <Route path="/bestellungen" element={<Bestellungen />} />
-            <Route path="/bestellungen/management" element={<BestellungsManagement />} />
-            <Route path="/liefertouren" element={<Liefertouren />} />
-            <Route path="/rechnungen" element={<Rechnungen />} />
-            <Route path="/waeschekraefte" element={<Waeschekraefte />} />
-            <Route path="/benutzer" element={<Benutzerverwaltung />} />
+            <Route path="/waescheartikel" element={<RequireAccess resource="waescheartikel"><Waescheartikel /></RequireAccess>} />
+            <Route path="/waeschesets" element={<RequireAccess resource="waeschesets"><Waeschesets /></RequireAccess>} />
+            <Route path="/bestellungen" element={<RequireAccess resource="bestellungen"><Bestellungen /></RequireAccess>} />
+            <Route path="/bestellungen/management" element={<RequireAccess resource="bestellungen_management"><BestellungsManagement /></RequireAccess>} />
+            <Route path="/liefertouren" element={<RequireAccess resource="liefertouren"><Liefertouren /></RequireAccess>} />
+            <Route path="/rechnungen" element={<RequireAccess resource="rechnungen"><Rechnungen /></RequireAccess>} />
+            <Route path="/waeschekraefte" element={<RequireAccess resource="waeschekraefte"><Waeschekraefte /></RequireAccess>} />
+            <Route path="/benutzer" element={<RequireAccess resource="benutzer"><Benutzerverwaltung /></RequireAccess>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
