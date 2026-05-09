@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
@@ -78,6 +79,19 @@ export default function Bestellungen() {
       abgeschlossen: bestellungen.filter((b) => b.status === "abgeschlossen").length,
     };
   }, [bestellungen]);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("neu") === "1") {
+      setSelectedBestellung(null);
+      setFormDialogOpen(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete("neu");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAddBestellung = () => {
     setSelectedBestellung(null);

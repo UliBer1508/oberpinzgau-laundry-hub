@@ -1,22 +1,7 @@
-import { ShoppingCart, Truck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ShoppingCart, ClipboardList, Truck, Receipt } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-
-const actions = [
-  {
-    label: "Neue Bestellung",
-    icon: ShoppingCart,
-    variant: "default" as const,
-    href: "/bestellungen",
-  },
-  {
-    label: "Tour planen",
-    icon: Truck,
-    variant: "outline" as const,
-    href: "/liefertouren",
-  },
-];
+import { QuickActionCard } from "./QuickActionCard";
 
 export function QuickActionsUpdated() {
   const navigate = useNavigate();
@@ -26,18 +11,37 @@ export function QuickActionsUpdated() {
       <CardHeader className="pb-3">
         <CardTitle className="text-base font-semibold">Schnellaktionen</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-2">
-        {actions.map((action) => (
-          <Button
-            key={action.label}
-            variant={action.variant}
-            className="h-11 justify-start gap-3"
-            onClick={() => navigate(action.href)}
-          >
-            <action.icon className="h-4 w-4" />
-            {action.label}
-          </Button>
-        ))}
+      <CardContent>
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+          <QuickActionCard
+            label="Neue Bestellung"
+            description="Bestellung erfassen"
+            icon={ShoppingCart}
+            variant="primary"
+            onClick={() => navigate("/bestellungen?neu=1")}
+          />
+          <QuickActionCard
+            label="Arbeitsauftrag"
+            description="Aufträge verwalten"
+            icon={ClipboardList}
+            variant="warning"
+            onClick={() => navigate("/bestellungen/management")}
+          />
+          <QuickActionCard
+            label="Tour planen"
+            description="Lieferung planen"
+            icon={Truck}
+            variant="info"
+            onClick={() => navigate("/liefertouren?neu=1")}
+          />
+          <QuickActionCard
+            label="Rechnungen"
+            description="Übersicht öffnen"
+            icon={Receipt}
+            variant="success"
+            onClick={() => navigate("/rechnungen")}
+          />
+        </div>
       </CardContent>
     </Card>
   );
