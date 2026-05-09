@@ -147,10 +147,10 @@ export function RechnungDetailDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl w-[calc(100vw-1rem)] max-h-[95vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <DialogTitle className="flex flex-wrap items-center gap-2 text-base sm:text-lg">
                 Rechnung {rechnung.rechnungsnummer}
                 <RechnungStatusBadge status={rechnung.status} />
                 {isOverdue && (
@@ -160,10 +160,12 @@ export function RechnungDetailDialog({
                 )}
               </DialogTitle>
               <div className="flex gap-2">
+                {/* Toggle nur Desktop - mobil immer strukturierte Ansicht */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowPrintView(!showPrintView)}
+                  className="hidden md:inline-flex"
                 >
                   {showPrintView ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}
                   {showPrintView ? "Bearbeiten" : "Vorschau"}
@@ -172,6 +174,7 @@ export function RechnungDetailDialog({
                   variant="outline"
                   size="sm"
                   onClick={handlePrint}
+                  className="flex-1 sm:flex-none"
                 >
                   <Printer className="h-4 w-4 mr-1" />
                   Drucken
@@ -180,28 +183,40 @@ export function RechnungDetailDialog({
             </div>
           </DialogHeader>
 
-          {showPrintView ? (
-            /* Druckansicht nach Vorlage */
-            <div ref={printRef} className="border rounded-lg overflow-hidden">
+          {/* Hidden print container - immer gemountet damit Drucken funktioniert */}
+          <div className="hidden">
+            <div ref={printRef}>
               <RechnungDruckansicht
                 rechnung={rechnung}
                 positionen={positionen}
                 einstellungen={einstellungen || null}
               />
             </div>
-          ) : (
-            /* Standard-Bearbeitungsansicht */
-            <div className="space-y-6">
+          </div>
+
+          {/* Druckansicht: nur Desktop wenn aktiviert */}
+          {showPrintView && (
+            <div className="hidden md:block border rounded-lg overflow-hidden">
+              <RechnungDruckansicht
+                rechnung={rechnung}
+                positionen={positionen}
+                einstellungen={einstellungen || null}
+              />
+            </div>
+          )}
+
+          {/* Strukturierte Ansicht: immer auf Mobile, auf Desktop wenn Druckansicht aus */}
+          <div className={showPrintView ? "md:hidden space-y-6" : "space-y-6"}>
               {/* Mahnungs-Info */}
               {(rechnung.mahnung_anzahl ?? 0) > 0 && (
                 <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md p-3 text-sm">
-                  <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-                    <AlertTriangle className="h-4 w-4" />
+                  <div className="flex flex-wrap items-center gap-2 text-amber-800 dark:text-amber-200">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
                     <span className="font-medium">
                       {rechnung.mahnung_anzahl} Mahnung{(rechnung.mahnung_anzahl ?? 0) > 1 ? "en" : ""} gesendet
                     </span>
                     {rechnung.mahnung_gesendet_am && (
-                      <span className="text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         (zuletzt: {format(new Date(rechnung.mahnung_gesendet_am), "dd.MM.yyyy HH:mm", { locale: de })})
                       </span>
                     )}
@@ -244,19 +259,48 @@ export function RechnungDetailDialog({
               {/* Kunde */}
               <div className="text-sm">
                 <p className="text-muted-foreground mb-1">Kunde</p>
-                <p className="font-medium">
+                <p className="font-medium break-words">
                   {rechnung.kunde_firma && `${rechnung.kunde_firma} - `}
                   {rechnung.kunde_name}
                   {rechnung.kunde_kundennummer && ` (${rechnung.kunde_kundennummer})`}
                 </p>
                 {(rechnung.kunde_strasse || rechnung.kunde_plz || rechnung.kunde_ort) && (
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground break-words">
                     {rechnung.kunde_strasse}, {rechnung.kunde_plz} {rechnung.kunde_ort}
                   </p>
                 )}
               </div>
 
               <Separator />
+
+              {/* Positionen */}
+              {positionen.length > 0 && (
+                <>
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Positionen</p>
+                    <div className="space-y-2">
+                      {positionen.map((pos, i) => (
+                        <div key={pos.id} className="rounded-md border bg-card p-3 text-sm">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="font-medium break-words">
+                                {i + 1}. {pos.bezeichnung}
+                                {pos.farbe && <span className="text-muted-foreground"> ({pos.farbe})</span>}
+                              </p>
+                              <p className="text-xs text-muted-foreground font-mono">{pos.artikelnummer}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {pos.menge} × {formatPreis(pos.einzelpreis)}
+                              </p>
+                            </div>
+                            <p className="font-semibold whitespace-nowrap">{formatPreis(pos.gesamtpreis)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
 
               {/* Beträge */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -286,18 +330,19 @@ export function RechnungDetailDialog({
                   <Separator />
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Notizen</p>
-                    <p className="text-sm">{rechnung.notizen}</p>
+                    <p className="text-sm break-words">{rechnung.notizen}</p>
                   </div>
                 </>
               )}
 
               {/* Aktionen */}
               <Separator />
-              <div className="flex gap-2 justify-end flex-wrap">
+              <div className="flex flex-col sm:flex-row gap-2 sm:justify-end sm:flex-wrap">
                 {(rechnung.status === 'offen' || rechnung.status === 'mahnung') && rechnung.kunde_email && (
                   <Button
                     variant="outline"
                     onClick={handleSendMahnung}
+                    className="w-full sm:w-auto"
                   >
                     <Send className="mr-2 h-4 w-4" />
                     Mahnung per E-Mail
@@ -310,6 +355,7 @@ export function RechnungDetailDialog({
                       onStatusChange(rechnung.id, 'bezahlt');
                       onOpenChange(false);
                     }}
+                    className="w-full sm:w-auto"
                   >
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Als bezahlt markieren
@@ -322,6 +368,7 @@ export function RechnungDetailDialog({
                       onStatusChange(rechnung.id, 'mahnung');
                       onOpenChange(false);
                     }}
+                    className="w-full sm:w-auto"
                   >
                     <AlertTriangle className="mr-2 h-4 w-4" />
                     Mahnung
@@ -334,6 +381,7 @@ export function RechnungDetailDialog({
                       onStatusChange(rechnung.id, 'storniert');
                       onOpenChange(false);
                     }}
+                    className="w-full sm:w-auto"
                   >
                     <XCircle className="mr-2 h-4 w-4" />
                     Stornieren
@@ -341,7 +389,6 @@ export function RechnungDetailDialog({
                 )}
               </div>
             </div>
-          )}
         </DialogContent>
       </Dialog>
 
