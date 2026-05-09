@@ -299,7 +299,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Status */}
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Select value={status} onValueChange={handleStatusChange}>
           <SelectTrigger className="h-8 text-sm border-0 p-0">
             <Badge 
