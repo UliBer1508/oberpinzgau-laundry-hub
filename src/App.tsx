@@ -16,6 +16,7 @@ import Rechnungen from "./pages/Rechnungen";
 import Rechnungseinstellungen from "./pages/Rechnungseinstellungen";
 import Waeschekraefte from "./pages/Waeschekraefte";
 import Benutzerverwaltung from "./pages/Benutzerverwaltung";
+import Integrationen from "./pages/Integrationen";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
