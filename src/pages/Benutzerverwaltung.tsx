@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { Plus, Trash2, Pencil, Search, Loader2, ShieldAlert } from "lucide-react";
+import { Plus, Trash2, Pencil, Search, Loader2, ShieldAlert, Users, ShieldCheck } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RollenTab } from "@/components/benutzer/RollenTab";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
