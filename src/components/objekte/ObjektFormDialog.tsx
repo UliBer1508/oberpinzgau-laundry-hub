@@ -30,6 +30,7 @@ interface ObjektFormDialogProps {
   onSave: (data: any) => void;
   isSaving?: boolean;
   kunden: Array<{ id: string; name: string; firma: string | null; kundennummer: string }>;
+  lockedKundeId?: string | null;
 }
 
 const objektTypen = [
@@ -46,6 +47,7 @@ export function ObjektFormDialog({
   onSave,
   isSaving,
   kunden,
+  lockedKundeId,
 }: ObjektFormDialogProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [bildUrl, setBildUrl] = useState<string | null>(null);
@@ -91,7 +93,7 @@ export function ObjektFormDialog({
       const newObjektnummer = `O${Date.now().toString().slice(-6)}`;
       reset({
         objektnummer: newObjektnummer,
-        kunde_id: "",
+        kunde_id: lockedKundeId || "",
         name: "",
         typ: "ferienwohnung",
         strasse: "",
@@ -104,7 +106,7 @@ export function ObjektFormDialog({
       });
       setBildUrl(null);
     }
-  }, [objekt, reset]);
+  }, [objekt, reset, lockedKundeId]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -161,25 +163,27 @@ export function ObjektFormDialog({
                 className="font-mono"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="kunde_id">Kunde *</Label>
-              <Select
-                value={selectedKundeId}
-                onValueChange={(value) => setValue("kunde_id", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Kunde auswählen" />
-                </SelectTrigger>
-                <SelectContent>
-                  {kunden.map((kunde) => (
-                    <SelectItem key={kunde.id} value={kunde.id}>
-                      {kunde.name}
-                      {kunde.firma && ` (${kunde.firma})`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {!lockedKundeId && (
+              <div className="space-y-2">
+                <Label htmlFor="kunde_id">Kunde *</Label>
+                <Select
+                  value={selectedKundeId}
+                  onValueChange={(value) => setValue("kunde_id", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Kunde auswählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {kunden.map((kunde) => (
+                      <SelectItem key={kunde.id} value={kunde.id}>
+                        {kunde.name}
+                        {kunde.firma && ` (${kunde.firma})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
