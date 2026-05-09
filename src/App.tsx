@@ -13,6 +13,7 @@ import Bestellungen from "./pages/Bestellungen";
 import BestellungsManagement from "./pages/BestellungsManagement";
 import Liefertouren from "./pages/Liefertouren";
 import Rechnungen from "./pages/Rechnungen";
+import Rechnungseinstellungen from "./pages/Rechnungseinstellungen";
 import Waeschekraefte from "./pages/Waeschekraefte";
 import Benutzerverwaltung from "./pages/Benutzerverwaltung";
 import Auth from "./pages/Auth";
