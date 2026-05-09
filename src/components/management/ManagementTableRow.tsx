@@ -472,7 +472,7 @@ export function ManagementTableRow({ bestellung, isSelected, onViewDetails }: Ma
       </TableCell>
 
       {/* Bearbeitung Deadline */}
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Popover open={isDeadlineOpen} onOpenChange={setIsDeadlineOpen}>
           <PopoverTrigger asChild>
             <Button
