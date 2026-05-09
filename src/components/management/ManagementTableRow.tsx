@@ -35,6 +35,7 @@ import { toast } from "sonner";
 interface ManagementTableRowProps {
   bestellung: ManagementBestellung;
   isSelected: boolean;
+  onViewDetails?: (id: string) => void;
 }
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive"; className?: string }> = {
