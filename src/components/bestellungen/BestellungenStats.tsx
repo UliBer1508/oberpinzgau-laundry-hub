@@ -1,14 +1,13 @@
-import { Package, Clock, CheckCircle, Euro } from "lucide-react";
+import { Package, Clock, CheckCircle, Truck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { formatPreis } from "@/lib/formatPreis";
 
 interface BestellungenStatsProps {
   stats: {
     gesamt: number;
     inBearbeitung: number;
+    ausgeliefert: number;
     abgeschlossen: number;
-    gesamtumsatz: number;
   };
 }
 
@@ -56,18 +55,18 @@ export function BestellungenStats({ stats }: BestellungenStatsProps) {
         iconTextClass="text-info"
       />
       <StatItem
+        icon={<Truck className="h-5 w-5" />}
+        label="Ausgeliefert"
+        value={stats.ausgeliefert}
+        iconBgClass="bg-warning/10"
+        iconTextClass="text-warning"
+      />
+      <StatItem
         icon={<CheckCircle className="h-5 w-5" />}
         label="Abgeschlossen"
         value={stats.abgeschlossen}
         iconBgClass="bg-success/10"
         iconTextClass="text-success"
-      />
-      <StatItem
-        icon={<Euro className="h-5 w-5" />}
-        label="Gesamtumsatz"
-        value={formatPreis(stats.gesamtumsatz)}
-        iconBgClass="bg-warning/10"
-        iconTextClass="text-warning"
       />
     </div>
   );
