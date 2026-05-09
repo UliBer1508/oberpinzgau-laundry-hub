@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet } from "lucide-react";
+import { Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { exportRechnungenToExcel } from "@/lib/rechnungenExport";
 import {
@@ -191,7 +191,7 @@ export default function Rechnungen() {
                 });
               }}
             >
-              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              <Download className="mr-2 h-4 w-4" />
               Excel Export
             </Button>
           </header>
