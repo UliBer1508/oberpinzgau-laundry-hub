@@ -2,8 +2,9 @@ import { useState, useMemo } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileSpreadsheet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { exportRechnungenToExcel } from "@/lib/rechnungenExport";
 import {
   useRechnungen,
   useUpdateRechnungStatus,
@@ -172,9 +173,26 @@ export default function Rechnungen() {
                 <p className="text-sm text-sidebar-foreground/80">Übersicht aller Rechnungen</p>
               </div>
             </div>
-            <Button variant="secondary" disabled className="disabled:opacity-100 disabled:bg-sidebar-accent disabled:text-sidebar-accent-foreground">
-              <FileText className="mr-2 h-4 w-4" />
-              Export (bald verfügbar)
+            <Button
+              variant="secondary"
+              onClick={() => {
+                if (filteredRechnungen.length === 0) {
+                  toast({
+                    title: "Keine Rechnungen",
+                    description: "Es gibt keine Rechnungen zum Exportieren.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                exportRechnungenToExcel(filteredRechnungen);
+                toast({
+                  title: "Export erstellt",
+                  description: `${filteredRechnungen.length} Rechnungen exportiert.`,
+                });
+              }}
+            >
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              Excel Export
             </Button>
           </header>
 
