@@ -1,53 +1,42 @@
 ## Ziel
-Dashboard-Layout neu strukturieren: 5 Übersichts-Kacheln (Bestellungen, Kunden, Arbeitsaufträge, Liefertouren, Rechnungen) statt der bisherigen Status-Filter. „Dashboard" aus der Sidebar entfernen.
+Bestellungen-Liste neu gestalten: Klick auf eine Bestellung öffnet direkt den Bearbeiten-Dialog, und das Layout wird moderner und übersichtlicher (keine horizontale Scrollleiste mehr).
 
 ## Änderungen
 
-### 1. Sidebar bereinigen
-**`src/components/layout/AppSidebar.tsx`** und **`src/components/layout/MobileBottomNav.tsx`**
-- Eintrag „Dashboard" aus `mainNavItems` entfernen.
-- Logo/Header in der Sidebar bleibt klickbar als Link auf `/` (Dashboard bleibt als Startseite erreichbar).
+### 1. `src/pages/Bestellungen.tsx`
+- `onViewDetails` der Tabelle so umverdrahten, dass beim Zeilen-Klick `handleEditBestellung` (Bearbeiten-Dialog) aufgerufen wird statt des Detail-Dialogs.
+- Detail-Dialog bleibt verfügbar, aber nicht mehr per Zeilenklick (wird über separaten Button "Details" zugänglich gemacht).
 
-### 2. Dashboard-Statistiken erweitern
-**`src/hooks/useDashboard.ts`** – `useDashboardStats` erweitern um:
-- `bestellungen.total` (vorhanden)
-- `kunden.total` (neu, `kunden` count)
-- `arbeitsauftraege` (neu) – Bestellungen mit Status `neu` + `in_bearbeitung`
-- `liefertouren.total` + `liefertouren.heute` (vorhanden)
-- `rechnungen.total` + `rechnungen.offen` (neu, `rechnungen` count)
-
-### 3. Dashboard-Seite umbauen
-**`src/pages/Index.tsx`**
-- Stats-Grid auf 5 Kacheln umstellen (responsive: 1 / 2 / 3 / 5 Spalten):
-  1. **Bestellungen** → klick → `/bestellungen`
-  2. **Kunden & Objekte** → klick → `/kunden`
-  3. **Arbeitsaufträge** (offen) → klick → `/bestellungen/management`
-  4. **Liefertouren** (heute / gesamt) → klick → `/liefertouren`
-  5. **Rechnungen** (offen / gesamt) → klick → `/rechnungen`
-- Jede Kachel zeigt Hauptzahl + kleinen Subtext (z. B. „3 heute", „2 offen").
-- `BestellungenDashboard` mit Status-Filter wird entfernt – stattdessen darunter zwei kompakte Sektionen behalten:
-  - `TodayLiefertouren` (heutige Touren)
-  - `QuickActionsUpdated` (Schnellaktionen)
-- Die alten Filter-States (`filter`, `setFilter`, `DashboardFilter`) entfallen auf dieser Seite.
-
-### 4. Navigation
-- `/` bleibt als Dashboard-Route bestehen.
-- Logo / App-Name in Sidebar als Link nach `/` setzen, damit der Einstieg ins Dashboard ohne eigenen Menüpunkt möglich ist.
-
-## Layout-Skizze
+### 2. `src/components/bestellungen/BestellungenTable.tsx` – komplettes Redesign
+Statt klassischer breiter Tabelle mit 10 Spalten → moderne **Card-/Listen-Ansicht**:
 
 ```text
-┌───────────────────────────────────────────────────────────┐
-│ Header: Dashboard · Samstag, 9. Mai 2026                  │
-├───────────────────────────────────────────────────────────┤
-│ [Bestellungen] [Kunden] [Arbeitsauftr.] [Touren] [Rechn.] │
-├───────────────────────────────────────────────────────────┤
-│ Liefertouren heute        │  Schnellaktionen              │
-└───────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│ B0001  ●Ausgeliefert  [⚡Priorität]                  ⋮ Menü   │
+│ Uli Berresheim · Chalet Wald                                    │
+│ 🛏 3× Bettlaken weiß  · 2× Handtuch grau  +2 weitere            │
+│ ─────────────────────────────────────────────────────────────── │
+│ 📅 19.12.25 10:23   👤 Maria K.   💶 86,40 €   🧾 Ausstehend   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-## Verifikation
-- `/` zeigt 5 Kacheln, jede ist klickbar und führt zur jeweiligen Seite.
-- Sidebar (Desktop) und Bottom-Nav (Mobil) enthalten keinen „Dashboard"-Eintrag mehr.
-- Klick auf Logo/App-Name führt nach `/`.
-- Keine Konsolen-Fehler; Counts entsprechen den DB-Werten.
+Pro Zeile:
+- **Kopfzeile**: Bestellnummer (mono, fett), Status-Badge, ggf. Prioritäts-Badge, rechts ein Dropdown-Menü (⋮) mit "Bearbeiten", "Details ansehen", "Status ändern", "Löschen".
+- **Kunde / Objekt** als zweite Zeile (Kunde fett, Objekt muted).
+- **Positionen-Vorschau**: erste 3 Artikel als kleine Badges, "+N weitere" wenn mehr.
+- **Footer-Zeile** mit Icons: Lieferdatum + Zeit, Wäschekraft, Betrag, Zahlungsstatus.
+
+Karten sind klickbar (gesamte Karte) → öffnet Bearbeiten-Dialog. Aktions-Menü stoppt Event-Propagation.
+
+Vorteile gegenüber der aktuellen Tabelle:
+- Kein horizontales Scrollen mehr (passt in 994 px Viewport).
+- Mobile-freundlich, da vertikal gestapelt.
+- Wichtige Infos stärker gewichtet (Status & Bestellnr. oben, Geld & Datum unten).
+- Konsistent mit dem Stil der bestehenden Dashboard-Bestellkarten (`BestellungenDashboard.tsx`).
+
+### 3. Daten / Hooks
+Keine Änderungen am Datenmodell oder den Hooks nötig — `useBestellungen` liefert bereits alle benötigten Felder. Positions-Vorschau lässt sich aus dem bestehenden `bestellungen[].positionen` (analog zum Dashboard) ziehen; falls nicht vorhanden, lediglich aus `useBestellungenMitDetails` ergänzen.
+
+## Außerhalb des Scope
+- Filter, Stats-Widgets, Detail-Dialog selbst, Form-Dialog: bleiben unverändert.
+- Keine DB-/Backend-Änderungen.
