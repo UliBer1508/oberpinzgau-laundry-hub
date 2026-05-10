@@ -23,6 +23,7 @@ export default function Liefertouren() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [waeschekraftFilter, setWaeschekraftFilter] = useState("all");
+  const [todayOnly, setTodayOnly] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isStoppsOpen, setIsStoppsOpen] = useState(false);
   const [selectedTour, setSelectedTour] = useState<Liefertour | null>(null);
