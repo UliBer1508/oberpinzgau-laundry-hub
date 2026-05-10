@@ -19,7 +19,7 @@ export function ManagementStats({ bestellungen, statusFilter, onStatusChange }: 
   const handle = (s: string) => () => onStatusChange(statusFilter === s ? "all" : s);
 
   return (
-    <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 sm:gap-4 grid-cols-2">
       <StatCard
         title="Gesamt"
         value={stats.total}
