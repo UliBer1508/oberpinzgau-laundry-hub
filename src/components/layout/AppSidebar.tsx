@@ -19,6 +19,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 import { useCan } from "@/hooks/useRoles";
+import { useCurrentUserRole } from "@/hooks/useBenutzer";
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  waeschekraft: "Wäschekraft",
+  kunde: "Kunde",
+};
 import {
   Sidebar,
   SidebarContent,
@@ -55,6 +62,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const { user, profile, signOut } = useAuth();
+  const { data: currentRole } = useCurrentUserRole();
   const can = useCan();
   // Wenn niemand eingeloggt ist (Dev-Modus), alles zeigen.
   const showAll = !user;
@@ -183,7 +191,7 @@ export function AppSidebar() {
                 {getDisplayName()}
               </span>
               <span className="text-xs text-sidebar-muted">
-                {user ? "Benutzer" : "Gast"}
+                {user ? (currentRole ? ROLE_LABELS[currentRole] ?? currentRole : "Benutzer") : "Gast"}
               </span>
             </div>
           )}
