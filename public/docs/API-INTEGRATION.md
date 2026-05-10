@@ -296,8 +296,46 @@ Hausverwaltung                Wäscheportal
 
 ---
 
+## Token-Verwaltung (intern, Portal-Betreiber)
+
+Tokens liegen ausschließlich als SHA-256-Hash in der Tabelle `partner_api_keys`. Die Spaltennamen sind:
+
+| Spalte | Typ | Beschreibung |
+|---|---|---|
+| `kundennummer` | text | zugeordnete Kundennummer (Tenant) |
+| `token_hash` | text | SHA-256-Hex des Klartext-Tokens |
+| `bezeichnung` | text | freier Bezeichner, z. B. „Hausverwaltung Oberpinzgau" |
+| `is_active` | boolean | `false` deaktiviert den Token sofort |
+| `last_used_at` | timestamptz | wird bei jedem Aufruf aktualisiert |
+
+### Neuen Token anlegen (SQL)
+
+```sql
+INSERT INTO partner_api_keys (kundennummer, token_hash, bezeichnung, is_active)
+VALUES (
+  'K470214',
+  encode(digest('<KLARTEXT-TOKEN>', 'sha256'), 'hex'),
+  'Hausverwaltung Oberpinzgau',
+  true
+);
+```
+
+> ⚠️ Spalte heißt **`bezeichnung`**, nicht `name`.
+> Voraussetzung: Extension `pgcrypto` aktiv (bei Supabase per Default).
+
+### Token rotieren
+
+```sql
+-- Alten deaktivieren
+UPDATE partner_api_keys SET is_active = false WHERE bezeichnung = 'Hausverwaltung Oberpinzgau';
+-- Neuen anlegen (siehe oben)
+```
+
+---
+
 ## Support
 
 - Token-Anlage / -Rotation: per Mail an den Portal-Betreiber inkl. Kundennummer.
 - Test-Aufrufe vor Go-Live empfohlen (z. B. mit einer Test-Bestellnummer).
 - Bei Fehlern bitte `request_id` aus den Server-Logs nennen (wird intern pro Aufruf vergeben).
+
