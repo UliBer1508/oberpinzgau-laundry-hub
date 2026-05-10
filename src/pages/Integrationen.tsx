@@ -347,6 +347,126 @@ export default function Integrationen() {
               </CardContent>
             </Card>
 
+            {/* Bestellstatus abfragen */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plug className="h-5 w-5" />
+                  Bestellstatus abfragen
+                </CardTitle>
+                <CardDescription>
+                  Status &amp; Positionen einer übermittelten Bestellung abrufen.
+                  Auth via Bearer-Token aus <code>partner_api_keys</code> – Mandantentrennung
+                  pro Kundennummer.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Badge variant="secondary" className="self-start">GET</Badge>
+                  <code className="flex-1 text-xs bg-muted px-3 py-2 rounded break-all">
+                    {STATUS_URL}?bestellnummer=B0042
+                  </code>
+                  <Button size="sm" variant="outline" onClick={() => copy(STATUS_URL, "URL")}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="text-sm space-y-1">
+                  <p className="font-medium">Query-Parameter (mind. einer)</p>
+                  <ul className="list-disc list-inside text-muted-foreground text-xs space-y-0.5">
+                    <li><code>bestellnummer</code> – Einzelabfrage, z.B. <code>B0042</code></li>
+                    <li><code>bestellnummern</code> – CSV-Liste, max. 100 Einträge (Batch)</li>
+                  </ul>
+                </div>
+
+                <div className="text-sm space-y-1">
+                  <p className="font-medium">Status-Werte</p>
+                  <p className="text-xs text-muted-foreground">
+                    <code>neu</code>, <code>in_bearbeitung</code>, <code>ausgeliefert</code>,
+                    <code> abgeholt</code>, <code>abgeschlossen</code>, <code>storniert</code>
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-medium">Beispiel-Response (Einzelabfrage)</p>
+                    <Button size="sm" variant="outline"
+                      onClick={() => copy(STATUS_RESPONSE_EXAMPLE, "Response")}>
+                      <Copy className="h-4 w-4 mr-1" /> Kopieren
+                    </Button>
+                  </div>
+                  <pre className="bg-muted text-xs rounded p-3 overflow-x-auto">
+                    <code>{STATUS_RESPONSE_EXAMPLE}</code>
+                  </pre>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Batch: <code>{`{ "orders": [ ... ] }`}</code> – nur gefundene Bestellungen.
+                  </p>
+                </div>
+
+                <div className="text-sm space-y-1">
+                  <p className="font-medium">Fehler</p>
+                  <ul className="list-disc list-inside text-muted-foreground text-xs space-y-0.5">
+                    <li><code>400</code> – kein Query-Parameter angegeben</li>
+                    <li><code>401</code> – Token fehlt/ungültig</li>
+                    <li><code>404</code> – nur bei Einzelabfrage, Bestellung nicht gefunden</li>
+                    <li><code>429</code> – Rate-Limit (60 req/min/Token)</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Rechnungen abrufen */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Rechnungen abrufen
+                </CardTitle>
+                <CardDescription>
+                  Rechnungen samt Positionen für die im Token hinterlegte Kundennummer.
+                  Tenant-Isolation: niemals quer.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Badge variant="secondary" className="self-start">GET</Badge>
+                  <code className="flex-1 text-xs bg-muted px-3 py-2 rounded break-all">
+                    {INVOICES_URL}?since=2026-01-01&amp;status=offen&amp;limit=100
+                  </code>
+                  <Button size="sm" variant="outline" onClick={() => copy(INVOICES_URL, "URL")}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="text-sm space-y-1">
+                  <p className="font-medium">Query-Parameter (alle optional)</p>
+                  <ul className="list-disc list-inside text-muted-foreground text-xs space-y-0.5">
+                    <li><code>kundennummer</code> – wenn gesetzt, muss sie der Token-Kundennummer entsprechen (sonst 403)</li>
+                    <li><code>since</code> – ISO-Datum, filtert <code>rechnungsdatum &gt;= since</code></li>
+                    <li><code>status</code> – z. B. <code>offen</code>, <code>bezahlt</code>, <code>storniert</code></li>
+                    <li><code>limit</code> – default 100, max 500</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-medium">Beispiel-Response</p>
+                    <Button size="sm" variant="outline"
+                      onClick={() => copy(INVOICES_RESPONSE_EXAMPLE, "Response")}>
+                      <Copy className="h-4 w-4 mr-1" /> Kopieren
+                    </Button>
+                  </div>
+                  <pre className="bg-muted text-xs rounded p-3 overflow-x-auto">
+                    <code>{INVOICES_RESPONSE_EXAMPLE}</code>
+                  </pre>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Leere Liste statt 404, wenn keine Rechnungen vorhanden.
+                    <code>pdf_url</code> kommt in einer Folge-Iteration (signierte URL).
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Downloads */}
             <Card>
               <CardHeader>
