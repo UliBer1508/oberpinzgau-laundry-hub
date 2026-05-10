@@ -299,6 +299,75 @@ export type Database = {
           },
         ]
       }
+      partner_api_keys: {
+        Row: {
+          bezeichnung: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          kundennummer: string
+          last_used_at: string | null
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          bezeichnung?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kundennummer: string
+          last_used_at?: string | null
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          bezeichnung?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kundennummer?: string
+          last_used_at?: string | null
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      partner_api_log: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          kundennummer: string | null
+          latency_ms: number | null
+          method: string
+          query: string | null
+          request_id: string | null
+          status_code: number
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          kundennummer?: string | null
+          latency_ms?: number | null
+          method: string
+          query?: string | null
+          request_id?: string | null
+          status_code: number
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          kundennummer?: string | null
+          latency_ms?: number | null
+          method?: string
+          query?: string | null
+          request_id?: string | null
+          status_code?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
