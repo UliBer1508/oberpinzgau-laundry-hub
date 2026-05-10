@@ -11,6 +11,52 @@ import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const ENDPOINT_URL = `${SUPABASE_URL}/functions/v1/external-order-import`;
+const STATUS_URL = `${SUPABASE_URL}/functions/v1/external-order-status`;
+const INVOICES_URL = `${SUPABASE_URL}/functions/v1/external-invoices`;
+
+const STATUS_RESPONSE_EXAMPLE = `{
+  "bestellnummer": "B0042",
+  "status": "in_bearbeitung",
+  "kunde_kundennummer": "K470214",
+  "objekt_objektnummer": "OBJ-001",
+  "gastname": "Familie Mustermann",
+  "check_in": "2026-05-10",
+  "check_out": "2026-05-15",
+  "anzahl_personen": 4,
+  "lieferdatum": "2026-05-09",
+  "abholdatum": "2026-05-16",
+  "erstellt_am": "2026-05-09T12:34:56Z",
+  "aktualisiert_am": "2026-05-10T08:15:00Z",
+  "gesamt_preis": 461.00,
+  "waehrung": "EUR",
+  "positionen": [
+    { "artikelnummer": "WA001", "name": "Bettwäsche", "menge": 4, "einzelpreis": 30.00, "summe": 120.00 }
+  ]
+}`;
+
+const INVOICES_RESPONSE_EXAMPLE = `{
+  "rechnungen": [
+    {
+      "id": "uuid",
+      "rechnungsnummer": "R-2026-0042",
+      "rechnungsdatum": "2026-04-30",
+      "faelligkeitsdatum": "2026-05-30",
+      "bezahlt_am": null,
+      "status": "offen",
+      "nettobetrag": 1200.00,
+      "mwst_betrag": 240.00,
+      "bruttobetrag": 1440.00,
+      "waehrung": "EUR",
+      "kunde_kundennummer": "K470214",
+      "kunde_name": "Steinbock Chalets",
+      "pdf_url": null,
+      "positionen": [
+        { "bezeichnung": "Bettwäsche", "menge": 12, "einzelpreis": 30.00, "summe": 360.00, "bestellnummer": "B0042" }
+      ]
+    }
+  ],
+  "count": 1
+}`;
 
 const PAYLOAD_EXAMPLE = `{
   "kundennummer": "K470214",
