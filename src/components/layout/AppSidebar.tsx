@@ -62,6 +62,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const { user, profile, signOut } = useAuth();
+  const { data: currentRole } = useCurrentUserRole();
   const can = useCan();
   // Wenn niemand eingeloggt ist (Dev-Modus), alles zeigen.
   const showAll = !user;
