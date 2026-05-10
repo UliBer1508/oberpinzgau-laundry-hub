@@ -26,7 +26,7 @@ export function QuickActionsUpdated() {
             onClick={() => navigate("/bestellungen?neu=1")}
           />
           <QuickActionCard
-            label="Arbeitsauftrag"
+            label="Neuen Arbeitsauftrag"
             description="Bestellung zuweisen"
             icon={ClipboardList}
             variant="warning"
