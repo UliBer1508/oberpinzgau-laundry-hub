@@ -37,6 +37,8 @@ export function LiefertourenStats({ touren, statusFilter, onStatusChange, todayA
         value={stats.today}
         icon={Calendar}
         variant="info"
+        active={todayActive}
+        onClick={onToggleToday}
       />
       <StatCard
         title="Aktive Touren"
