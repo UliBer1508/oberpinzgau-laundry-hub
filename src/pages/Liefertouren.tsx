@@ -23,6 +23,7 @@ export default function Liefertouren() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [waeschekraftFilter, setWaeschekraftFilter] = useState("all");
+  const [todayOnly, setTodayOnly] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isStoppsOpen, setIsStoppsOpen] = useState(false);
   const [selectedTour, setSelectedTour] = useState<Liefertour | null>(null);
@@ -45,6 +46,7 @@ export default function Liefertouren() {
   const updateStatus = useUpdateLiefertourStatus();
 
   const filteredTouren = useMemo(() => {
+    const today = new Date().toISOString().split("T")[0];
     return touren.filter((tour) => {
       const matchesSearch =
         searchTerm === "" ||
@@ -57,9 +59,11 @@ export default function Liefertouren() {
       const matchesWaeschekraft =
         waeschekraftFilter === "all" || tour.waeschekraft_id === waeschekraftFilter;
 
-      return matchesSearch && matchesStatus && matchesWaeschekraft;
+      const matchesToday = !todayOnly || tour.datum === today;
+
+      return matchesSearch && matchesStatus && matchesWaeschekraft && matchesToday;
     });
-  }, [touren, searchTerm, statusFilter, waeschekraftFilter]);
+  }, [touren, searchTerm, statusFilter, waeschekraftFilter, todayOnly]);
 
   const handleEdit = (tour: Liefertour) => {
     setSelectedTour(tour);
@@ -133,7 +137,7 @@ export default function Liefertouren() {
               </TabsList>
 
               <TabsContent value="touren" className="space-y-6">
-                <LiefertourenStats touren={touren} statusFilter={statusFilter} onStatusChange={setStatusFilter} />
+                <LiefertourenStats touren={touren} statusFilter={statusFilter} onStatusChange={setStatusFilter} todayActive={todayOnly} onToggleToday={() => setTodayOnly((v) => !v)} />
 
                 <LiefertourenFilter
                   searchTerm={searchTerm}

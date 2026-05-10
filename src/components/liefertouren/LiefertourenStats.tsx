@@ -6,9 +6,11 @@ interface LiefertourenStatsProps {
   touren: Liefertour[];
   statusFilter?: string;
   onStatusChange?: (status: string) => void;
+  todayActive?: boolean;
+  onToggleToday?: () => void;
 }
 
-export function LiefertourenStats({ touren, statusFilter, onStatusChange }: LiefertourenStatsProps) {
+export function LiefertourenStats({ touren, statusFilter, onStatusChange, todayActive, onToggleToday }: LiefertourenStatsProps) {
   const today = new Date().toISOString().split("T")[0];
 
   const stats = {
@@ -35,6 +37,8 @@ export function LiefertourenStats({ touren, statusFilter, onStatusChange }: Lief
         value={stats.today}
         icon={Calendar}
         variant="info"
+        active={todayActive}
+        onClick={onToggleToday}
       />
       <StatCard
         title="Aktive Touren"
