@@ -137,7 +137,7 @@ export default function Liefertouren() {
               </TabsList>
 
               <TabsContent value="touren" className="space-y-6">
-                <LiefertourenStats touren={touren} statusFilter={statusFilter} onStatusChange={setStatusFilter} />
+                <LiefertourenStats touren={touren} statusFilter={statusFilter} onStatusChange={setStatusFilter} todayActive={todayOnly} onToggleToday={() => setTodayOnly((v) => !v)} />
 
                 <LiefertourenFilter
                   searchTerm={searchTerm}
