@@ -15,6 +15,7 @@ import {
   Plug,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { PWAInstallButton } from "@/components/PWAInstallButton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -180,7 +181,8 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
+      <SidebarFooter className="border-t border-sidebar-border p-4 space-y-3">
+        {!isCollapsed && <PWAInstallButton fullWidth variant="outline" size="sm" />}
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground">
             <span className="text-sm font-medium">{getInitials()}</span>
