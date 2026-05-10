@@ -191,7 +191,7 @@ export function AppSidebar() {
                 {getDisplayName()}
               </span>
               <span className="text-xs text-sidebar-muted">
-                {user ? "Benutzer" : "Gast"}
+                {user ? (currentRole ? ROLE_LABELS[currentRole] ?? currentRole : "Benutzer") : "Gast"}
               </span>
             </div>
           )}
