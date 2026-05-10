@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.get-external-api-key]
 verify_jwt = false
+
+[functions.external-order-status]
+verify_jwt = false
+
+[functions.external-invoices]
+verify_jwt = false
