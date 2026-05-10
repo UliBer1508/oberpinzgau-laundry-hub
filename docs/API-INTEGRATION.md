@@ -1,550 +1,303 @@
 # API & Integrations-Dokumentation
 
-## Wäscheportal Oberpinzgau - Zugriffsdokumentation
+**Wäscheportal Oberpinzgau** – Integration für Hausverwaltungs-Software
 
-Diese Dokumentation beschreibt alle Möglichkeiten, programmgesteuert auf das Wäscheportal zuzugreifen.
+Diese Dokumentation beschreibt die offizielle Partner-Schnittstelle, über die eine Hausverwaltungs-Software Wäschebestellungen anlegen, deren Bearbeitungsstatus abfragen und Rechnungen importieren kann.
 
----
-
-## 1. Direkte Supabase-Verbindung (Empfohlen für eigene Programme)
-
-### Verbindungsdaten
-
-| Parameter | Wert |
-|-----------|------|
-| **Supabase URL** | `https://pkpnowevagxmhyqlawng.supabase.co` |
-| **Anon Key** | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrcG5vd2V2YWd4bWh5cWxhd25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMzE5OTUsImV4cCI6MjA4MDYwNzk5NX0.yHgZOQg24yzUGTNaQnOOJK4QwWEeSfr7MgQUpq88UTY` |
-
-### Client-Initialisierung
-
-#### JavaScript/TypeScript
-```typescript
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  'https://pkpnowevagxmhyqlawng.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrcG5vd2V2YWd4bWh5cWxhd25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMzE5OTUsImV4cCI6MjA4MDYwNzk5NX0.yHgZOQg24yzUGTNaQnOOJK4QwWEeSfr7MgQUpq88UTY'
-);
-```
-
-#### Python
-```python
-from supabase import create_client
-
-supabase = create_client(
-    "https://pkpnowevagxmhyqlawng.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrcG5vd2V2YWd4bWh5cWxhd25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMzE5OTUsImV4cCI6MjA4MDYwNzk5NX0.yHgZOQg24yzUGTNaQnOOJK4QwWEeSfr7MgQUpq88UTY"
-)
-```
-
-#### C# / .NET
-```csharp
-using Supabase;
-
-var options = new SupabaseOptions
-{
-    AutoRefreshToken = true,
-    PersistSession = true
-};
-
-var client = new Supabase.Client(
-    "https://pkpnowevagxmhyqlawng.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrcG5vd2V2YWd4bWh5cWxhd25nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUwMzE5OTUsImV4cCI6MjA4MDYwNzk5NX0.yHgZOQg24yzUGTNaQnOOJK4QwWEeSfr7MgQUpq88UTY",
-    options
-);
-await client.InitializeAsync();
-```
+> **Empfehlung:** Verwende ausschließlich die hier beschriebenen REST-Endpoints. Direkter DB-Zugriff ist nicht mehr vorgesehen und wird nicht supportet.
 
 ---
 
-## 2. Datenbanktabellen
+## Übersicht der Endpoints
 
-### Stammdaten
+| Methode | Endpoint | Zweck |
+|---|---|---|
+| `POST` | `/functions/v1/external-order-import` | Bestellung anlegen |
+| `GET`  | `/functions/v1/external-order-status` | Status & Positionen einer Bestellung abrufen |
+| `GET`  | `/functions/v1/external-invoices` | Rechnungen mit Positionen abrufen |
 
-| Tabelle | Beschreibung |
-|---------|-------------|
-| `kunden` | Kundenstammdaten (Firma, Kontakt, Bestellmodus) |
-| `objekte` | Objekte/Unterkünfte der Kunden (Hotels, Ferienwohnungen, etc.) |
-| `waescheartikel` | Wäscheartikel-Katalog mit Preisen |
-| `waeschesets` | Wäschesets (Artikelzusammenstellungen pro Objekt) |
-| `waescheset_artikel` | Artikel innerhalb eines Sets |
-| `waeschekraefte` | Personal (Wäschekräfte, Fahrer) |
-
-### Bestellungen
-
-| Tabelle | Beschreibung |
-|---------|-------------|
-| `waeschebestellungen` | Bestellungen mit Buchungsdaten |
-| `bestellpositionen` | Bestellte Artikel pro Bestellung |
-| `bestellung_history` | Statusverlauf und Änderungsprotokoll |
-
-### Logistik
-
-| Tabelle | Beschreibung |
-|---------|-------------|
-| `liefertouren` | Geplante Liefertouren |
-| `liefertour_stopps` | Einzelne Stopps einer Tour |
-| `routenvorlagen` | Vorlagen für wiederkehrende Routen |
-| `routenvorlage_kunden` | Kunden in Routenvorlagen |
-
-### Rechnungen
-
-| Tabelle | Beschreibung |
-|---------|-------------|
-| `rechnungen` | Rechnungsköpfe |
-| `rechnungspositionen` | Rechnungspositionen |
-| `rechnungseinstellungen` | Globale Rechnungseinstellungen |
+**Basis-URL:** `https://pkpnowevagxmhyqlawng.supabase.co`
 
 ---
 
-## 3. Wichtige Tabellenstrukturen
+## Authentifizierung
 
-### kunden
-```sql
-id              UUID PRIMARY KEY
-kundennummer    TEXT NOT NULL (z.B. "K470214")
-name            TEXT NOT NULL
-firma           TEXT
-email           TEXT
-telefon         TEXT
-strasse         TEXT
-plz             TEXT
-ort             TEXT
-bestellmodus    ENUM ('mit_buchung', 'nur_sets')
-bestellart      ENUM ('lieferung', 'abholung', 'beides')
-aktiv           BOOLEAN DEFAULT true
+Alle Partner-Endpoints verwenden denselben HTTP-Header:
+
+```
+Authorization: Bearer <PARTNER_TOKEN>
+Content-Type: application/json
 ```
 
-### objekte
-```sql
-id              UUID PRIMARY KEY
-objektnummer    TEXT NOT NULL (z.B. "O415239")
-name            TEXT NOT NULL
-kunde_id        UUID REFERENCES kunden(id)
-typ             ENUM ('hotel', 'apartmenthaus', 'ferienhaus', 'ferienwohnung')
-strasse         TEXT
-plz             TEXT
-ort             TEXT
-ansprechpartner TEXT
-telefon         TEXT
-aktiv           BOOLEAN DEFAULT true
-```
+- Den Token erhältst du direkt vom Wäscheportal-Betreiber.
+- Der Token ist **pro Hausverwaltung + Kundennummer** ausgestellt. Du siehst ausschließlich Daten zu deiner eigenen Kundennummer (Tenant-Isolation auf Server-Ebene).
+- Der Token wird im Backend nur als SHA-256-Hash gespeichert und ist jederzeit ohne Code-Deploy rotierbar.
+- Soft-Rate-Limit: **60 Requests/Minute pro Token**, sonst `429 Too Many Requests`.
 
-### waescheartikel
-```sql
-id              UUID PRIMARY KEY
-artikelnummer   TEXT NOT NULL (z.B. "WA001")
-name            TEXT NOT NULL
-bezeichnung     TEXT
-kategorie       TEXT ('Bettwäsche', 'Handtücher', 'Wellness', 'Badartikel', 'Küchenartikel')
-groesse         TEXT
-farbe           TEXT
-preis           DECIMAL(10,2)
-bild_url        TEXT
-aktiv           BOOLEAN DEFAULT true
-```
-
-### waeschebestellungen
-```sql
-id                  UUID PRIMARY KEY
-bestellnummer       TEXT NOT NULL (z.B. "B2024-0001")
-kunde_id            UUID REFERENCES kunden(id) NOT NULL
-objekt_id           UUID REFERENCES objekte(id)
-status              ENUM ('neu', 'in_bearbeitung', 'ausgeliefert', 'abgeholt', 'abgeschlossen', 'storniert')
-gastname            TEXT
-check_in            DATE
-check_out           DATE
-anzahl_personen     INTEGER DEFAULT 1
-lieferdatum         DATE
-lieferzeit          TEXT
-abholdatum          DATE
-abholzeit           TEXT
-waeschekraft_id     UUID REFERENCES waeschekraefte(id)
-prioritaet          INTEGER DEFAULT 0
-bearbeitung_deadline TIMESTAMP WITH TIME ZONE
-notizen             TEXT
-created_at          TIMESTAMP WITH TIME ZONE
-updated_at          TIMESTAMP WITH TIME ZONE
-```
-
-### bestellpositionen
-```sql
-id              UUID PRIMARY KEY
-bestellung_id   UUID REFERENCES waeschebestellungen(id) NOT NULL
-artikel_id      UUID REFERENCES waescheartikel(id) NOT NULL
-menge           INTEGER DEFAULT 1
-notizen         TEXT
-```
-
-### bestellung_history
-```sql
-id              UUID PRIMARY KEY
-bestellung_id   UUID REFERENCES waeschebestellungen(id) NOT NULL
-status          TEXT NOT NULL
-bearbeiter_name TEXT
-notiz           TEXT
-zeitpunkt       TIMESTAMP WITH TIME ZONE DEFAULT now()
-```
+Fehlt der Header oder ist der Token unbekannt/inaktiv → `401 Unauthorized`.
 
 ---
 
-## 4. Bestellung erstellen (Direktzugriff)
-
-### Workflow
-1. Bestellung in `waeschebestellungen` erstellen
-2. Positionen in `bestellpositionen` hinzufügen
-3. History-Eintrag in `bestellung_history` erstellen
-
-### JavaScript/TypeScript Beispiel
-
-```typescript
-async function createOrder(orderData: {
-  kunde_id: string;
-  objekt_id?: string;
-  gastname?: string;
-  check_in?: string;
-  check_out?: string;
-  anzahl_personen?: number;
-  lieferdatum?: string;
-  positionen: Array<{ artikel_id: string; menge: number; notizen?: string }>;
-}) {
-  // 1. Nächste Bestellnummer generieren
-  const { data: lastOrder } = await supabase
-    .from('waeschebestellungen')
-    .select('bestellnummer')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
-
-  const year = new Date().getFullYear();
-  let nextNumber = 1;
-  if (lastOrder?.bestellnummer) {
-    const match = lastOrder.bestellnummer.match(/B(\d{4})-(\d+)/);
-    if (match && parseInt(match[1]) === year) {
-      nextNumber = parseInt(match[2]) + 1;
-    }
-  }
-  const bestellnummer = `B${year}-${String(nextNumber).padStart(4, '0')}`;
-
-  // 2. Bestellung erstellen
-  const { data: bestellung, error: bestellungError } = await supabase
-    .from('waeschebestellungen')
-    .insert({
-      bestellnummer,
-      kunde_id: orderData.kunde_id,
-      objekt_id: orderData.objekt_id,
-      gastname: orderData.gastname,
-      check_in: orderData.check_in,
-      check_out: orderData.check_out,
-      anzahl_personen: orderData.anzahl_personen || 1,
-      lieferdatum: orderData.lieferdatum,
-      status: 'neu'
-    })
-    .select()
-    .single();
-
-  if (bestellungError) throw bestellungError;
-
-  // 3. Positionen hinzufügen
-  const positionen = orderData.positionen.map(pos => ({
-    bestellung_id: bestellung.id,
-    artikel_id: pos.artikel_id,
-    menge: pos.menge,
-    notizen: pos.notizen
-  }));
-
-  const { error: positionenError } = await supabase
-    .from('bestellpositionen')
-    .insert(positionen);
-
-  if (positionenError) throw positionenError;
-
-  // 4. History-Eintrag erstellen
-  await supabase
-    .from('bestellung_history')
-    .insert({
-      bestellung_id: bestellung.id,
-      status: 'neu',
-      bearbeiter_name: 'Externes System',
-      notiz: 'Bestellung erstellt via Direktzugriff'
-    });
-
-  return bestellung;
-}
-```
-
-### Python Beispiel
-
-```python
-from datetime import datetime
-
-async def create_order(order_data):
-    # 1. Nächste Bestellnummer generieren
-    result = supabase.table('waeschebestellungen') \
-        .select('bestellnummer') \
-        .order('created_at', desc=True) \
-        .limit(1) \
-        .execute()
-    
-    year = datetime.now().year
-    next_number = 1
-    if result.data:
-        import re
-        match = re.match(r'B(\d{4})-(\d+)', result.data[0]['bestellnummer'])
-        if match and int(match.group(1)) == year:
-            next_number = int(match.group(2)) + 1
-    
-    bestellnummer = f"B{year}-{next_number:04d}"
-    
-    # 2. Bestellung erstellen
-    bestellung = supabase.table('waeschebestellungen').insert({
-        'bestellnummer': bestellnummer,
-        'kunde_id': order_data['kunde_id'],
-        'objekt_id': order_data.get('objekt_id'),
-        'gastname': order_data.get('gastname'),
-        'check_in': order_data.get('check_in'),
-        'check_out': order_data.get('check_out'),
-        'anzahl_personen': order_data.get('anzahl_personen', 1),
-        'lieferdatum': order_data.get('lieferdatum'),
-        'status': 'neu'
-    }).execute()
-    
-    bestellung_id = bestellung.data[0]['id']
-    
-    # 3. Positionen hinzufügen
-    positionen = [{
-        'bestellung_id': bestellung_id,
-        'artikel_id': pos['artikel_id'],
-        'menge': pos['menge'],
-        'notizen': pos.get('notizen')
-    } for pos in order_data['positionen']]
-    
-    supabase.table('bestellpositionen').insert(positionen).execute()
-    
-    # 4. History-Eintrag
-    supabase.table('bestellung_history').insert({
-        'bestellung_id': bestellung_id,
-        'status': 'neu',
-        'bearbeiter_name': 'Externes System',
-        'notiz': 'Bestellung erstellt via Direktzugriff'
-    }).execute()
-    
-    return bestellung.data[0]
-```
-
----
-
-## 5. Stammdaten abfragen
-
-### Aktive Kunden abrufen
-```typescript
-const { data: kunden } = await supabase
-  .from('kunden')
-  .select('id, kundennummer, name, firma, bestellmodus')
-  .eq('aktiv', true)
-  .order('name');
-```
-
-### Objekte eines Kunden
-```typescript
-const { data: objekte } = await supabase
-  .from('objekte')
-  .select('id, objektnummer, name, typ')
-  .eq('kunde_id', kundeId)
-  .eq('aktiv', true);
-```
-
-### Wäscheartikel-Katalog
-```typescript
-const { data: artikel } = await supabase
-  .from('waescheartikel')
-  .select('id, artikelnummer, name, bezeichnung, kategorie, groesse, farbe, preis')
-  .eq('aktiv', true)
-  .order('artikelnummer');
-```
-
-### Wäscheset mit Artikeln
-```typescript
-const { data: sets } = await supabase
-  .from('waeschesets')
-  .select(`
-    id, name, beschreibung,
-    waescheset_artikel (
-      menge,
-      berechnungsart,
-      waescheartikel (id, artikelnummer, name, preis)
-    )
-  `)
-  .eq('objekt_id', objektId)
-  .eq('aktiv', true);
-```
-
----
-
-## 6. External API (für Drittanbieter)
-
-Für externe Programme, die keinen direkten Datenbankzugriff haben sollen, steht eine REST API zur Verfügung.
-
-### Endpoint
-
-| Parameter | Wert |
-|-----------|------|
-| **URL** | `https://pkpnowevagxmhyqlawng.supabase.co/functions/v1/external-order-import` |
-| **Methode** | `POST` |
-| **Content-Type** | `application/json` |
-
-### Authentifizierung
+## 1. Bestellung anlegen
 
 ```
-Authorization: Bearer DEIN_EXTERNAL_API_KEY
+POST https://pkpnowevagxmhyqlawng.supabase.co/functions/v1/external-order-import
 ```
-
-Der API-Key wird als Supabase Secret `EXTERNAL_API_KEY` konfiguriert.
 
 ### Request-Body
 
 ```json
 {
   "kundennummer": "K470214",
-  "objektnummer": "O415239",
-  "gastname": "Max Mustermann",
-  "check_in": "2024-07-15",
-  "check_out": "2024-07-22",
+  "objektnummer": "OBJ-001",
+  "gastname": "Familie Mustermann",
+  "check_in": "2026-05-10",
+  "check_out": "2026-05-15",
   "anzahl_personen": 4,
-  "lieferdatum": "2024-07-14",
-  "abholdatum": "2024-07-22",
-  "notizen": "Bitte am Nachmittag liefern",
+  "lieferdatum": "2026-05-09",
+  "abholdatum": "2026-05-16",
+  "lieferzeit": "08:00 - 12:00",
+  "abholzeit": "10:00 - 14:00",
+  "notizen": "Bitte vor 10:00 anliefern",
+  "prioritaet": 0,
   "positionen": [
-    {
-      "artikelnummer": "WA001",
-      "menge": 2,
-      "notizen": "Für Doppelbett"
-    },
-    {
-      "artikelnummer": "WA005",
-      "menge": 8
-    }
+    { "artikelnummer": "WA001", "menge": 6 },
+    { "artikelnummer": "WA002", "menge": 6 },
+    { "artikelnummer": "WA003", "menge": 6, "notizen": "weiß" }
   ]
 }
 ```
 
-### Pflichtfelder
+### Felder
 
-| Feld | Typ | Beschreibung |
-|------|-----|-------------|
-| `kundennummer` | string | Kundennummer (z.B. "K470214") |
-| `positionen` | array | Min. 1 Position erforderlich |
-| `positionen[].artikelnummer` | string | Artikelnummer (z.B. "WA001") |
-| `positionen[].menge` | number | Menge (min. 1) |
+| Feld | Typ | Pflicht | Beschreibung |
+|---|---|---|---|
+| `kundennummer` | string | ✅ | Kundennummer aus dem Portal (z. B. `K470214`) |
+| `objektnummer` | string | – | Objekt, falls bestellung an einem konkreten Objekt erfolgt |
+| `gastname` | string | – | Name der Buchung |
+| `check_in` | date `YYYY-MM-DD` | – | Anreise |
+| `check_out` | date `YYYY-MM-DD` | – | Abreise |
+| `anzahl_personen` | int | – | default 1 |
+| `lieferdatum` | date | – | default: `check_in - 1` |
+| `abholdatum` | date | – | Wunsch-Abholdatum |
+| `lieferzeit` / `abholzeit` | string | – | freier Text, z. B. `08:00 - 12:00` |
+| `notizen` | string | – | Bemerkungen zur Bestellung |
+| `prioritaet` | int | – | `0` = normal, höher = wichtiger |
+| `positionen[]` | array | ✅ | mind. 1 Eintrag |
+| `positionen[].artikelnummer` | string | ✅ | z. B. `WA001` |
+| `positionen[].menge` | int | ✅ | Stückzahl |
+| `positionen[].notizen` | string | – | Notiz pro Position |
 
-### Optionale Felder
+### Responses
 
-| Feld | Typ | Beschreibung |
-|------|-----|-------------|
-| `objektnummer` | string | Objektnummer |
-| `gastname` | string | Name des Gastes |
-| `check_in` | string | Check-in Datum (YYYY-MM-DD) |
-| `check_out` | string | Check-out Datum (YYYY-MM-DD) |
-| `anzahl_personen` | number | Anzahl Personen (Default: 1) |
-| `lieferdatum` | string | Lieferdatum (YYYY-MM-DD) |
-| `abholdatum` | string | Abholdatum (YYYY-MM-DD) |
-| `notizen` | string | Zusätzliche Notizen |
+`201 Created`
+```json
+{ "success": true, "bestellnummer": "B0042", "id": "uuid", "positionen_count": 3 }
+```
 
-### Response (Erfolg - HTTP 201)
+`400` Validation · `401` Token ungültig · `404` Kunde / Artikel / Objekt nicht gefunden.
+
+### cURL
+
+```bash
+curl -X POST 'https://pkpnowevagxmhyqlawng.supabase.co/functions/v1/external-order-import' \
+  -H 'Authorization: Bearer <PARTNER_TOKEN>' \
+  -H 'Content-Type: application/json' \
+  -d '{ "kundennummer":"K470214","positionen":[{"artikelnummer":"WA001","menge":6}] }'
+```
+
+---
+
+## 2. Bestellstatus abfragen
+
+```
+GET https://pkpnowevagxmhyqlawng.supabase.co/functions/v1/external-order-status
+```
+
+Liefert Status, Buchungsdaten, Positionen und kalkulierten Gesamtpreis einer übermittelten Bestellung.
+
+### Query-Parameter (mind. einer Pflicht)
+
+| Parameter | Typ | Beschreibung |
+|---|---|---|
+| `bestellnummer` | string | Einzelabfrage, z. B. `B0042` |
+| `bestellnummern` | string | CSV, Batch-Abfrage, max. 100 Einträge |
+
+### Status-Werte
+
+`neu` → `in_bearbeitung` → `ausgeliefert` → `abgeholt` → `abgeschlossen` (oder `storniert`)
+
+### Response 200 – Einzelabfrage
 
 ```json
 {
-  "success": true,
-  "bestellung": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "bestellnummer": "B2024-0042",
-    "status": "neu",
-    "created_at": "2024-07-10T14:30:00Z"
-  },
-  "message": "Bestellung B2024-0042 erfolgreich erstellt"
+  "bestellnummer": "B0042",
+  "status": "in_bearbeitung",
+  "kunde_kundennummer": "K470214",
+  "objekt_objektnummer": "OBJ-001",
+  "gastname": "Familie Mustermann",
+  "check_in": "2026-05-10",
+  "check_out": "2026-05-15",
+  "anzahl_personen": 4,
+  "lieferdatum": "2026-05-09",
+  "abholdatum": "2026-05-16",
+  "erstellt_am": "2026-05-09T12:34:56Z",
+  "aktualisiert_am": "2026-05-10T08:15:00Z",
+  "gesamt_preis": 461.00,
+  "waehrung": "EUR",
+  "positionen": [
+    { "artikelnummer": "WA001", "name": "Bettwäsche", "menge": 4, "einzelpreis": 30.00, "summe": 120.00 }
+  ]
 }
 ```
 
-### cURL Beispiel
+### Response 200 – Batch
+
+```json
+{ "orders": [ /* nur gefundene Bestellungen, in beliebiger Reihenfolge */ ] }
+```
+
+Nicht gefundene Bestellnummern werden im Batch-Modus **stillschweigend ausgelassen** – kein Fehlerobjekt pro fehlender Nummer.
+
+### Fehler
+
+| Code | Bedeutung |
+|---|---|
+| `400` | Weder `bestellnummer` noch `bestellnummern` angegeben |
+| `401` | Token fehlt/ungültig |
+| `404` | nur bei Einzelabfrage, Bestellung nicht gefunden oder gehört nicht zur Token-Kundennummer |
+| `429` | Rate-Limit überschritten |
+
+### Empfohlenes Polling
+
+- **Aktive Bestellungen** (`status` ∈ `neu, in_bearbeitung, ausgeliefert`): alle 10–15 Min.
+- **Erledigte Bestellungen**: kein Polling mehr nötig.
+
+### cURL
 
 ```bash
-curl -X POST \
-  'https://pkpnowevagxmhyqlawng.supabase.co/functions/v1/external-order-import' \
-  -H 'Authorization: Bearer DEIN_API_KEY' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "kundennummer": "K470214",
-    "objektnummer": "O415239",
-    "gastname": "Max Mustermann",
-    "check_in": "2024-07-15",
-    "check_out": "2024-07-22",
-    "anzahl_personen": 4,
-    "lieferdatum": "2024-07-14",
-    "positionen": [
-      {"artikelnummer": "WA001", "menge": 2},
-      {"artikelnummer": "WA005", "menge": 8}
-    ]
-  }'
+# Einzeln
+curl -H 'Authorization: Bearer <PARTNER_TOKEN>' \
+  'https://pkpnowevagxmhyqlawng.supabase.co/functions/v1/external-order-status?bestellnummer=B0042'
+
+# Batch
+curl -H 'Authorization: Bearer <PARTNER_TOKEN>' \
+  'https://pkpnowevagxmhyqlawng.supabase.co/functions/v1/external-order-status?bestellnummern=B0042,B0043,B0044'
 ```
 
 ---
 
-## 7. Sicherheitshinweise
+## 3. Rechnungen abrufen
 
-### Aktueller Status (Entwicklung)
+```
+GET https://pkpnowevagxmhyqlawng.supabase.co/functions/v1/external-invoices
+```
 
-⚠️ **Row Level Security (RLS) ist derzeit DEAKTIVIERT**
+Liefert Rechnungen samt Positionen für die Token-Kundennummer.
 
-- Der Anon Key hat vollen Lese-/Schreibzugriff auf alle Tabellen
-- Dies ist nur für die Entwicklungsphase gedacht
+### Query-Parameter (alle optional)
 
-### Vor Produktivbetrieb
+| Parameter | Typ | Default | Beschreibung |
+|---|---|---|---|
+| `kundennummer` | string | aus Token | wenn gesetzt, **muss** sie der Token-Kundennummer entsprechen, sonst `403` |
+| `since` | date `YYYY-MM-DD` | – | nur Rechnungen mit `rechnungsdatum >= since` |
+| `status` | string | – | z. B. `offen`, `bezahlt`, `storniert` |
+| `limit` | int | 100 | max 500 |
 
-Vor dem Go-Live müssen folgende Maßnahmen umgesetzt werden:
+### Response 200
 
-1. **RLS aktivieren** auf allen Tabellen
-2. **Policies definieren** für Benutzerrollen (Admin, Wäschekraft, Kunde)
-3. **Service Role Key** nur serverseitig verwenden
-4. **API-Keys** regelmäßig rotieren
-5. **HTTPS** für alle Verbindungen erzwingen
+```json
+{
+  "rechnungen": [
+    {
+      "id": "uuid",
+      "rechnungsnummer": "R-2026-0042",
+      "rechnungsdatum": "2026-04-30",
+      "faelligkeitsdatum": "2026-05-30",
+      "bezahlt_am": null,
+      "status": "offen",
+      "nettobetrag": 1200.00,
+      "mwst_betrag": 240.00,
+      "bruttobetrag": 1440.00,
+      "waehrung": "EUR",
+      "kunde_kundennummer": "K470214",
+      "kunde_name": "Steinbock Chalets",
+      "pdf_url": null,
+      "positionen": [
+        {
+          "bezeichnung": "Bettwäsche",
+          "menge": 12,
+          "einzelpreis": 30.00,
+          "summe": 360.00,
+          "bestellnummer": "B0042"
+        }
+      ]
+    }
+  ],
+  "count": 1
+}
+```
+
+- **Sortierung**: nach `rechnungsdatum` absteigend.
+- **Leere Liste statt 404**, wenn keine Rechnungen vorhanden.
+- `pdf_url` ist aktuell immer `null`. Eine signierte, zeitlich limitierte PDF-URL (1 h gültig) wird in einer Folge-Iteration nachgeliefert.
+- `positionen[].bestellnummer` verknüpft die Rechnungsposition mit der ursprünglichen Bestellung.
+
+### Fehler
+
+| Code | Bedeutung |
+|---|---|
+| `401` | Token fehlt/ungültig |
+| `403` | `kundennummer`-Parameter weicht von Token-Kundennummer ab |
+| `429` | Rate-Limit überschritten |
+
+### cURL
+
+```bash
+curl -H 'Authorization: Bearer <PARTNER_TOKEN>' \
+  'https://pkpnowevagxmhyqlawng.supabase.co/functions/v1/external-invoices?since=2026-01-01&status=offen&limit=100'
+```
 
 ---
 
-## 8. Enums und Standardwerte
+## Empfohlener Integrations-Flow
 
-### bestellung_status
-- `neu` - Neue Bestellung
-- `in_bearbeitung` - In Bearbeitung
-- `ausgeliefert` - Ausgeliefert
-- `abgeholt` - Abgeholt
-- `abgeschlossen` - Abgeschlossen
-- `storniert` - Storniert
-
-### objekt_typ
-- `hotel`
-- `apartmenthaus`
-- `ferienhaus`
-- `ferienwohnung`
-
-### bestellmodus
-- `mit_buchung` - Mit Buchungsdaten (Gast, Check-in/out)
-- `nur_sets` - Nur Wäschesets ohne Buchungsdaten
-
-### bestellart
-- `lieferung` - Nur Lieferung
-- `abholung` - Nur Abholung
-- `beides` - Lieferung und Abholung
-
-### berechnungsart (für Wäscheset-Artikel)
-- `pro_buchung` - Menge gilt pro Buchung
-- `pro_gast` - Menge wird mit Gästezahl multipliziert
-
-### mitarbeiter_typ
-- `waeschekraft` - Nur Wäschebearbeitung
-- `fahrer` - Nur Lieferung
-- `beides` - Beide Rollen
+```
+Hausverwaltung                Wäscheportal
+     │                              │
+     │ POST external-order-import   │
+     ├─────────────────────────────▶│  201  { bestellnummer: "B0042" }
+     │◀─────────────────────────────┤
+     │                              │
+     │  ⏱  Polling alle 10 Min      │
+     │ GET  external-order-status   │
+     ├─────────────────────────────▶│
+     │◀─────────────────────────────┤  status: "ausgeliefert"
+     │                              │
+     │  ⏱  Täglicher Sync           │
+     │ GET  external-invoices       │
+     ├─────────────────────────────▶│
+     │◀─────────────────────────────┤  rechnungen[]
+     │                              │
+     ▼                              ▼
+   In Buchhaltung übernehmen
+```
 
 ---
 
-*Dokumentation erstellt: Dezember 2024*
-*Version: 1.0*
+## Bekannte Stamm­daten-Konventionen
+
+- **Kundennummer-Format**: `K` + Ziffern (z. B. `K470214`).
+- **Objektnummer-Format**: frei (z. B. `OBJ-001`).
+- **Artikelnummer-Format**: `WA` + Ziffern (z. B. `WA001`).
+- **Bestellnummer-Format**: `B` + 4–13 Ziffern (z. B. `B0042`, `B1778343093471`).
+- **Rechnungsnummer-Format**: `R-YYYY-NNNN` (z. B. `R-2026-0042`).
+- **Währung**: EUR, **MwSt-Satz**: 20 % (Österreich).
+
+---
+
+## Support
+
+- Token-Anlage / -Rotation: per Mail an den Portal-Betreiber inkl. Kundennummer.
+- Test-Aufrufe vor Go-Live empfohlen (z. B. mit einer Test-Bestellnummer).
+- Bei Fehlern bitte `request_id` aus den Server-Logs nennen (wird intern pro Aufruf vergeben).
