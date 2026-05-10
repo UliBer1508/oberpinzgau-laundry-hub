@@ -1,58 +1,31 @@
 ## Ziel
 
-Klick auf das Schnellaktion-Widget **"Arbeitsauftrag"** soll nicht mehr nur zur Verwaltungsseite navigieren, sondern direkt einen kleinen Dialog öffnen, mit dem ein Arbeitsauftrag erstellt werden kann (= Bestellung auswählen + Wäschekraft zuweisen + optional Priorität).
-
-## Konzept "Arbeitsauftrag"
-
-Im aktuellen Datenmodell existiert keine separate Tabelle. Ein **Arbeitsauftrag** entspricht einer `waeschebestellungen`-Zeile mit:
-- zugewiesener `waeschekraft_id`
-- Status `in_bearbeitung`
-- optional gesetzter `prioritaet` und `bearbeitung_deadline`
-
-Diese Zuweisung erfolgt heute zeilenweise auf `/bestellungen/management`. Das neue Widget bündelt diesen Vorgang in einem fokussierten Dialog.
+Die Arbeitsverwaltung (`/bestellungen/management`) soll vom Look & Feel exakt der Bestellungen-Seite (`/bestellungen`) entsprechen:
+- Stats-Karten oben in der gewohnten Größe (4 Karten nebeneinander auf Desktop, 2×2 auf Tablet/Mobile)
+- Arbeitsaufträge in der Liste **immer** als einzelne Karten – auch auf Desktop, statt der bisherigen Tabelle
 
 ## Änderungen
 
-### 1. Neue Komponente `src/components/management/ArbeitsauftragErstellenDialog.tsx`
+### 1. Stats-Karten kleiner (`src/components/management/ManagementStats.tsx`)
+Grid-Klassen wieder auf das Standardraster setzen:
+```text
+grid-cols-2 lg:grid-cols-4
+```
+(aktuell `grid-cols-2` ohne lg-Stufe → die Karten werden auf Desktop unnötig riesig)
 
-Dialog mit folgenden Feldern:
+Damit verhalten sich die 4 Status-Karten (Gesamt / Neu / In Bearbeitung / Ausgeliefert) genau wie auf Bestellungen und Rechnungen.
 
-| Feld | Pflicht | Quelle |
-|---|---|---|
-| Bestellung | ja | Select über offene Bestellungen (Status `neu`, ohne `waeschekraft_id`); Anzeige: Bestellnummer + Kunde + Lieferdatum |
-| Wäschekraft | ja | Select aus `useWaeschekraefteForSelect()` |
-| Priorität | nein | Normal / Hoch / Dringend (Default Normal) |
-| Bearbeitung bis | nein | DatePicker, leer = keine Deadline |
+### 2. Arbeitsaufträge immer als Karten (`src/components/management/ManagementTable.tsx`)
+- Die Desktop-Tabelle (mit Drag-and-Drop, `ManagementTableRow`) wird entfernt.
+- Auf allen Breakpoints wird die Karten-Liste (`ManagementMobileList`) gerendert, identisch zum Bestellungen-Layout.
+- `md:hidden` / `hidden md:block` Wrapper entfallen.
+- DnD-Kit-Imports, `useUpdateReihenfolge`-Hook und der gesamte `handleDragEnd`-Block werden entfernt, da nicht mehr verwendet.
+- Das Empty-State-Markup bleibt (nur einmal, ohne Tabelle).
 
-Verhalten:
-- "Erstellen"-Button → führt **eine** Update-Mutation auf der gewählten Bestellung aus:
-  - `waeschekraft_id` setzen
-  - `status` → `in_bearbeitung`
-  - `prioritaet` setzen (falls geändert)
-  - `bearbeitung_deadline` setzen (falls gewählt)
-- Nach Erfolg: Dialog schließen, Toast "Arbeitsauftrag erstellt", Navigation nach `/bestellungen/management`
-- Keine offenen Bestellungen vorhanden → Hinweis im Dialog mit Link "Neue Bestellung erstellen"
+### 3. Folge: Drag-and-Drop-Reihenfolge entfällt
+Die manuelle Sortierung per Drag-and-Drop war an die Tabelle gebunden und wird mit dem Wegfall der Tabelle entfernt. Die Sortierung erfolgt weiterhin automatisch nach Priorität und Lieferdatum (Logik in `BestellungsManagement.tsx` bleibt unverändert). Die Datenbank-Spalte `reihenfolge` wird nicht angefasst.
 
-### 2. Neuer Hook-Eintrag in `src/hooks/useManagementBestellungen.ts`
-
-`useCreateArbeitsauftrag()` — ein einzelner Mutation-Hook, der die obigen Felder atomar in einem `update` schreibt und die Listen-Queries invalidiert (`bestellungen`, `management-bestellungen`, `dashboard-stats`).
-
-Alternativ können bestehende Hooks (`useUpdateWaeschekraft`, `useUpdateManagementStatus`, ...) sequenziell genutzt werden — bevorzugt aber **ein** Update für Atomizität.
-
-### 3. Daten-Hook für offene Bestellungen
-
-In derselben Datei `useOffeneBestellungenForArbeitsauftrag()` ergänzen:
-- Selektiert `id, bestellnummer, lieferdatum, kunde:kunden(name)` aus `waeschebestellungen`
-- Filter: `status = 'neu'` UND `waeschekraft_id IS NULL`
-- Sortierung nach `lieferdatum ASC`
-
-### 4. `src/components/dashboard/QuickActionsUpdated.tsx`
-- Lokaler State `arbeitsauftragOpen`
-- "Arbeitsauftrag"-Widget: `onClick` öffnet den neuen Dialog statt zu navigieren
-- Dialog wird am Ende der Komponente gerendert
-
-## Out of Scope
-- Keine Änderung am Datenmodell / kein Migration
-- Keine Änderungen an `/bestellungen/management` selbst
-- Keine Bulk-Zuweisung (mehrere Bestellungen gleichzeitig)
-- Reihenfolge (`reihenfolge`) wird nicht gesetzt — bleibt bei Drag&Drop in der Management-Seite
+## Nicht betroffen
+- `BestellungsManagement.tsx` (Filter, Sortierung, Header, Excel-Export) – keine Änderungen nötig
+- `ManagementMobileList.tsx` – wurde bereits ans Bestellungen-Karten-Design angeglichen
+- `ManagementFilterBar.tsx`, Detail-Dialog, Hooks
