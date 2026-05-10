@@ -1,12 +1,4 @@
-import { MoreHorizontal, Pencil, Power, Package } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { MoreVertical, Pencil, Power, Package, Building, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import type { Waescheset } from "@/hooks/useWaeschesets";
 import { formatPreis } from "@/lib/formatPreis";
 
@@ -25,15 +18,10 @@ interface WaeschesetsTableProps {
   onManageArtikel: (set: Waescheset) => void;
 }
 
-export function WaeschesetsTable({
-  sets,
-  onEdit,
-  onToggleAktiv,
-  onManageArtikel,
-}: WaeschesetsTableProps) {
+export function WaeschesetsTable({ sets, onEdit, onToggleAktiv, onManageArtikel }: WaeschesetsTableProps) {
   if (sets.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed bg-card p-12 text-center">
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-card p-12 text-center">
         <Package className="h-12 w-12 text-muted-foreground/50" />
         <h3 className="mt-4 text-lg font-semibold">Keine Wäschesets gefunden</h3>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -43,101 +31,71 @@ export function WaeschesetsTable({
     );
   }
 
-  const renderActions = (set: Waescheset) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-        <DropdownMenuItem onClick={() => onManageArtikel(set)}>
-          <Package className="mr-2 h-4 w-4" />Artikel verwalten
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onEdit(set)}>
-          <Pencil className="mr-2 h-4 w-4" />Bearbeiten
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onToggleAktiv(set)}>
-          <Power className="mr-2 h-4 w-4" />
-          {set.aktiv ? "Deaktivieren" : "Aktivieren"}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-
   return (
-    <>
-      {/* Mobile */}
-      <div className="md:hidden space-y-3">
-        {sets.map((set) => (
-          <div
-            key={set.id}
-            role="button"
-            onClick={() => onEdit(set)}
-            className="rounded-lg border bg-card p-4 shadow-sm active:bg-muted/50 transition-colors"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className="font-semibold truncate">{set.name}</div>
-                <div className="text-sm text-muted-foreground truncate">{set.kundeName}</div>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <Badge variant={set.aktiv ? "default" : "secondary"} className="text-xs">
-                  {set.aktiv ? "Aktiv" : "Inaktiv"}
-                </Badge>
-                {renderActions(set)}
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {sets.map((set) => (
+        <div
+          key={set.id}
+          role="button"
+          tabIndex={0}
+          onClick={() => onEdit(set)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onEdit(set);
+            }
+          }}
+          className={cn(
+            "group relative rounded-xl border bg-card p-4 sm:p-5 shadow-sm transition-all",
+            "hover:shadow-md hover:border-primary/30 cursor-pointer",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            !set.aktiv && "opacity-60",
+          )}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base font-semibold truncate">{set.name}</h3>
+              <div className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground truncate">
+                <User className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{set.kundeName}</span>
               </div>
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-              <Badge variant="outline">{set.objektName}</Badge>
-              <Badge variant="secondary">{set.artikelCount} Artikel</Badge>
-              <span className="ml-auto font-medium">{formatPreis(set.gesamtpreis)}</span>
+            <div className="flex items-center gap-1 shrink-0">
+              <Badge variant={set.aktiv ? "default" : "secondary"} className="text-xs">
+                {set.aktiv ? "Aktiv" : "Inaktiv"}
+              </Badge>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenuItem onClick={() => onManageArtikel(set)}>
+                    <Package className="mr-2 h-4 w-4" />Artikel verwalten
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEdit(set)}>
+                    <Pencil className="mr-2 h-4 w-4" />Bearbeiten
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onToggleAktiv(set)}>
+                    <Power className="mr-2 h-4 w-4" />{set.aktiv ? "Deaktivieren" : "Aktivieren"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            {set.beschreibung && (
-              <div className="mt-2 text-xs text-muted-foreground line-clamp-2">{set.beschreibung}</div>
-            )}
           </div>
-        ))}
-      </div>
 
-      {/* Desktop */}
-      <div className="hidden md:block rounded-lg border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Kunde</TableHead>
-              <TableHead>Objekt</TableHead>
-              <TableHead>Beschreibung</TableHead>
-              <TableHead className="text-center">Artikel</TableHead>
-              <TableHead className="text-right">Preis</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[80px]">Aktionen</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sets.map((set) => (
-              <TableRow key={set.id}>
-                <TableCell className="font-medium">{set.name}</TableCell>
-                <TableCell><span className="text-sm">{set.kundeName}</span></TableCell>
-                <TableCell><Badge variant="outline">{set.objektName}</Badge></TableCell>
-                <TableCell className="max-w-[200px] truncate text-muted-foreground">
-                  {set.beschreibung || "-"}
-                </TableCell>
-                <TableCell className="text-center"><Badge variant="secondary">{set.artikelCount}</Badge></TableCell>
-                <TableCell className="text-right font-medium">{formatPreis(set.gesamtpreis)}</TableCell>
-                <TableCell>
-                  <Badge variant={set.aktiv ? "default" : "secondary"}>
-                    {set.aktiv ? "Aktiv" : "Inaktiv"}
-                  </Badge>
-                </TableCell>
-                <TableCell>{renderActions(set)}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </>
+          {set.beschreibung && (
+            <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{set.beschreibung}</p>
+          )}
+
+          <div className="mt-3 border-t pt-3 flex flex-wrap items-center gap-2 text-sm">
+            <Badge variant="outline" className="gap-1"><Building className="h-3 w-3" />{set.objektName}</Badge>
+            <Badge variant="secondary" className="gap-1"><Package className="h-3 w-3" />{set.artikelCount} Artikel</Badge>
+            <span className="ml-auto font-mono font-medium">{formatPreis(set.gesamtpreis)}</span>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
-

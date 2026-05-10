@@ -1,59 +1,45 @@
-# Schnellaktionen erweitern: Drucken & Exportieren
+# Karten-Layout für Personal, Wäscheartikel, Wäschesets, Benutzer
 
-## Ziel
-Teuni soll morgens mit einem Klick eine gefilterte Liste von Bestellungen, Arbeitsaufträgen oder Rechnungen drucken oder als Excel/CSV exportieren können. Dazu drei neue Schnellaktions-Karten ergänzen, alle Karten kompakter gestalten, sodass 7 Karten in einem responsiven Raster (4 pro Reihe ab `lg`) sauber passen.
+Einheitliches Karten-Layout (wie Liefertouren/Rechnungen) auf alle vier Seiten anwenden. Bestehende Tabellen-Ansichten werden durch das Karten-Grid ersetzt.
 
-## Änderungen
+Karten-Format (analog `LiefertourenTable`):
+- `grid gap-3` (1 Spalte mobil, `md:grid-cols-2 xl:grid-cols-3`)
+- Karte: `group rounded-xl border bg-card p-4 sm:p-5 shadow-sm hover:shadow-md hover:border-primary/30`, `role="button"` mit Enter/Space
+- Kopf: ID/Schlüssel + Status-Badge + `MoreVertical` Dropdown rechts
+- Titel: Name (`text-base font-semibold`)
+- Footer (durch `border-t pt-3` getrennt): Icons + Sekundär-Infos
+- Inaktive Karten: `opacity-60`
 
-### 1. `QuickActionCard.tsx` — kompakter
-- `min-h-[120px]` → `min-h-[96px]`
-- Padding `p-4` → `p-3`
-- Icon-Box `h-11 w-11` → `h-9 w-9`, Icon `h-5 w-5` → `h-4 w-4`
-- Gap `gap-3` → `gap-2`
-- Schrift bleibt (`text-sm` / `text-xs`)
+## 1. `src/components/waeschekraefte/WaeschekraefteTable.tsx`
+Tabellen + Mobile-Block ersetzen durch Karten-Grid.
+- Kopf: `personalnummer` (mono) · Typ-Badge (`Wäschekraft`/`Fahrer`/`Beides`) · Status-Badge (Aktiv/Inaktiv) · Dropdown (Bearbeiten / Aktivieren / Portal / Löschen)
+- Titel: `name`
+- Footer: `Phone` telefon · `Mail` email · `MapPin` adresse · `Key`-Badge Portal-Status
+- Klick auf Karte → `onEdit`
 
-### 2. `QuickActionsUpdated.tsx` — 3 neue Karten + neutrale Variante
-Bestehende 4 Karten bleiben. Darunter (im selben Grid) drei zusätzliche Karten:
+## 2. `src/components/waescheartikel/WaescheartikelTable.tsx`
+Tabelle + Mobile-Block ersetzen durch Karten-Grid. Sortierung wird auf Filter-Bar verschoben? **Nein** – Sortier-Steuerung bleibt erhalten als kleine `Select`-Leiste (`sortField` + `asc/desc`) oberhalb des Grids, statt Spaltenkopf-Buttons.
+- Kopf-Bereich: links 56×56-Bild (oder `ImageIcon`-Platzhalter), daneben `artikelnummer` (mono) + Status-Badge + Dropdown (Bearbeiten / Aktivieren)
+- Titel: `name`
+- Meta-Zeile: Kategorie-Badge · Farb-Punkt + Farbe · Größe · `bezeichnung` (truncate)
+- Footer: Preis rechts (mono, `text-sm font-medium`)
 
-- **Bestellungen exportieren** (Icon `Printer`, neue Variante `neutral`) → öffnet `ExportDialog` mit Typ `bestellungen`
-- **Arbeitsaufträge exportieren** (Icon `ClipboardList` mit `Printer`-Akzent) → `ExportDialog` Typ `arbeitsauftraege`
-- **Rechnungen exportieren** (Icon `Receipt`/`Printer`) → `ExportDialog` Typ `rechnungen`
+## 3. `src/components/waeschesets/WaeschesetsTable.tsx`
+Tabelle + Mobile-Block ersetzen durch Karten-Grid. Empty-State bleibt unverändert.
+- Kopf: `name` · Status-Badge · Dropdown (Artikel verwalten / Bearbeiten / Aktivieren)
+- Sub-Titel: `kundeName`
+- Footer: `Building`-Badge `objektName` · `Package`-Badge `${artikelCount} Artikel` · Preis rechts (mono)
+- Beschreibung (falls vorhanden): `text-xs text-muted-foreground line-clamp-2`
+- Klick → `onEdit`
 
-`QuickActionCard` bekommt zusätzlich Variante `neutral` (`bg-muted text-foreground`).
+## 4. `src/pages/Benutzerverwaltung.tsx` (Tab "Benutzer")
+`<Table>` + Wrapper `rounded-lg border bg-card overflow-hidden` ersetzen durch Karten-Grid (gleiche Loader-/Empty-States bleiben).
+- Kopf: Avatar-Initialen (`h-9 w-9 rounded-full bg-primary/10`) + `name` + Telefon (klein) | rechts: Rollen-`Select` als Inline-Badge + Action-Icons (`Pencil`, `Trash2` destructive, deaktiviert für eigenen Account)
+- Footer: `Mail` email · `Calendar` Erstellt am `dd.MM.yyyy`
+- Karte hat KEIN `role="button"` (Inline-Aktionen bleiben), `MoreVertical` wird nicht eingeführt
 
-Grid bleibt `grid-cols-2 lg:grid-cols-4` — die 7 Karten fließen automatisch in zwei Reihen (4 + 3).
-
-### 3. Neuer Dialog: `src/components/dashboard/ExportDialog.tsx`
-Ein wiederverwendbarer Dialog mit Props `{ open, onOpenChange, type: "bestellungen" | "arbeitsauftraege" | "rechnungen" }`.
-
-Inhalt je nach Typ:
-
-**Statusauswahl (Checkboxen, vorausgewählt = sinnvolle Defaults für „morgens starten"):**
-- `bestellungen`: `neu`, `in_bearbeitung`, `bereit`, `ausgeliefert`, `storniert` — Default: `neu` + `in_bearbeitung`
-- `arbeitsauftraege`: gleiche Status, Default: `neu` + `in_bearbeitung` (Quelle = `waeschebestellungen` mit `waeschekraft_id` gesetzt)
-- `rechnungen`: `offen`, `bezahlt`, `mahnung`, `storniert` — Default: `offen` + `mahnung`
-
-**Datumsfilter:**
-- Bestellungen / Arbeitsaufträge: Filter auf `lieferdatum` mit Quick-Picks „Heute", „Morgen", „Diese Woche", „Alle" + manuelles Von/Bis
-- Rechnungen: Filter auf `rechnungsdatum` analog
-
-**Aktionen (zwei Buttons):**
-- `Drucken` → ruft `printList(rows, columns, title)` auf
-- `Excel exportieren` → ruft `exportXlsx(rows, columns, filename)` mit `xlsx`
-
-### 4. Neuer Helfer: `src/lib/exportHelpers.ts`
-- `exportXlsx(rows, columns, filename)` — nutzt vorhandenes `xlsx`-Paket (`utils.json_to_sheet`, `writeFile`)
-- `printList({ title, columns, rows })` — öffnet `window.open("", "_blank")`, schreibt minimales HTML mit Tabelle + `@media print` Styles + ruft `window.print()`. Spaltenkopf, Zebrastreifen, Druckdatum.
-
-### 5. Daten laden
-Im `ExportDialog` direkt per Supabase-Client laden (kein neues Hook nötig), beim Klick auf Drucken/Excel:
-
-- Bestellungen / Arbeitsaufträge: `waeschebestellungen` join `kunden(name,kundennummer)`, `objekte(name)`, `waeschekraefte(name)` — Spalten: Bestellnummer, Kunde, Objekt, Lieferdatum, Status, Wäschekraft, Personen
-- Rechnungen: `rechnungen` — Spalten: Rechnungsnummer, Kunde, Rechnungsdatum, Fällig, Brutto, Status
-
-Status-Filter via `.in("status", selectedStatuses)`, Datumsfilter via `.gte/.lte`.
-
-## Nicht-Änderungen
-- Keine Schemaänderungen, kein neues Edge Function
-- Bestehende Seiten (/bestellungen, /rechnungen, /liefertouren) bleiben unberührt
-- Stats-Komponenten bleiben unberührt
+## Nicht betroffen
+- Stats- und Filter-Komponenten der jeweiligen Seiten
+- Form-Dialoge
+- Hooks und Datenmodell
+- Rollen-Tab in der Benutzerverwaltung
