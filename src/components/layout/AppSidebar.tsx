@@ -19,6 +19,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 import { useCan } from "@/hooks/useRoles";
+import { useCurrentUserRole } from "@/hooks/useBenutzer";
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  waeschekraft: "Wäschekraft",
+  kunde: "Kunde",
+};
 import {
   Sidebar,
   SidebarContent,
