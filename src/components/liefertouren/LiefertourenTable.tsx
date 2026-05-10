@@ -1,14 +1,16 @@
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { MoreHorizontal, Edit, MapPin, Play, CheckCircle, RotateCcw } from "lucide-react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  MoreVertical,
+  Edit,
+  MapPin,
+  Play,
+  CheckCircle,
+  RotateCcw,
+  Calendar,
+  User,
+  Truck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { LiefertourStatusBadge } from "./LiefertourStatusBadge";
+import { cn } from "@/lib/utils";
 import type { Liefertour } from "@/hooks/useLiefertouren";
 
 interface LiefertourenTableProps {
@@ -28,155 +31,124 @@ interface LiefertourenTableProps {
   onUpdateStatus: (id: string, status: string) => void;
 }
 
-const NEXT_STATUS: Record<string, string> = {
-  geplant: "aktiv",
-  aktiv: "abgeschlossen",
-};
-
 export function LiefertourenTable({
   touren,
   onEdit,
   onManageStopps,
   onUpdateStatus,
 }: LiefertourenTableProps) {
-  const formatDate = (dateStr: string) => {
-    return format(new Date(dateStr), "dd.MM.yyyy", { locale: de });
-  };
-
-  const renderActions = (tour: Liefertour) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48" onClick={(e) => e.stopPropagation()}>
-        <DropdownMenuItem onClick={() => onManageStopps(tour)}>
-          <MapPin className="mr-2 h-4 w-4" />Stopps verwalten
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onEdit(tour)}>
-          <Edit className="mr-2 h-4 w-4" />Bearbeiten
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        {tour.status === "geplant" && (
-          <DropdownMenuItem onClick={() => onUpdateStatus(tour.id, "aktiv")}>
-            <Play className="mr-2 h-4 w-4" />Tour starten
-          </DropdownMenuItem>
-        )}
-        {tour.status === "aktiv" && (
-          <DropdownMenuItem onClick={() => onUpdateStatus(tour.id, "abgeschlossen")}>
-            <CheckCircle className="mr-2 h-4 w-4" />Tour abschließen
-          </DropdownMenuItem>
-        )}
-        {tour.status === "abgeschlossen" && (
-          <DropdownMenuItem onClick={() => onUpdateStatus(tour.id, "geplant")}>
-            <RotateCcw className="mr-2 h-4 w-4" />Zurücksetzen
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+  if (touren.length === 0) {
+    return (
+      <div className="rounded-lg border bg-card p-12 text-center">
+        <Truck className="mx-auto h-10 w-10 text-muted-foreground/50" />
+        <p className="mt-3 text-sm text-muted-foreground">Keine Liefertouren gefunden.</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {/* Mobile */}
-      <div className="md:hidden space-y-3">
-        {touren.length === 0 ? (
-          <div className="rounded-md border p-6 text-center text-muted-foreground">Keine Liefertouren gefunden</div>
-        ) : (
-          touren.map((tour) => {
-            const progress = tour.stoppCount > 0 ? (tour.erledigtCount / tour.stoppCount) * 100 : 0;
-            return (
-              <div
-                key={tour.id}
-                role="button"
-                onClick={() => onManageStopps(tour)}
-                className="rounded-lg border bg-card p-4 shadow-sm active:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-semibold truncate">{tour.name}</div>
-                    <div className="font-mono text-xs text-muted-foreground">{tour.tournummer}</div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <LiefertourStatusBadge status={tour.status} />
-                    {renderActions(tour)}
-                  </div>
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <div className="text-xs text-muted-foreground">Datum</div>
-                    <div>{formatDate(tour.datum)}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Wäschekraft</div>
-                    <div className="truncate">{tour.waeschekraftName || "—"}</div>
-                  </div>
-                </div>
-                <div className="mt-2">
-                  <div className="flex items-center gap-2">
-                    <Progress value={progress} className="h-2 flex-1" />
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {tour.erledigtCount}/{tour.stoppCount}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
+    <div className="grid gap-3">
+      {touren.map((tour) => {
+        const progress = tour.stoppCount > 0 ? (tour.erledigtCount / tour.stoppCount) * 100 : 0;
 
-      {/* Desktop */}
-      <div className="hidden md:block rounded-lg border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-[100px]">Tour-Nr.</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Datum</TableHead>
-              <TableHead>Wäschekraft</TableHead>
-              <TableHead className="w-[180px]">Stopps</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {touren.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
-                  Keine Liefertouren gefunden
-                </TableCell>
-              </TableRow>
-            ) : (
-              touren.map((tour) => {
-                const progress = tour.stoppCount > 0 ? (tour.erledigtCount / tour.stoppCount) * 100 : 0;
-                return (
-                  <TableRow key={tour.id}>
-                    <TableCell className="font-mono font-medium">{tour.tournummer}</TableCell>
-                    <TableCell className="font-medium">{tour.name}</TableCell>
-                    <TableCell>{formatDate(tour.datum)}</TableCell>
-                    <TableCell>{tour.waeschekraftName || "—"}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={progress} className="h-2 flex-1" />
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {tour.erledigtCount}/{tour.stoppCount}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <LiefertourStatusBadge status={tour.status} />
-                    </TableCell>
-                    <TableCell>{renderActions(tour)}</TableCell>
-                  </TableRow>
-                );
-              })
+        return (
+          <div
+            key={tour.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => onManageStopps(tour)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onManageStopps(tour);
+              }
+            }}
+            className={cn(
+              "group relative rounded-xl border bg-card p-4 sm:p-5 shadow-sm transition-all",
+              "hover:shadow-md hover:border-primary/30 cursor-pointer",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             )}
-          </TableBody>
-        </Table>
-      </div>
-    </>
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                <span className="font-mono text-sm font-semibold text-foreground">
+                  {tour.tournummer}
+                </span>
+                <LiefertourStatusBadge status={tour.status} />
+              </div>
+
+              <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => onManageStopps(tour)}>
+                      <MapPin className="mr-2 h-4 w-4" />
+                      Stopps verwalten
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onEdit(tour)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Bearbeiten
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {tour.status === "geplant" && (
+                      <DropdownMenuItem onClick={() => onUpdateStatus(tour.id, "aktiv")}>
+                        <Play className="mr-2 h-4 w-4" />
+                        Tour starten
+                      </DropdownMenuItem>
+                    )}
+                    {tour.status === "aktiv" && (
+                      <DropdownMenuItem onClick={() => onUpdateStatus(tour.id, "abgeschlossen")}>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Tour abschließen
+                      </DropdownMenuItem>
+                    )}
+                    {tour.status === "abgeschlossen" && (
+                      <DropdownMenuItem onClick={() => onUpdateStatus(tour.id, "geplant")}>
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Zurücksetzen
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            {/* Name */}
+            <div className="mt-3 text-sm">
+              <span className="font-semibold text-foreground">{tour.name}</span>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t pt-3 text-sm">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>{format(new Date(tour.datum), "dd.MM.yyyy", { locale: de })}</span>
+              </div>
+
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <User className="h-4 w-4" />
+                <span>{tour.waeschekraftName || "—"}</span>
+              </div>
+
+              <div className="flex items-center gap-2 ml-auto min-w-[140px]">
+                <Progress value={progress} className="h-2 flex-1" />
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  {tour.erledigtCount}/{tour.stoppCount}
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
-
