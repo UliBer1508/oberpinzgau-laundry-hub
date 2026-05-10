@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { Plus, Trash2, Pencil, Search, Loader2, ShieldAlert, Users, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, Pencil, Search, Loader2, ShieldAlert, Users, ShieldCheck, Mail, Calendar } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RollenTab } from "@/components/benutzer/RollenTab";
 import { format } from "date-fns";
@@ -179,105 +179,98 @@ export default function Benutzerverwaltung() {
               </Select>
             </div>
 
-            <div className="rounded-lg border bg-card overflow-hidden">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-64">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : filtered.length === 0 ? (
-                <div className="flex items-center justify-center h-64">
-                  <p className="text-muted-foreground">Keine Benutzer gefunden</p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead className="w-[60px]"></TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>E-Mail</TableHead>
-                      <TableHead className="w-[180px]">Rolle</TableHead>
-                      <TableHead className="w-[140px]">Erstellt am</TableHead>
-                      <TableHead className="w-[120px] text-right">Aktionen</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filtered.map((b) => (
-                      <TableRow key={b.id}>
-                        <TableCell>
-                          <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
-                            {initials(b.name)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">{b.name}</div>
+            {isLoading ? (
+              <div className="flex items-center justify-center h-64 rounded-xl border bg-card">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="flex items-center justify-center h-64 rounded-xl border border-dashed bg-card">
+                <p className="text-muted-foreground">Keine Benutzer gefunden</p>
+              </div>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {filtered.map((b) => (
+                  <div
+                    key={b.id}
+                    className="group relative rounded-xl border bg-card p-4 sm:p-5 shadow-sm transition-all hover:shadow-md hover:border-primary/30"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium shrink-0">
+                          {initials(b.name)}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-semibold truncate">{b.name}</div>
                           {b.telefon && (
-                            <div className="text-xs text-muted-foreground">{b.telefon}</div>
+                            <div className="text-xs text-muted-foreground truncate">{b.telefon}</div>
                           )}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">{b.email}</TableCell>
-                        <TableCell>
-                          <Select
-                            value={b.role ?? ""}
-                            onValueChange={(v) =>
-                              setRole.mutate(
-                                { user_id: b.id, role: v as AppRole },
-                                {
-                                  onSuccess: () => toast.success("Rolle aktualisiert"),
-                                  onError: (e: Error) => toast.error(e.message),
-                                }
-                              )
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => setEditTarget(b)}
+                          title="Bearbeiten"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => setDeleteTarget(b)}
+                          disabled={b.id === user?.id}
+                          title={b.id === user?.id ? "Eigener Account" : "Löschen"}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="mt-3">
+                      <Select
+                        value={b.role ?? ""}
+                        onValueChange={(v) =>
+                          setRole.mutate(
+                            { user_id: b.id, role: v as AppRole },
+                            {
+                              onSuccess: () => toast.success("Rolle aktualisiert"),
+                              onError: (e: Error) => toast.error(e.message),
                             }
-                          >
-                            <SelectTrigger className="h-8 border-0 p-0">
-                              {b.role ? (
-                                <Badge className={ROLE_BADGE[b.role]}>
-                                  {ROLE_LABEL[b.role]}
-                                </Badge>
-                              ) : (
-                                <span className="text-muted-foreground text-sm">— keine —</span>
-                              )}
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ALL_ROLES.map((r) => (
-                                <SelectItem key={r} value={r}>
-                                  {ROLE_LABEL[r]}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(b.created_at), "dd.MM.yyyy", { locale: de })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => setEditTarget(b)}
-                              title="Bearbeiten"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive"
-                              onClick={() => setDeleteTarget(b)}
-                              disabled={b.id === user?.id}
-                              title={b.id === user?.id ? "Eigener Account" : "Löschen"}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </div>
+                          )
+                        }
+                      >
+                        <SelectTrigger className="h-8 w-auto inline-flex border-0 p-0 shadow-none [&>svg]:ml-1">
+                          {b.role ? (
+                            <Badge className={ROLE_BADGE[b.role]}>{ROLE_LABEL[b.role]}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">— keine Rolle —</span>
+                          )}
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ALL_ROLES.map((r) => (
+                            <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="mt-3 border-t pt-3 grid gap-1.5 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 truncate">
+                        <Mail className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{b.email}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3.5 w-3.5 shrink-0" />
+                        Erstellt am {format(new Date(b.created_at), "dd.MM.yyyy", { locale: de })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
               </TabsContent>
             </Tabs>
           </main>

@@ -1,13 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Pencil, Power, ArrowUpDown, Image as ImageIcon } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { MoreVertical, Pencil, Power, Image as ImageIcon, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,6 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import type { Waescheartikel } from "@/hooks/useWaescheartikel";
 
 interface WaescheartikelTableProps {
@@ -36,230 +30,156 @@ const colorMap: Record<string, string> = {
   "Bunt": "bg-gradient-to-r from-red-400 via-yellow-400 to-blue-400",
 };
 
+const SORT_LABEL: Record<SortField, string> = {
+  artikelnummer: "Artikelnummer",
+  name: "Name",
+  groesse: "Größe",
+  kategorie: "Kategorie",
+  farbe: "Farbe",
+  preis: "Preis",
+  aktiv: "Status",
+};
+
 function getColorClass(farbe: string | null): string {
   if (!farbe) return "bg-gray-300";
   return colorMap[farbe] || "bg-gray-300";
 }
 
-export function WaescheartikelTable({
-  artikel,
-  onEdit,
-  onToggleAktiv,
-}: WaescheartikelTableProps) {
+export function WaescheartikelTable({ artikel, onEdit, onToggleAktiv }: WaescheartikelTableProps) {
   const [sortField, setSortField] = useState<SortField>("artikelnummer");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
 
   const sortedArtikel = [...artikel].sort((a, b) => {
     let aValue: string | boolean | number = "";
     let bValue: string | boolean | number = "";
-
     switch (sortField) {
-      case "artikelnummer":
-        aValue = a.artikelnummer || "";
-        bValue = b.artikelnummer || "";
-        break;
-      case "name":
-        aValue = a.name || "";
-        bValue = b.name || "";
-        break;
-      case "groesse":
-        aValue = a.groesse || "";
-        bValue = b.groesse || "";
-        break;
-      case "kategorie":
-        aValue = a.kategorie || "";
-        bValue = b.kategorie || "";
-        break;
-      case "farbe":
-        aValue = a.farbe || "";
-        bValue = b.farbe || "";
-        break;
-      case "preis":
-        aValue = a.preis ?? -1;
-        bValue = b.preis ?? -1;
-        break;
-      case "aktiv":
-        aValue = a.aktiv ?? false;
-        bValue = b.aktiv ?? false;
-        break;
+      case "artikelnummer": aValue = a.artikelnummer || ""; bValue = b.artikelnummer || ""; break;
+      case "name": aValue = a.name || ""; bValue = b.name || ""; break;
+      case "groesse": aValue = a.groesse || ""; bValue = b.groesse || ""; break;
+      case "kategorie": aValue = a.kategorie || ""; bValue = b.kategorie || ""; break;
+      case "farbe": aValue = a.farbe || ""; bValue = b.farbe || ""; break;
+      case "preis": aValue = a.preis ?? -1; bValue = b.preis ?? -1; break;
+      case "aktiv": aValue = a.aktiv ?? false; bValue = b.aktiv ?? false; break;
     }
-
     if (typeof aValue === "boolean" && typeof bValue === "boolean") {
-      return sortDirection === "asc"
-        ? Number(aValue) - Number(bValue)
-        : Number(bValue) - Number(aValue);
+      return sortDirection === "asc" ? Number(aValue) - Number(bValue) : Number(bValue) - Number(aValue);
     }
-
     if (typeof aValue === "number" && typeof bValue === "number") {
       return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
     }
-
-    const comparison = String(aValue).localeCompare(String(bValue), "de");
-    return sortDirection === "asc" ? comparison : -comparison;
+    const c = String(aValue).localeCompare(String(bValue), "de");
+    return sortDirection === "asc" ? c : -c;
   });
 
-  const SortButton = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="-ml-3 h-8 data-[state=open]:bg-accent"
-      onClick={() => handleSort(field)}
-    >
-      {children}
-      <ArrowUpDown className="ml-2 h-4 w-4" />
-    </Button>
-  );
-
-  const renderActions = (artikel: Waescheartikel) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
-          <MoreHorizontal className="h-4 w-4" />
-          <span className="sr-only">Aktionen</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-        <DropdownMenuItem onClick={() => onEdit(artikel)}>
-          <Pencil className="mr-2 h-4 w-4" />
-          Bearbeiten
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onToggleAktiv(artikel.id, !artikel.aktiv)}>
-          <Power className="mr-2 h-4 w-4" />
-          {artikel.aktiv ? "Deaktivieren" : "Aktivieren"}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-
   return (
-    <>
-      {/* Mobile */}
-      <div className="md:hidden space-y-3">
-        {sortedArtikel.length === 0 ? (
-          <div className="rounded-md border p-6 text-center text-muted-foreground">Keine Wäscheartikel gefunden.</div>
-        ) : (
-          sortedArtikel.map((artikel) => (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-muted-foreground">Sortieren nach:</span>
+        <Select value={sortField} onValueChange={(v) => setSortField(v as SortField)}>
+          <SelectTrigger className="h-8 w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(SORT_LABEL) as SortField[]).map((f) => (
+              <SelectItem key={f} value={f}>{SORT_LABEL[f]}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1"
+          onClick={() => setSortDirection((d) => (d === "asc" ? "desc" : "asc"))}
+        >
+          <ArrowUpDown className="h-3.5 w-3.5" />
+          {sortDirection === "asc" ? "Aufsteigend" : "Absteigend"}
+        </Button>
+      </div>
+
+      {sortedArtikel.length === 0 ? (
+        <div className="rounded-xl border border-dashed bg-card p-10 text-center text-muted-foreground">
+          Keine Wäscheartikel gefunden.
+        </div>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {sortedArtikel.map((a) => (
             <div
-              key={artikel.id}
+              key={a.id}
               role="button"
-              onClick={() => onEdit(artikel)}
-              className="rounded-lg border bg-card p-3 shadow-sm active:bg-muted/50 transition-colors flex gap-3"
-            >
-              {artikel.bild_url ? (
-                <img src={artikel.bild_url} alt={artikel.name} className="w-14 h-14 object-cover rounded border shrink-0" />
-              ) : (
-                <div className="w-14 h-14 bg-muted rounded border flex items-center justify-center shrink-0">
-                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                </div>
+              tabIndex={0}
+              onClick={() => onEdit(a)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onEdit(a);
+                }
+              }}
+              className={cn(
+                "group relative rounded-xl border bg-card p-4 sm:p-5 shadow-sm transition-all",
+                "hover:shadow-md hover:border-primary/30 cursor-pointer",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                !a.aktiv && "opacity-60",
               )}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-semibold truncate">{artikel.name}</div>
-                    <div className="font-mono text-xs text-muted-foreground">{artikel.artikelnummer}</div>
+            >
+              <div className="flex items-start gap-3">
+                {a.bild_url ? (
+                  <img src={a.bild_url} alt={a.name} className="w-14 h-14 object-cover rounded border shrink-0" />
+                ) : (
+                  <div className="w-14 h-14 bg-muted rounded border flex items-center justify-center shrink-0">
+                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  {renderActions(artikel)}
-                </div>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-                  {artikel.kategorie && <Badge variant="secondary" className="text-xs">{artikel.kategorie}</Badge>}
-                  {artikel.farbe && (
-                    <span className="inline-flex items-center gap-1 rounded border px-1.5 py-0.5">
-                      <span className={`h-3 w-3 rounded-full ${getColorClass(artikel.farbe)}`} />
-                      {artikel.farbe}
-                    </span>
-                  )}
-                  {artikel.groesse && <span className="text-muted-foreground">{artikel.groesse}</span>}
-                </div>
-                <div className="mt-1 flex items-center justify-between">
-                  <Badge variant={artikel.aktiv ? "default" : "secondary"} className="text-xs">
-                    {artikel.aktiv ? "Aktiv" : "Inaktiv"}
-                  </Badge>
-                  <span className="font-mono text-sm">
-                    {artikel.preis != null ? `${artikel.preis.toFixed(2).replace('.', ',')} €` : "-"}
-                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-xs font-semibold">{a.artikelnummer}</span>
+                        <Badge variant={a.aktiv ? "default" : "secondary"} className="text-xs">
+                          {a.aktiv ? "Aktiv" : "Inaktiv"}
+                        </Badge>
+                      </div>
+                      <h3 className="mt-1 text-base font-semibold truncate">{a.name}</h3>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 -mr-1 -mt-1" onClick={(e) => e.stopPropagation()}>
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem onClick={() => onEdit(a)}>
+                          <Pencil className="mr-2 h-4 w-4" />Bearbeiten
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onToggleAktiv(a.id, !a.aktiv)}>
+                          <Power className="mr-2 h-4 w-4" />{a.aktiv ? "Deaktivieren" : "Aktivieren"}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
-        )}
-      </div>
 
-      {/* Desktop */}
-      <div className="hidden md:block rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[60px]">Bild</TableHead>
-              <TableHead className="w-[100px]"><SortButton field="artikelnummer">Art.-Nr.</SortButton></TableHead>
-              <TableHead><SortButton field="name">Name</SortButton></TableHead>
-              <TableHead><SortButton field="groesse">Größe</SortButton></TableHead>
-              <TableHead>Bezeichnung</TableHead>
-              <TableHead><SortButton field="kategorie">Kategorie</SortButton></TableHead>
-              <TableHead><SortButton field="farbe">Farbe</SortButton></TableHead>
-              <TableHead className="text-right"><SortButton field="preis">Preis</SortButton></TableHead>
-              <TableHead><SortButton field="aktiv">Status</SortButton></TableHead>
-              <TableHead className="w-[70px]">Aktionen</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedArtikel.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={10} className="h-24 text-center">Keine Wäscheartikel gefunden.</TableCell>
-              </TableRow>
-            ) : (
-              sortedArtikel.map((artikel) => (
-                <TableRow key={artikel.id}>
-                  <TableCell>
-                    {artikel.bild_url ? (
-                      <img src={artikel.bild_url} alt={artikel.name} className="w-12 h-12 object-cover rounded border" />
-                    ) : (
-                      <div className="w-12 h-12 bg-muted rounded border flex items-center justify-center">
-                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="font-mono text-sm">{artikel.artikelnummer}</TableCell>
-                  <TableCell className="font-medium">{artikel.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{artikel.groesse || "-"}</TableCell>
-                  <TableCell className="text-muted-foreground">{artikel.bezeichnung || "-"}</TableCell>
-                  <TableCell>
-                    {artikel.kategorie ? <Badge variant="secondary">{artikel.kategorie}</Badge> : <span className="text-muted-foreground">-</span>}
-                  </TableCell>
-                  <TableCell>
-                    {artikel.farbe ? (
-                      <div className="flex items-center gap-2">
-                        <span className={`h-4 w-4 rounded-full ${getColorClass(artikel.farbe)}`} />
-                        <span>{artikel.farbe}</span>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right font-mono">
-                    {artikel.preis != null ? `${artikel.preis.toFixed(2).replace('.', ',')} €` : <span className="text-muted-foreground">-</span>}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={artikel.aktiv ? "default" : "secondary"}>
-                      {artikel.aktiv ? "Aktiv" : "Inaktiv"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{renderActions(artikel)}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </>
+              <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
+                {a.kategorie && <Badge variant="secondary" className="text-xs">{a.kategorie}</Badge>}
+                {a.farbe && (
+                  <span className="inline-flex items-center gap-1 rounded border px-1.5 py-0.5">
+                    <span className={cn("h-3 w-3 rounded-full", getColorClass(a.farbe))} />
+                    {a.farbe}
+                  </span>
+                )}
+                {a.groesse && <span className="text-muted-foreground">{a.groesse}</span>}
+                {a.bezeichnung && <span className="text-muted-foreground truncate max-w-[10rem]">· {a.bezeichnung}</span>}
+              </div>
+
+              <div className="mt-3 border-t pt-3 flex items-center justify-end">
+                <span className="font-mono text-sm font-medium">
+                  {a.preis != null ? `${a.preis.toFixed(2).replace(".", ",")} €` : "—"}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
-
