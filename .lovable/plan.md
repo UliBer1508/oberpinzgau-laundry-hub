@@ -1,45 +1,36 @@
-# Karten-Layout für Personal, Wäscheartikel, Wäschesets, Benutzer
+# PWA aktivieren & Installations-Funktion
 
-Einheitliches Karten-Layout (wie Liefertouren/Rechnungen) auf alle vier Seiten anwenden. Bestehende Tabellen-Ansichten werden durch das Karten-Grid ersetzt.
+Die PWA-Konfiguration ist bereits vorhanden (`vite-plugin-pwa`, Manifest, Icons, Meta-Tags), aber es fehlen drei Dinge:
+1. Sichere Registrierung (verhindert Probleme im Lovable-Editor-Preview / iframe)
+2. Eine sichtbare „App installieren"-Funktion
+3. Service-Worker-Schutz für OAuth-Routen
 
-Karten-Format (analog `LiefertourenTable`):
-- `grid gap-3` (1 Spalte mobil, `md:grid-cols-2 xl:grid-cols-3`)
-- Karte: `group rounded-xl border bg-card p-4 sm:p-5 shadow-sm hover:shadow-md hover:border-primary/30`, `role="button"` mit Enter/Space
-- Kopf: ID/Schlüssel + Status-Badge + `MoreVertical` Dropdown rechts
-- Titel: Name (`text-base font-semibold`)
-- Footer (durch `border-t pt-3` getrennt): Icons + Sekundär-Infos
-- Inaktive Karten: `opacity-60`
+## Was umgesetzt wird
 
-## 1. `src/components/waeschekraefte/WaeschekraefteTable.tsx`
-Tabellen + Mobile-Block ersetzen durch Karten-Grid.
-- Kopf: `personalnummer` (mono) · Typ-Badge (`Wäschekraft`/`Fahrer`/`Beides`) · Status-Badge (Aktiv/Inaktiv) · Dropdown (Bearbeiten / Aktivieren / Portal / Löschen)
-- Titel: `name`
-- Footer: `Phone` telefon · `Mail` email · `MapPin` adresse · `Key`-Badge Portal-Status
-- Klick auf Karte → `onEdit`
+### 1. Sichere Service-Worker-Registrierung
+- `src/main.tsx`: PWA-Registrierung nur wenn **nicht** im iframe und **nicht** auf einer Lovable-Preview-Domain. In Preview/iframe werden bestehende Service Worker abgemeldet, damit der Editor stabil bleibt.
+- `vite.config.ts`: `devOptions: { enabled: false }` (SW nur im Production-Build aktiv) und `navigateFallbackDenylist: [/^\/~oauth/]` ergänzen.
 
-## 2. `src/components/waescheartikel/WaescheartikelTable.tsx`
-Tabelle + Mobile-Block ersetzen durch Karten-Grid. Sortierung wird auf Filter-Bar verschoben? **Nein** – Sortier-Steuerung bleibt erhalten als kleine `Select`-Leiste (`sortField` + `asc/desc`) oberhalb des Grids, statt Spaltenkopf-Buttons.
-- Kopf-Bereich: links 56×56-Bild (oder `ImageIcon`-Platzhalter), daneben `artikelnummer` (mono) + Status-Badge + Dropdown (Bearbeiten / Aktivieren)
-- Titel: `name`
-- Meta-Zeile: Kategorie-Badge · Farb-Punkt + Farbe · Größe · `bezeichnung` (truncate)
-- Footer: Preis rechts (mono, `text-sm font-medium`)
+### 2. Installations-UI
+- Neuer Hook `src/hooks/usePWAInstall.ts`: fängt das `beforeinstallprompt`-Event ab, erkennt iOS (Safari liefert kein Event → Anleitung zeigen) und meldet ob die App schon installiert ist (`display-mode: standalone`).
+- Neue Komponente `src/components/PWAInstallButton.tsx`: 
+  - Auf Android/Desktop-Chrome → Button „App installieren" → ruft den Browser-Prompt auf
+  - Auf iOS Safari → Dialog mit Anleitung „Teilen → Zum Home-Bildschirm"
+  - Wenn bereits installiert → versteckt
+- Integration im Header/Sidebar (`src/components/Layout` oder vergleichbar) als dezenter Button, plus optionales Banner auf der Startseite `/` für nicht-installierte mobile Nutzer.
 
-## 3. `src/components/waeschesets/WaeschesetsTable.tsx`
-Tabelle + Mobile-Block ersetzen durch Karten-Grid. Empty-State bleibt unverändert.
-- Kopf: `name` · Status-Badge · Dropdown (Artikel verwalten / Bearbeiten / Aktivieren)
-- Sub-Titel: `kundeName`
-- Footer: `Building`-Badge `objektName` · `Package`-Badge `${artikelCount} Artikel` · Preis rechts (mono)
-- Beschreibung (falls vorhanden): `text-xs text-muted-foreground line-clamp-2`
-- Klick → `onEdit`
+### 3. Hinweis an dich
+- PWA-Funktionen (Install-Prompt, Offline) funktionieren **nur in der veröffentlichten Version** (`oberpinzgau-laundry-hub.lovable.app`), **nicht im Editor-Preview**. Im Preview ist der Button bewusst inaktiv.
+- iOS unterstützt keinen automatischen Install-Prompt — Nutzer müssen über „Teilen → Zum Home-Bildschirm" installieren. Die Komponente zeigt das automatisch an.
 
-## 4. `src/pages/Benutzerverwaltung.tsx` (Tab "Benutzer")
-`<Table>` + Wrapper `rounded-lg border bg-card overflow-hidden` ersetzen durch Karten-Grid (gleiche Loader-/Empty-States bleiben).
-- Kopf: Avatar-Initialen (`h-9 w-9 rounded-full bg-primary/10`) + `name` + Telefon (klein) | rechts: Rollen-`Select` als Inline-Badge + Action-Icons (`Pencil`, `Trash2` destructive, deaktiviert für eigenen Account)
-- Footer: `Mail` email · `Calendar` Erstellt am `dd.MM.yyyy`
-- Karte hat KEIN `role="button"` (Inline-Aktionen bleiben), `MoreVertical` wird nicht eingeführt
+## Technische Details
 
-## Nicht betroffen
-- Stats- und Filter-Komponenten der jeweiligen Seiten
-- Form-Dialoge
-- Hooks und Datenmodell
-- Rollen-Tab in der Benutzerverwaltung
+**Geänderte/neue Dateien:**
+- `vite.config.ts` — `devOptions.enabled: false`, `navigateFallbackDenylist`
+- `src/main.tsx` — Iframe-/Preview-Guard vor SW-Registrierung
+- `src/hooks/usePWAInstall.ts` — neu
+- `src/components/PWAInstallButton.tsx` — neu
+- `src/components/Layout.tsx` (oder Header) — Button einhängen
+
+**Erkennung iOS:** `/iphone|ipad|ipod/i.test(navigator.userAgent) && !/CriOS|FxiOS/i.test(...)`
+**Erkennung installiert:** `window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone`
