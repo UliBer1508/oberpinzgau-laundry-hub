@@ -40,6 +40,7 @@ const FARB_STYLES: Record<string, string> = {
 };
 
 const KATEGORIEN = ["Apartment", "Chalet", "Hotelzimmer", "Wellness", "Sonstige"];
+const KATEGORIEN_ARTIKEL = ["Bettwäsche", "Handtücher", "Wellness", "Badartikel", "Küchenartikel"];
 
 const schema = z.object({
   name: z.string().min(1, "Name erforderlich").max(120),
