@@ -14,11 +14,10 @@ import {
   type VorlageSet,
 } from "@/hooks/useVorlagenSets";
 import { VorlageFormDialog, type PendingVorlageArtikel } from "@/components/vorlagen/VorlageFormDialog";
-import { formatPreis } from "@/lib/formatPreis";
+import { VorlagenSetsGrid } from "@/components/vorlagen/VorlagenSetsGrid";
 
 export default function VorlagenSets() {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const { data: vorlagen = [], isLoading } = useVorlagenSets();
   const createMut = useCreateVorlage();
   const updateMut = useUpdateVorlage();
