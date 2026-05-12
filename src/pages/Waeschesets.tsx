@@ -238,6 +238,11 @@ export default function Waeschesets() {
               onSubmit={handleSaveSet}
               isLoading={createSet.isPending || updateSet.isPending}
             />
+
+            <VorlageUebernehmenDialog
+              open={vorlageDialogOpen}
+              onOpenChange={setVorlageDialogOpen}
+            />
           </div>
         </main>
       </div>
