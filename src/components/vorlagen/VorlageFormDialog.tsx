@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Package, Plus, Minus, Trash2, User, Calendar, ChevronsUpDown, Check } from "lucide-react";
+import { Package, Plus, Minus, Trash2, User, Calendar, ChevronsUpDown, Check, Upload, X, Image as ImageIcon } from "lucide-react";
+import { useUploadArtikelBild } from "@/hooks/useWaescheartikel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -83,6 +84,33 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
   const [menge, setMenge] = useState<number>(1);
   const [berechnungsart, setBerechnungsart] = useState<Berechnungsart>("pro_buchung");
   const [artikelPopoverOpen, setArtikelPopoverOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingBild, setIsUploadingBild] = useState(false);
+  const uploadBildMut = useUploadArtikelBild();
+
+  const handleBildSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      toast({ title: "Ungültiges Format", description: "Nur JPG, PNG oder WEBP.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Datei zu groß", description: "Maximale Dateigröße ist 5MB.", variant: "destructive" });
+      return;
+    }
+    setIsUploadingBild(true);
+    try {
+      const url = await uploadBildMut.mutateAsync(file);
+      form.setValue("bild_url", url, { shouldDirty: true });
+    } catch (err) {
+      toast({ title: "Upload fehlgeschlagen", description: "Bild konnte nicht hochgeladen werden.", variant: "destructive" });
+    } finally {
+      setIsUploadingBild(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const { data: alleArtikel = [] } = useWaescheartikelForSelect();
   const { data: existingArtikel = [] } = useVorlageArtikel(vorlage?.id ?? null);
@@ -296,10 +324,47 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
                 name="bild_url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bild-URL (optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://…" {...field} />
-                    </FormControl>
+                    <FormLabel>Bild (optional)</FormLabel>
+                    <div className="flex items-center gap-3">
+                      {field.value ? (
+                        <div className="relative">
+                          <img src={field.value} alt="Vorschau" className="w-16 h-16 object-cover rounded-md border" />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-5 w-5"
+                            onClick={() => form.setValue("bild_url", "", { shouldDirty: true })}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div
+                          className="w-16 h-16 border-2 border-dashed rounded-md flex items-center justify-center text-muted-foreground cursor-pointer hover:border-primary hover:text-primary"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <ImageIcon className="h-6 w-6" />
+                        </div>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={handleBildSelect}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploadingBild}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {isUploadingBild ? "Lädt…" : field.value ? "Ändern" : "Hochladen"}
+                      </Button>
+                    </div>
                   </FormItem>
                 )}
               />
