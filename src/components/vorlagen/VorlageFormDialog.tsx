@@ -571,108 +571,168 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
                 </div>
               )}
 
-              {/* Add article section */}
-              <div className="rounded-lg border bg-muted/50 p-4">
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex-1 min-w-[240px]">
-                    <Popover open={artikelPopoverOpen} onOpenChange={setArtikelPopoverOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          role="combobox"
-                          className="w-full justify-between bg-background font-normal"
-                        >
-                          {selectedArtikelDetails ? (
-                            <span className="truncate">
-                              {selectedArtikelDetails.artikelnummer} – {selectedArtikelDetails.name}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">Artikel suchen…</span>
-                          )}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Artikel suchen…" />
-                          <CommandList>
-                            <CommandEmpty>Keine Artikel gefunden.</CommandEmpty>
-                            <CommandGroup>
-                              {verfuegbareArtikel.map((a) => (
-                                <CommandItem
-                                  key={a.id}
-                                  value={`${a.artikelnummer} ${a.name} ${a.kategorie ?? ""}`}
-                                  onSelect={() => {
-                                    setSelectedArtikel(a.id);
-                                    setArtikelPopoverOpen(false);
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      selectedArtikel === a.id ? "opacity-100" : "opacity-0",
-                                    )}
-                                  />
-                                  <div className="flex-1">
-                                    <div className="font-medium">
-                                      {a.artikelnummer} – {a.name}
-                                    </div>
-                                    {(a.kategorie || a.farbe) && (
-                                      <div className="text-xs text-muted-foreground">
-                                        {[a.kategorie, a.farbe].filter(Boolean).join(" · ")}
-                                      </div>
-                                    )}
-                                  </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  <div className="w-20">
+              {/* Article picker */}
+              <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="text-sm font-medium">Artikel auswählen</h4>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      type="number"
-                      min={1}
-                      value={menge}
-                      onChange={(e) => setMenge(parseInt(e.target.value) || 1)}
-                      className="bg-background"
-                      placeholder="Menge"
+                      placeholder="Artikel suchen…"
+                      value={artikelSuche}
+                      onChange={(e) => setArtikelSuche(e.target.value)}
+                      className="pl-8 bg-background"
                     />
                   </div>
+                  <Select value={artikelKategorieFilter} onValueChange={setArtikelKategorieFilter}>
+                    <SelectTrigger className="w-[200px] bg-background">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="alle">Alle Kategorien</SelectItem>
+                      {KATEGORIEN_ARTIKEL.map((k) => (
+                        <SelectItem key={k} value={k}>
+                          {k}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                  <RadioGroup
-                    value={berechnungsart}
-                    onValueChange={(v) => setBerechnungsart(v as Berechnungsart)}
-                    className="flex items-center gap-4 rounded-md border bg-background px-3 py-2"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <RadioGroupItem value="pro_buchung" id="vorl_pro_buchung" />
-                      <Label htmlFor="vorl_pro_buchung" className="flex items-center gap-1 cursor-pointer text-sm">
-                        <Calendar className="h-3.5 w-3.5" />
-                        Pro Buchung
-                      </Label>
+                <div className="rounded-md border bg-background max-h-[360px] overflow-y-auto divide-y">
+                  {gefilterteArtikel.length === 0 ? (
+                    <div className="p-6 text-center text-sm text-muted-foreground">
+                      Keine Artikel gefunden.
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <RadioGroupItem value="pro_gast" id="vorl_pro_gast" />
-                      <Label htmlFor="vorl_pro_gast" className="flex items-center gap-1 cursor-pointer text-sm">
-                        <User className="h-3.5 w-3.5" />
-                        Pro Gast
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                  ) : (
+                    gefilterteArtikel.map((a) => {
+                      const isUsed = usedArtikelIds.has(a.id);
+                      const rowMenge = rowMengen[a.id] ?? 1;
+                      const rowBerech = rowBerechnung[a.id] ?? "pro_buchung";
+                      return (
+                        <div
+                          key={a.id}
+                          className={cn(
+                            "flex items-center gap-3 p-2.5",
+                            isUsed && "opacity-50 bg-muted/30",
+                          )}
+                        >
+                          {a.bild_url ? (
+                            <img
+                              src={a.bild_url}
+                              alt={a.name}
+                              loading="lazy"
+                              className="h-10 w-10 rounded object-cover border shrink-0"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded border bg-muted flex items-center justify-center shrink-0">
+                              <Package className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-mono text-xs">{a.artikelnummer}</span>
+                              <span className="font-medium text-sm truncate">{a.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                              {a.kategorie && <Badge variant="outline" className="text-[10px] py-0">{a.kategorie}</Badge>}
+                              {a.farbe && (
+                                <span className="flex items-center gap-1">
+                                  <span className={`h-3 w-3 rounded-full ${getFarbStyle(a.farbe)}`} />
+                                  {a.farbe}
+                                </span>
+                              )}
+                            </div>
+                          </div>
 
-                  <Button
-                    type="button"
-                    onClick={handleAddArtikel}
-                    disabled={!selectedArtikel || addMut.isPending}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Hinzufügen
-                  </Button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() =>
+                                setRowMengen((p) => ({ ...p, [a.id]: Math.max(1, rowMenge - 1) }))
+                              }
+                              disabled={isUsed || rowMenge <= 1}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <Input
+                              type="number"
+                              min={1}
+                              value={rowMenge}
+                              onChange={(e) =>
+                                setRowMengen((p) => ({
+                                  ...p,
+                                  [a.id]: Math.max(1, parseInt(e.target.value) || 1),
+                                }))
+                              }
+                              disabled={isUsed}
+                              className="h-7 w-12 text-center px-1"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() =>
+                                setRowMengen((p) => ({ ...p, [a.id]: rowMenge + 1 }))
+                              }
+                              disabled={isUsed}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+
+                          <Button
+                            type="button"
+                            variant={rowBerech === "pro_gast" ? "default" : "outline"}
+                            size="sm"
+                            className="gap-1.5 shrink-0 h-7"
+                            onClick={() =>
+                              setRowBerechnung((p) => ({
+                                ...p,
+                                [a.id]: rowBerech === "pro_buchung" ? "pro_gast" : "pro_buchung",
+                              }))
+                            }
+                            disabled={isUsed}
+                          >
+                            {rowBerech === "pro_gast" ? (
+                              <>
+                                <User className="h-3.5 w-3.5" />
+                                Pro Gast
+                              </>
+                            ) : (
+                              <>
+                                <Calendar className="h-3.5 w-3.5" />
+                                Pro Buchung
+                              </>
+                            )}
+                          </Button>
+
+                          {isUsed ? (
+                            <div className="h-8 w-8 flex items-center justify-center text-emerald-600 shrink-0">
+                              <Check className="h-4 w-4" />
+                            </div>
+                          ) : (
+                            <Button
+                              type="button"
+                              size="icon"
+                              className="h-8 w-8 shrink-0"
+                              onClick={() => handleAddArtikelById(a.id)}
+                              disabled={addMut.isPending}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>
