@@ -23,9 +23,9 @@ export function WaeschesetsTable({ sets, onEdit, onToggleAktiv, onManageArtikel 
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-card p-12 text-center">
         <Package className="h-12 w-12 text-muted-foreground/50" />
-        <h3 className="mt-4 text-lg font-semibold">Keine Wäschesets gefunden</h3>
+        <h3 className="mt-4 text-lg font-semibold">Keine Kunden-Wäschesets gefunden</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Erstellen Sie ein neues Wäscheset oder passen Sie die Filter an.
+          Erstellen Sie ein neues Kunden-Wäscheset oder passen Sie die Filter an.
         </p>
       </div>
     );

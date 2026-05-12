@@ -356,7 +356,7 @@ export function WaeschesetFormDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            {set ? "Wäscheset bearbeiten" : "Neues Wäscheset erstellen"}
+            {set ? "Kunden-Wäscheset bearbeiten" : "Neues Kunden-Wäscheset erstellen"}
           </DialogTitle>
         </DialogHeader>
 

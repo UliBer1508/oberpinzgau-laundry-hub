@@ -85,8 +85,8 @@ const Objekte = () => {
 
   const handleManageSets = (objekt: Objekt) => {
     toast({
-      title: "Wäschesets verwalten",
-      description: `Wäschesets für ${objekt.name} werden geladen...`,
+      title: "Kunden-Wäschesets verwalten",
+      description: `Kunden-Wäschesets für ${objekt.name} werden geladen...`,
     });
   };
 

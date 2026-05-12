@@ -11,7 +11,7 @@ export default function Verwaltung() {
   const items = [
     { label: "Wäschekräfte/Fahrer", description: "Personal verwalten", icon: UserCheck, variant: "primary" as const, href: "/waeschekraefte" },
     { label: "Wäscheartikel", description: "Artikel-Stammdaten", icon: Package, variant: "info" as const, href: "/waescheartikel" },
-    { label: "Wäschesets", description: "Sets konfigurieren", icon: Layers, variant: "success" as const, href: "/waeschesets" },
+    { label: "Kunden-Wäschesets", description: "Sets konfigurieren", icon: Layers, variant: "success" as const, href: "/waeschesets" },
     { label: "Rechnungseinstellungen", description: "Rechnungsdaten & MwSt.", icon: FileText, variant: "warning" as const, href: "/rechnungseinstellungen" },
     { label: "Benutzerverwaltung", description: "Benutzer & Rollen", icon: Settings, variant: "primary" as const, href: "/benutzer" },
     { label: "API & Integrationen", description: "Schnittstellen", icon: Plug, variant: "info" as const, href: "/integrationen" },
