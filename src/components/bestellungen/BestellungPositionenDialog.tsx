@@ -140,7 +140,7 @@ export function BestellungPositionenDialog({
         set_id: selectedSet,
       });
       setSelectedSet("");
-      toast.success(`${result.count} Artikel aus Wäscheset übernommen`);
+      toast.success(`${result.count} Artikel aus Kunden-Wäscheset übernommen`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Fehler beim Übernehmen");
     }
@@ -174,12 +174,12 @@ export function BestellungPositionenDialog({
             <div className="rounded-lg border bg-muted/30 p-4">
               <h4 className="mb-3 flex items-center gap-2 text-sm font-medium">
                 <Layers className="h-4 w-4" />
-                Wäscheset übernehmen
+                Kunden-Wäscheset übernehmen
               </h4>
               <div className="flex gap-2">
                 <Select value={selectedSet} onValueChange={setSelectedSet}>
                   <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Wäscheset auswählen" />
+                    <SelectValue placeholder="Kunden-Wäscheset auswählen" />
                   </SelectTrigger>
                   <SelectContent>
                     {waeschesets.map((set) => (
