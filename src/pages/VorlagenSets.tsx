@@ -126,48 +126,12 @@ export default function VorlagenSets() {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {vorlagen.map((v) => (
-                  <Card key={v.id} className={v.aktiv ? "" : "opacity-60"}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="text-base">{v.name}</CardTitle>
-                        {v.kategorie && <Badge variant="secondary">{v.kategorie}</Badge>}
-                      </div>
-                      {v.beschreibung && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">{v.beschreibung}</p>
-                      )}
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Artikel</span>
-                        <span className="font-medium">{v.artikelCount}</span>
-                      </div>
-                      {v.gesamtpreis !== null && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Wert</span>
-                          <span className="font-medium">{formatPreis(v.gesamtpreis)}</span>
-                        </div>
-                      )}
-                      <div className="flex items-center justify-between pt-2">
-                        <span className="text-muted-foreground">Aktiv</span>
-                        <Switch checked={v.aktiv} onCheckedChange={() => toggleAktiv(v)} />
-                      </div>
-                    </CardContent>
-                    <CardFooter className="gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(v)}>
-                        <Pencil className="h-4 w-4 mr-1" />Bearbeiten
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => navigate("/waeschesets")}>
-                        <ArrowDownToLine className="h-4 w-4 mr-1" />Übernehmen
-                      </Button>
-                      <Button variant="ghost" size="icon" className="ml-auto text-destructive" onClick={() => setDeleteId(v.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
+              <VorlagenSetsGrid
+                sets={vorlagen}
+                onEdit={handleEdit}
+                onToggleAktiv={toggleAktiv}
+                onDelete={setDeleteId}
+              />
             )}
 
             <VorlageFormDialog
