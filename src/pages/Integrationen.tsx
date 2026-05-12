@@ -170,7 +170,7 @@ export default function Integrationen() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Plug className="h-5 w-5" />
-                  Stammdaten abrufen (Wäscheartikel & Unsere Wäschesets)
+                  Stammdaten abrufen (Wäscheartikel & Unsere-Wäschesets)
                 </CardTitle>
                 <CardDescription>
                   Lese-Endpunkte für die Hausverwaltung. Damit kannst du Wäscheartikel und die von
@@ -189,7 +189,7 @@ export default function Integrationen() {
                   </p>
                 </div>
                 <div>
-                  <div className="text-sm font-semibold mb-1">GET Unsere Wäschesets</div>
+                  <div className="text-sm font-semibold mb-1">GET Unsere-Wäschesets</div>
                   <pre className="rounded bg-muted p-3 text-xs overflow-x-auto"><code>{`curl -H "Authorization: Bearer $EXTERNAL_API_KEY" \\
   "${VORLAGEN_URL}?aktiv=true"`}</code></pre>
                   <p className="text-xs text-muted-foreground mt-1">
