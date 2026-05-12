@@ -750,6 +750,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_export_presets: {
+        Row: {
+          action: string
+          bis: string | null
+          created_at: string
+          date_mode: string
+          id: string
+          preset_type: string
+          statuses: string[]
+          updated_at: string
+          user_id: string
+          von: string | null
+        }
+        Insert: {
+          action?: string
+          bis?: string | null
+          created_at?: string
+          date_mode?: string
+          id?: string
+          preset_type: string
+          statuses?: string[]
+          updated_at?: string
+          user_id: string
+          von?: string | null
+        }
+        Update: {
+          action?: string
+          bis?: string | null
+          created_at?: string
+          date_mode?: string
+          id?: string
+          preset_type?: string
+          statuses?: string[]
+          updated_at?: string
+          user_id?: string
+          von?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

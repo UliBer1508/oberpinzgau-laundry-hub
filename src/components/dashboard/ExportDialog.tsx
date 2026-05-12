@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { Printer, FileSpreadsheet, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Printer, FileSpreadsheet, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -12,12 +13,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { exportXlsx, printList, type ExportColumn } from "@/lib/exportHelpers";
-import { format } from "date-fns";
+import { executeExport, type DateMode, type ExportType } from "@/lib/runExport";
+import { useExportPresets } from "@/hooks/useExportPresets";
+import { useAuth } from "@/contexts/AuthContext";
 
-export type ExportType = "bestellungen" | "arbeitsauftraege" | "rechnungen";
+export type { ExportType };
 
 interface Props {
   open: boolean;
@@ -47,126 +48,105 @@ const TITLES: Record<ExportType, string> = {
   rechnungen: "Rechnungen",
 };
 
-function isoToday(offset = 0) {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  return d.toISOString().slice(0, 10);
-}
-
 export function ExportDialog({ open, onOpenChange, type }: Props) {
+  const { user } = useAuth();
+  const { presets, savePreset, deletePreset } = useExportPresets();
+  const stored = presets[type];
+
   const isRechnung = type === "rechnungen";
   const allStatus = isRechnung ? RECHNUNG_STATUS : BESTELL_STATUS;
-  const defaults = isRechnung
-    ? ["offen", "mahnung"]
-    : ["neu", "in_bearbeitung"];
+  const defaults = isRechnung ? ["offen", "mahnung"] : ["neu", "in_bearbeitung"];
 
   const [statuses, setStatuses] = useState<string[]>(defaults);
+  const [mode, setMode] = useState<DateMode>("alle");
   const [von, setVon] = useState<string>("");
   const [bis, setBis] = useState<string>("");
   const [loading, setLoading] = useState<null | "print" | "excel">(null);
+  const [savePref, setSavePref] = useState(false);
+
+  // Preset beim Öffnen einspielen
+  useEffect(() => {
+    if (!open) return;
+    if (stored) {
+      setStatuses(stored.statuses ?? defaults);
+      setMode((stored.date_mode as DateMode) ?? "alle");
+      setVon(stored.von ?? "");
+      setBis(stored.bis ?? "");
+      setSavePref(true);
+    } else {
+      setStatuses(defaults);
+      setMode("alle");
+      setVon("");
+      setBis("");
+      setSavePref(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, stored?.id]);
 
   const toggle = (v: string) =>
     setStatuses((s) => (s.includes(v) ? s.filter((x) => x !== v) : [...s, v]));
 
-  const setQuick = (mode: "heute" | "morgen" | "woche" | "alle") => {
-    if (mode === "alle") return setVon(""), setBis("");
-    if (mode === "heute") return setVon(isoToday()), setBis(isoToday());
-    if (mode === "morgen") return setVon(isoToday(1)), setBis(isoToday(1));
-    if (mode === "woche") {
-      setVon(isoToday());
-      setBis(isoToday(6));
+  const setQuick = (m: DateMode) => {
+    setMode(m);
+    if (m !== "custom") {
+      setVon("");
+      setBis("");
     }
   };
 
-  async function loadRows(): Promise<{ rows: Record<string, unknown>[]; columns: ExportColumn[] }> {
-    if (isRechnung) {
-      let q = supabase
-        .from("rechnungen")
-        .select("rechnungsnummer, kunde_name, kunde_firma, rechnungsdatum, faelligkeitsdatum, bruttobetrag, status")
-        .order("rechnungsdatum", { ascending: false });
-      if (statuses.length) q = q.in("status", statuses);
-      if (von) q = q.gte("rechnungsdatum", von);
-      if (bis) q = q.lte("rechnungsdatum", bis);
-      const { data, error } = await q;
-      if (error) throw error;
-      const rows = (data ?? []).map((r) => ({
-        rechnungsnummer: r.rechnungsnummer,
-        kunde: r.kunde_firma || r.kunde_name,
-        rechnungsdatum: r.rechnungsdatum,
-        faelligkeitsdatum: r.faelligkeitsdatum ?? "",
-        bruttobetrag: Number(r.bruttobetrag).toFixed(2),
-        status: r.status,
-      }));
-      return {
-        rows,
-        columns: [
-          { key: "rechnungsnummer", label: "Rechnungsnr." },
-          { key: "kunde", label: "Kunde" },
-          { key: "rechnungsdatum", label: "Datum" },
-          { key: "faelligkeitsdatum", label: "Fällig" },
-          { key: "bruttobetrag", label: "Brutto (€)" },
-          { key: "status", label: "Status" },
-        ],
-      };
-    }
-
-    let q = supabase
-      .from("waeschebestellungen")
-      .select(
-        "bestellnummer, status, lieferdatum, abholdatum, anzahl_personen, kunden(name, kundennummer), objekte(name), waeschekraefte(name)",
-      )
-      .order("lieferdatum", { ascending: true, nullsFirst: false });
-    if (statuses.length) q = q.in("status", statuses as never);
-    if (von) q = q.gte("lieferdatum", von);
-    if (bis) q = q.lte("lieferdatum", bis);
-    if (type === "arbeitsauftraege") q = q.not("waeschekraft_id", "is", null);
-
-    const { data, error } = await q;
-    if (error) throw error;
-    const rows = (data ?? []).map((r: any) => ({
-      bestellnummer: r.bestellnummer,
-      kunde: r.kunden?.name ?? "",
-      objekt: r.objekte?.name ?? "",
-      lieferdatum: r.lieferdatum ?? "",
-      abholdatum: r.abholdatum ?? "",
-      personen: r.anzahl_personen ?? "",
-      waeschekraft: r.waeschekraefte?.name ?? "",
-      status: r.status,
-    }));
-    return {
-      rows,
-      columns: [
-        { key: "bestellnummer", label: "Bestellnr." },
-        { key: "kunde", label: "Kunde" },
-        { key: "objekt", label: "Objekt" },
-        { key: "lieferdatum", label: "Lieferdatum" },
-        { key: "abholdatum", label: "Abholdatum" },
-        { key: "personen", label: "Personen" },
-        { key: "waeschekraft", label: "Wäschekraft" },
-        { key: "status", label: "Status" },
-      ],
-    };
-  }
-
-  async function handleAction(mode: "print" | "excel") {
-    setLoading(mode);
+  async function handleAction(action: "print" | "excel") {
+    setLoading(action);
     try {
-      const { rows, columns } = await loadRows();
-      if (!rows.length) {
+      const count = await executeExport(type, {
+        statuses,
+        date_mode: mode,
+        von: mode === "custom" ? von || null : null,
+        bis: mode === "custom" ? bis || null : null,
+        action,
+      });
+      if (!count) {
         toast.info("Keine Einträge gefunden");
-        return;
+      } else if (action === "excel") {
+        toast.success(`${count} Einträge exportiert`);
       }
-      const title = TITLES[type];
-      if (mode === "print") {
-        printList({ title, columns, rows });
-      } else {
-        exportXlsx(rows, columns, `${title}_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
-        toast.success(`${rows.length} Einträge exportiert`);
+
+      if (savePref && user) {
+        try {
+          await savePreset({
+            type,
+            preset: {
+              statuses,
+              date_mode: mode,
+              von: mode === "custom" ? von || null : null,
+              bis: mode === "custom" ? bis || null : null,
+              action,
+            },
+          });
+        } catch (e) {
+          console.warn("Preset speichern fehlgeschlagen", e);
+        }
+      } else if (!savePref && stored) {
+        try {
+          await deletePreset(type);
+        } catch (e) {
+          console.warn("Preset löschen fehlgeschlagen", e);
+        }
       }
-    } catch (e: any) {
-      toast.error("Export fehlgeschlagen", { description: e.message });
+      onOpenChange(false);
+    } catch (e) {
+      toast.error("Export fehlgeschlagen", { description: (e as Error).message });
     } finally {
       setLoading(null);
+    }
+  }
+
+  async function handleRemove() {
+    try {
+      await deletePreset(type);
+      toast.success("Voreinstellung entfernt");
+      setSavePref(false);
+    } catch (e) {
+      toast.error("Entfernen fehlgeschlagen", { description: (e as Error).message });
     }
   }
 
@@ -202,30 +182,68 @@ export function ExportDialog({ open, onOpenChange, type }: Props) {
           <div className="space-y-2">
             <Label>Zeitraum</Label>
             <div className="flex flex-wrap gap-1">
-              <Button type="button" size="sm" variant="outline" onClick={() => setQuick("heute")}>
-                Heute
-              </Button>
-              <Button type="button" size="sm" variant="outline" onClick={() => setQuick("morgen")}>
-                Morgen
-              </Button>
-              <Button type="button" size="sm" variant="outline" onClick={() => setQuick("woche")}>
-                Diese Woche
-              </Button>
-              <Button type="button" size="sm" variant="outline" onClick={() => setQuick("alle")}>
-                Alle
-              </Button>
+              {(["heute", "morgen", "woche", "alle"] as DateMode[]).map((m) => (
+                <Button
+                  key={m}
+                  type="button"
+                  size="sm"
+                  variant={mode === m ? "default" : "outline"}
+                  onClick={() => setQuick(m)}
+                >
+                  {m === "heute" ? "Heute" : m === "morgen" ? "Morgen" : m === "woche" ? "Diese Woche" : "Alle"}
+                </Button>
+              ))}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-xs text-muted-foreground">Von</Label>
-                <Input type="date" value={von} onChange={(e) => setVon(e.target.value)} />
+                <Input
+                  type="date"
+                  value={mode === "custom" ? von : ""}
+                  onChange={(e) => {
+                    setMode("custom");
+                    setVon(e.target.value);
+                  }}
+                />
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Bis</Label>
-                <Input type="date" value={bis} onChange={(e) => setBis(e.target.value)} />
+                <Input
+                  type="date"
+                  value={mode === "custom" ? bis : ""}
+                  onChange={(e) => {
+                    setMode("custom");
+                    setBis(e.target.value);
+                  }}
+                />
               </div>
             </div>
           </div>
+
+          {user && (
+            <div className="flex items-start justify-between gap-3 rounded-md border bg-muted/30 p-3">
+              <div className="space-y-0.5">
+                <Label className="text-sm">Als Schnellaktion speichern</Label>
+                <p className="text-xs text-muted-foreground">
+                  Beim nächsten Klick auf die Karte wird direkt mit diesen Einstellungen exportiert.
+                </p>
+              </div>
+              <Switch checked={savePref} onCheckedChange={setSavePref} />
+            </div>
+          )}
+
+          {stored && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              onClick={handleRemove}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Gespeicherte Voreinstellung entfernen
+            </Button>
+          )}
         </div>
 
         <DialogFooter className="gap-2 sm:gap-2">
