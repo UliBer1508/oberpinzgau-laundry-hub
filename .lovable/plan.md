@@ -1,25 +1,26 @@
-## Problem
-In jeder Zeile zeigt der aktuelle Toggle nur den **aktiven** Wert (z. B. „📅 Pro Buchung"). Dass dieser Button anklickbar ist und auf „Pro Gast" wechselt, ist nicht erkennbar – der User denkt, es gibt nur „Pro Buchung".
+## Plan: Vorlagen-Set-Karten an Wäschesets-Optik angleichen
 
-## Lösung
-Ersetze den Single-Button durch ein **Segmented-Control mit beiden Optionen sichtbar**. Beide Knöpfe sind immer zu sehen, der aktive ist farblich hervorgehoben.
+Die `/vorlagen-sets`-Karten werden auf das identische Layout der `/waeschesets`-Karten umgebaut (siehe Screenshot). Das macht die Karte komplett klickbar zum Bearbeiten und der separate „Bearbeiten"-Button entfällt.
 
-## Änderung in `src/components/vorlagen/VorlageFormDialog.tsx`
+### Antwort: Übernehmen-Button
+Aktuell leitet er nur auf `/waeschesets` weiter. Im **Teuni-Portal** (zentrale Standard-Sets) ist „Übernehmen" fehl am Platz – das passiert im Kunden-Workflow, nicht in der Vorlagen-Verwaltung. **Wird entfernt.**
 
-Im Artikel-Picker (innerhalb der Listen-Zeilen) den bisherigen Toggle-Button ersetzen durch einen kompakten Zwei-Tasten-Block:
+### Änderungen
 
-```text
-┌─────────────────┬──────────────┐
-│ 📅 Pro Buchung  │  👤 Pro Gast │   ← aktiver Eintrag = primary, inaktiver = ghost
-└─────────────────┴──────────────┘
-```
+**1. Neue Komponente** `src/components/vorlagen/VorlagenSetsGrid.tsx`
+   - Visuell identisch zu `WaeschesetsTable` (Card-Style, Hover, Aktiv-Badge oben rechts, Dreipunktmenü, Footer mit Badges + Preis rechts)
+   - Anpassungen für Vorlagen-Kontext:
+     - **Subtitle** statt Kundenname: Kategorie mit `Tag`-Icon (oder leer)
+     - **Footer-Badges**: nur „X Artikel" (kein Objekt-Badge, da Vorlagen nicht objektgebunden)
+     - **Dropdown-Menü** (3-Punkte): „Bearbeiten", „Aktivieren/Deaktivieren", „Löschen" (rot)
+   - Ganze Karte → `onClick={() => onEdit(v)}`, Tastatur-Support
 
-Verhalten:
-- Klick auf einen der beiden Knöpfe setzt direkt `rowBerechnung[a.id]` auf den entsprechenden Wert (kein Toggle-Logik mehr nötig).
-- Aktive Seite: `bg-primary text-primary-foreground`, inaktive: transparent + Hover.
-- Container: `inline-flex rounded-md border bg-background p-0.5`, Höhe ~28 px, kompakt damit Layout passt.
-- Bei `disabled` (Artikel bereits im Set) bleiben beide sichtbar, aber nicht klickbar.
+**2. `src/pages/VorlagenSets.tsx`**
+   - Inline-`<Card>`-Grid (Zeilen 134–175) durch `<VorlagenSetsGrid sets={vorlagen} onEdit={...} onToggleAktiv={...} onDelete={setDeleteId} />` ersetzen
+   - Imports `Card*`, `Pencil`, `ArrowDownToLine`, `Trash2`, `Switch`, `useNavigate` (falls ungenutzt) entfernen
+   - „Übernehmen"-Logik vollständig entfernen
+   - Bestehende Hooks/Daten/Filter/Dialoge unverändert
 
-## Nicht geändert
-- Logik / State / Submit / Datenbank.
-- Toggle in der oberen „Artikel im Set"-Tabelle bleibt wie er ist (dort ist Kontext klar, eine Spalte).
+### Nicht geändert
+- `VorlageFormDialog`, Hooks, Daten, Routen.
+- `/waeschesets`-Seite und `VorlageUebernehmenDialog` (bleibt für Kundenportal-Nutzung).
