@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShoppingCart, ClipboardList, Truck, Receipt, Printer, FileSpreadsheet, FileText, ChevronDown, Settings } from "lucide-react";
+import { ShoppingCart, ClipboardList, Truck, Printer, FileSpreadsheet, FileText, ChevronDown, Settings } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -92,13 +92,6 @@ export function QuickActionsUpdated() {
             icon={Truck}
             variant="info"
             onClick={() => navigate("/liefertouren?neu=1")}
-          />
-          <QuickActionCard
-            label="Rechnungen"
-            description="Übersicht öffnen"
-            icon={Receipt}
-            variant="success"
-            onClick={() => navigate("/rechnungen")}
           />
           {exportCard("bestellungen", "Bestellungen drucken", Printer)}
           {exportCard("arbeitsauftraege", "Arbeitsaufträge drucken", FileText)}
