@@ -20,6 +20,8 @@ import { WaeschesetsStats } from "@/components/waeschesets/WaeschesetsStats";
 import { WaeschesetsFilter } from "@/components/waeschesets/WaeschesetsFilter";
 import { WaeschesetsTable } from "@/components/waeschesets/WaeschesetsTable";
 import { WaeschesetFormDialog } from "@/components/waeschesets/WaeschesetFormDialog";
+import { VorlageUebernehmenDialog } from "@/components/vorlagen/VorlageUebernehmenDialog";
+import { ArrowDownToLine } from "lucide-react";
 
 interface PendingArtikel {
   id: string;
