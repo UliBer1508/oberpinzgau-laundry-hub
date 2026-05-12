@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Package, Plus, Trash2 } from "lucide-react";
+import { Package, Plus, Minus, Trash2, User, Calendar, ChevronsUpDown, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useWaescheartikelForSelect, type Berechnungsart } from "@/hooks/useWaeschesets";
 import {
@@ -22,6 +28,17 @@ import {
   useUpdateVorlageArtikel,
   type VorlageSet,
 } from "@/hooks/useVorlagenSets";
+
+const FARB_STYLES: Record<string, string> = {
+  "Weiß": "bg-white border border-gray-300",
+  "Weiß gestreift": "bg-white border border-gray-300",
+  "Grau": "bg-gray-400",
+  "Grau gestreift": "bg-gray-400",
+  "Braun": "bg-amber-800",
+  "Bunt": "bg-gradient-to-r from-pink-400 via-yellow-400 to-blue-400",
+};
+
+const KATEGORIEN = ["Apartment", "Chalet", "Hotelzimmer", "Wellness", "Sonstige"];
 
 const schema = z.object({
   name: z.string().min(1, "Name erforderlich").max(120),
@@ -33,15 +50,26 @@ const schema = z.object({
 
 type Values = z.infer<typeof schema>;
 
+export interface PendingVorlageArtikel {
+  id: string;
+  artikel_id: string;
+  artikelNummer: string;
+  artikelName: string;
+  kategorie: string | null;
+  farbe: string | null;
+  bild_url: string | null;
+  preis: number | null;
+  menge: number;
+  berechnungsart: Berechnungsart;
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   vorlage: VorlageSet | null;
-  onSubmit: (v: Values) => Promise<void>;
+  onSubmit: (v: Values, pendingArtikel?: PendingVorlageArtikel[]) => Promise<void>;
   isLoading: boolean;
 }
-
-const KATEGORIEN = ["Apartment", "Chalet", "Hotelzimmer", "Wellness", "Sonstige"];
 
 export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoading }: Props) {
   const { toast } = useToast();
@@ -50,12 +78,14 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
     defaultValues: { name: "", kategorie: "", beschreibung: "", bild_url: "", aktiv: true },
   });
 
-  const [artikelId, setArtikelId] = useState("");
-  const [menge, setMenge] = useState(1);
+  const [pendingArtikel, setPendingArtikel] = useState<PendingVorlageArtikel[]>([]);
+  const [selectedArtikel, setSelectedArtikel] = useState<string>("");
+  const [menge, setMenge] = useState<number>(1);
   const [berechnungsart, setBerechnungsart] = useState<Berechnungsart>("pro_buchung");
+  const [artikelPopoverOpen, setArtikelPopoverOpen] = useState(false);
 
   const { data: alleArtikel = [] } = useWaescheartikelForSelect();
-  const { data: positionen = [] } = useVorlageArtikel(vorlage?.id ?? null);
+  const { data: existingArtikel = [] } = useVorlageArtikel(vorlage?.id ?? null);
   const addMut = useAddVorlageArtikel();
   const removeMut = useRemoveVorlageArtikel();
   const updateMut = useUpdateVorlageArtikel();
@@ -73,173 +103,518 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
             }
           : { name: "", kategorie: "", beschreibung: "", bild_url: "", aktiv: true },
       );
-      setArtikelId("");
+      setPendingArtikel([]);
+      setSelectedArtikel("");
       setMenge(1);
       setBerechnungsart("pro_buchung");
+      setArtikelPopoverOpen(false);
     }
   }, [open, vorlage, form]);
 
-  const verfuegbar = useMemo(() => {
-    const used = new Set(positionen.map((p) => p.artikel_id));
-    return alleArtikel.filter((a) => !used.has(a.id));
-  }, [alleArtikel, positionen]);
+  const verfuegbareArtikel = useMemo(() => {
+    const usedIds = vorlage
+      ? existingArtikel.map((a) => a.artikel_id)
+      : pendingArtikel.map((a) => a.artikel_id);
+    return alleArtikel.filter((a) => !usedIds.includes(a.id));
+  }, [alleArtikel, vorlage, existingArtikel, pendingArtikel]);
 
-  const handleAdd = async () => {
-    if (!vorlage || !artikelId) return;
-    try {
-      await addMut.mutateAsync({ vorlage_id: vorlage.id, artikel_id: artikelId, menge, berechnungsart });
-      setArtikelId("");
-      setMenge(1);
-      setBerechnungsart("pro_buchung");
-    } catch {
-      toast({ title: "Fehler beim Hinzufügen", variant: "destructive" });
+  const selectedArtikelDetails = useMemo(
+    () => alleArtikel.find((a) => a.id === selectedArtikel),
+    [alleArtikel, selectedArtikel],
+  );
+
+  const handleAddArtikel = async () => {
+    if (!selectedArtikel) return;
+    const artikel = alleArtikel.find((a) => a.id === selectedArtikel);
+    if (!artikel) return;
+
+    if (vorlage) {
+      try {
+        await addMut.mutateAsync({
+          vorlage_id: vorlage.id,
+          artikel_id: selectedArtikel,
+          menge,
+          berechnungsart,
+        });
+        toast({ title: "Artikel hinzugefügt" });
+      } catch {
+        toast({ title: "Fehler beim Hinzufügen", variant: "destructive" });
+        return;
+      }
+    } else {
+      setPendingArtikel((prev) => [
+        ...prev,
+        {
+          id: `temp-${Date.now()}`,
+          artikel_id: selectedArtikel,
+          artikelNummer: artikel.artikelnummer,
+          artikelName: artikel.name,
+          kategorie: artikel.kategorie,
+          farbe: artikel.farbe,
+          bild_url: artikel.bild_url,
+          preis: artikel.preis ?? null,
+          menge,
+          berechnungsart,
+        },
+      ]);
+    }
+
+    setSelectedArtikel("");
+    setMenge(1);
+    setBerechnungsart("pro_buchung");
+  };
+
+  const handleRemoveArtikel = async (id: string, tempId?: string) => {
+    if (vorlage) {
+      try {
+        await removeMut.mutateAsync({ id, vorlage_id: vorlage.id });
+      } catch {
+        toast({ title: "Fehler beim Entfernen", variant: "destructive" });
+      }
+    } else {
+      setPendingArtikel((prev) => prev.filter((a) => a.id !== tempId));
     }
   };
 
+  const handleUpdateMenge = async (id: string, tempId: string, newMenge: number) => {
+    if (newMenge < 1) return;
+    if (vorlage) {
+      try {
+        await updateMut.mutateAsync({ id, vorlage_id: vorlage.id, menge: newMenge });
+      } catch {
+        toast({ title: "Fehler beim Aktualisieren", variant: "destructive" });
+      }
+    } else {
+      setPendingArtikel((prev) => prev.map((a) => (a.id === tempId ? { ...a, menge: newMenge } : a)));
+    }
+  };
+
+  const handleToggleBerechnungsart = async (id: string, tempId: string, current: Berechnungsart) => {
+    const next: Berechnungsart = current === "pro_buchung" ? "pro_gast" : "pro_buchung";
+    if (vorlage) {
+      try {
+        await updateMut.mutateAsync({ id, vorlage_id: vorlage.id, berechnungsart: next });
+      } catch {
+        toast({ title: "Fehler beim Aktualisieren", variant: "destructive" });
+      }
+    } else {
+      setPendingArtikel((prev) => prev.map((a) => (a.id === tempId ? { ...a, berechnungsart: next } : a)));
+    }
+  };
+
+  const getFarbStyle = (farbe: string | null) => {
+    if (!farbe) return "bg-gray-200";
+    return FARB_STYLES[farbe] || "bg-gray-200";
+  };
+
+  const handleFormSubmit = async (values: Values) => {
+    await onSubmit(values, vorlage ? undefined : pendingArtikel);
+  };
+
+  const displayArtikel = vorlage
+    ? existingArtikel.map((a) => ({
+        id: a.id,
+        tempId: a.id,
+        artikel_id: a.artikel_id,
+        artikelNummer: a.artikelNummer,
+        artikelName: a.artikelName,
+        kategorie: a.kategorie,
+        farbe: a.farbe,
+        bild_url: a.bild_url,
+        preis: a.preis,
+        menge: a.menge,
+        berechnungsart: a.berechnungsart,
+      }))
+    : pendingArtikel.map((a) => ({
+        id: a.id,
+        tempId: a.id,
+        artikel_id: a.artikel_id,
+        artikelNummer: a.artikelNummer,
+        artikelName: a.artikelName,
+        kategorie: a.kategorie,
+        farbe: a.farbe,
+        bild_url: a.bild_url,
+        preis: a.preis,
+        menge: a.menge,
+        berechnungsart: a.berechnungsart,
+      }));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5" />
-            {vorlage ? "Vorlagen-Set bearbeiten" : "Neues Vorlagen-Set"}
+            {vorlage ? "Wäscheset bearbeiten" : "Neues Wäscheset erstellen"}
           </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name *</FormLabel>
-                  <FormControl><Input placeholder="z. B. Standard-Apartment" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="kategorie" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Kategorie</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ""}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="– keine –" /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      {KATEGORIEN.map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )} />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="z. B. Standard-Apartment" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="kategorie"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kategorie</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="– keine –" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {KATEGORIEN.map((k) => (
+                          <SelectItem key={k} value={k}>
+                            {k}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
             </div>
 
-            <FormField control={form.control} name="beschreibung" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Beschreibung</FormLabel>
-                <FormControl><Textarea rows={2} {...field} /></FormControl>
-              </FormItem>
-            )} />
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField control={form.control} name="bild_url" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="bild_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bild-URL (optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://…" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="aktiv"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-3 h-[66px]">
+                    <FormLabel className="cursor-pointer">Aktiv</FormLabel>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="beschreibung"
+              render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bild-URL (optional)</FormLabel>
-                  <FormControl><Input placeholder="https://…" {...field} /></FormControl>
+                  <FormLabel>Beschreibung</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Beschreibung des Sets..." rows={2} {...field} />
+                  </FormControl>
                 </FormItem>
-              )} />
-              <FormField control={form.control} name="aktiv" render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-lg border p-3 h-[66px]">
-                  <FormLabel className="cursor-pointer">Aktiv</FormLabel>
-                  <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                </FormItem>
-              )} />
+              )}
+            />
+
+            <Separator />
+
+            {/* Articles section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4 text-muted-foreground" />
+                <h3 className="font-medium">Artikel im Set</h3>
+                <Badge variant="secondary" className="ml-auto">
+                  {displayArtikel.length} Artikel
+                </Badge>
+              </div>
+
+              {displayArtikel.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
+                  <Package className="h-8 w-8 text-muted-foreground/50" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Noch keine Artikel. Fügen Sie unten Artikel hinzu.
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-lg border overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Art.-Nr.</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Kategorie</TableHead>
+                        <TableHead>Farbe</TableHead>
+                        <TableHead className="text-right">Preis</TableHead>
+                        <TableHead className="text-center">Menge</TableHead>
+                        <TableHead className="text-right">Summe</TableHead>
+                        <TableHead className="text-center">Berechnung</TableHead>
+                        <TableHead className="w-[60px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {displayArtikel.map((a) => (
+                        <TableRow key={a.id}>
+                          <TableCell className="font-mono text-sm">{a.artikelNummer}</TableCell>
+                          <TableCell className="font-medium">{a.artikelName}</TableCell>
+                          <TableCell>
+                            {a.kategorie ? <Badge variant="outline">{a.kategorie}</Badge> : "-"}
+                          </TableCell>
+                          <TableCell>
+                            {a.farbe ? (
+                              <div className="flex items-center gap-2">
+                                <span className={`h-4 w-4 rounded-full ${getFarbStyle(a.farbe)}`} />
+                                <span className="text-sm">{a.farbe}</span>
+                              </div>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            {a.preis != null ? (
+                              `${a.preis.toFixed(2).replace(".", ",")} €`
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-center gap-1">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => handleUpdateMenge(a.id, a.tempId, a.menge - 1)}
+                                disabled={a.menge <= 1}
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <Input
+                                type="number"
+                                min={1}
+                                value={a.menge}
+                                onChange={(e) =>
+                                  handleUpdateMenge(a.id, a.tempId, parseInt(e.target.value) || 1)
+                                }
+                                className="h-7 w-14 text-center"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => handleUpdateMenge(a.id, a.tempId, a.menge + 1)}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right font-mono font-medium">
+                            {a.preis != null ? (
+                              `${(a.menge * a.preis).toFixed(2).replace(".", ",")} €`
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant={a.berechnungsart === "pro_gast" ? "default" : "outline"}
+                                    size="sm"
+                                    className="gap-1.5"
+                                    onClick={() =>
+                                      handleToggleBerechnungsart(a.id, a.tempId, a.berechnungsart)
+                                    }
+                                  >
+                                    {a.berechnungsart === "pro_gast" ? (
+                                      <>
+                                        <User className="h-3.5 w-3.5" />
+                                        <span>Pro Gast</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Calendar className="h-3.5 w-3.5" />
+                                        <span>Pro Buchung</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    {a.berechnungsart === "pro_gast"
+                                      ? "Menge wird mit Gästeanzahl multipliziert"
+                                      : "Menge gilt für die gesamte Buchung"}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">Klicken zum Wechseln</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                              onClick={() => handleRemoveArtikel(a.id, a.tempId)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {displayArtikel.some((a) => a.preis != null) && (
+                        <TableRow className="bg-muted/50 font-medium">
+                          <TableCell colSpan={6} className="text-right">
+                            Gesamtpreis:
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-base">
+                            {displayArtikel
+                              .reduce((sum, a) => sum + (a.preis != null ? a.menge * a.preis : 0), 0)
+                              .toFixed(2)
+                              .replace(".", ",")}{" "}
+                            €
+                          </TableCell>
+                          <TableCell colSpan={2}></TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              {/* Add article section */}
+              <div className="rounded-lg border bg-muted/50 p-4">
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex-1 min-w-[240px]">
+                    <Popover open={artikelPopoverOpen} onOpenChange={setArtikelPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between bg-background font-normal"
+                        >
+                          {selectedArtikelDetails ? (
+                            <span className="truncate">
+                              {selectedArtikelDetails.artikelnummer} – {selectedArtikelDetails.name}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Artikel suchen…</span>
+                          )}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Artikel suchen…" />
+                          <CommandList>
+                            <CommandEmpty>Keine Artikel gefunden.</CommandEmpty>
+                            <CommandGroup>
+                              {verfuegbareArtikel.map((a) => (
+                                <CommandItem
+                                  key={a.id}
+                                  value={`${a.artikelnummer} ${a.name} ${a.kategorie ?? ""}`}
+                                  onSelect={() => {
+                                    setSelectedArtikel(a.id);
+                                    setArtikelPopoverOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedArtikel === a.id ? "opacity-100" : "opacity-0",
+                                    )}
+                                  />
+                                  <div className="flex-1">
+                                    <div className="font-medium">
+                                      {a.artikelnummer} – {a.name}
+                                    </div>
+                                    {(a.kategorie || a.farbe) && (
+                                      <div className="text-xs text-muted-foreground">
+                                        {[a.kategorie, a.farbe].filter(Boolean).join(" · ")}
+                                      </div>
+                                    )}
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="w-20">
+                    <Input
+                      type="number"
+                      min={1}
+                      value={menge}
+                      onChange={(e) => setMenge(parseInt(e.target.value) || 1)}
+                      className="bg-background"
+                      placeholder="Menge"
+                    />
+                  </div>
+
+                  <RadioGroup
+                    value={berechnungsart}
+                    onValueChange={(v) => setBerechnungsart(v as Berechnungsart)}
+                    className="flex items-center gap-4 rounded-md border bg-background px-3 py-2"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <RadioGroupItem value="pro_buchung" id="vorl_pro_buchung" />
+                      <Label htmlFor="vorl_pro_buchung" className="flex items-center gap-1 cursor-pointer text-sm">
+                        <Calendar className="h-3.5 w-3.5" />
+                        Pro Buchung
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <RadioGroupItem value="pro_gast" id="vorl_pro_gast" />
+                      <Label htmlFor="vorl_pro_gast" className="flex items-center gap-1 cursor-pointer text-sm">
+                        <User className="h-3.5 w-3.5" />
+                        Pro Gast
+                      </Label>
+                    </div>
+                  </RadioGroup>
+
+                  <Button
+                    type="button"
+                    onClick={handleAddArtikel}
+                    disabled={!selectedArtikel || addMut.isPending}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Hinzufügen
+                  </Button>
+                </div>
+              </div>
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
-              <Button type="submit" disabled={isLoading}>{vorlage ? "Speichern" : "Erstellen"}</Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Abbrechen
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {vorlage ? "Speichern" : "Erstellen"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
-
-        {vorlage && (
-          <>
-            <Separator className="my-4" />
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <h3 className="font-medium">Artikel im Vorlagen-Set</h3>
-                <Badge variant="secondary" className="ml-auto">{positionen.length}</Badge>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_100px_160px_auto] gap-2">
-                <Select value={artikelId} onValueChange={setArtikelId}>
-                  <SelectTrigger><SelectValue placeholder="Artikel wählen…" /></SelectTrigger>
-                  <SelectContent>
-                    {verfuegbar.map((a) => (
-                      <SelectItem key={a.id} value={a.id}>{a.artikelnummer} – {a.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input type="number" min={1} value={menge} onChange={(e) => setMenge(Math.max(1, Number(e.target.value) || 1))} />
-                <Select value={berechnungsart} onValueChange={(v) => setBerechnungsart(v as Berechnungsart)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pro_buchung">pro Buchung</SelectItem>
-                    <SelectItem value="pro_gast">pro Gast</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button type="button" onClick={handleAdd} disabled={!artikelId}>
-                  <Plus className="h-4 w-4 mr-1" /> Hinzufügen
-                </Button>
-              </div>
-
-              {positionen.length === 0 ? (
-                <div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-                  Noch keine Artikel.
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Artikel</TableHead>
-                      <TableHead className="w-24">Menge</TableHead>
-                      <TableHead className="w-40">Berechnung</TableHead>
-                      <TableHead className="w-12"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {positionen.map((p) => (
-                      <TableRow key={p.id}>
-                        <TableCell>
-                          <div className="font-medium">{p.artikelName}</div>
-                          <div className="text-xs text-muted-foreground">{p.artikelNummer}</div>
-                        </TableCell>
-                        <TableCell>
-                          <Input type="number" min={1} value={p.menge} onChange={(e) => updateMut.mutate({ id: p.id, vorlage_id: vorlage.id, menge: Math.max(1, Number(e.target.value) || 1) })} />
-                        </TableCell>
-                        <TableCell>
-                          <Select value={p.berechnungsart} onValueChange={(v) => updateMut.mutate({ id: p.id, vorlage_id: vorlage.id, berechnungsart: v as Berechnungsart })}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pro_buchung">pro Buchung</SelectItem>
-                              <SelectItem value="pro_gast">pro Gast</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <Button type="button" size="icon" variant="ghost" onClick={() => removeMut.mutate({ id: p.id, vorlage_id: vorlage.id })}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </div>
-          </>
-        )}
-
-        {!vorlage && (
-          <p className="text-xs text-muted-foreground">Artikel können nach dem Anlegen der Vorlage hinzugefügt werden.</p>
-        )}
       </DialogContent>
     </Dialog>
   );
