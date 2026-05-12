@@ -14,10 +14,10 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  useVorlagenSets, useCreateVorlage, useUpdateVorlage, useDeleteVorlage,
+  useVorlagenSets, useCreateVorlage, useUpdateVorlage, useDeleteVorlage, useAddVorlageArtikel,
   type VorlageSet,
 } from "@/hooks/useVorlagenSets";
-import { VorlageFormDialog } from "@/components/vorlagen/VorlageFormDialog";
+import { VorlageFormDialog, type PendingVorlageArtikel } from "@/components/vorlagen/VorlageFormDialog";
 import { formatPreis } from "@/lib/formatPreis";
 
 export default function VorlagenSets() {
@@ -27,6 +27,7 @@ export default function VorlagenSets() {
   const createMut = useCreateVorlage();
   const updateMut = useUpdateVorlage();
   const deleteMut = useDeleteVorlage();
+  const addArtikelMut = useAddVorlageArtikel();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selected, setSelected] = useState<VorlageSet | null>(null);
@@ -35,7 +36,10 @@ export default function VorlagenSets() {
   const handleNew = () => { setSelected(null); setDialogOpen(true); };
   const handleEdit = (v: VorlageSet) => { setSelected(v); setDialogOpen(true); };
 
-  const handleSubmit = async (values: { name: string; kategorie?: string; beschreibung?: string; bild_url?: string; aktiv: boolean }) => {
+  const handleSubmit = async (
+    values: { name: string; kategorie?: string; beschreibung?: string; bild_url?: string; aktiv: boolean },
+    pendingArtikel?: PendingVorlageArtikel[],
+  ) => {
     try {
       const payload = {
         name: values.name,
@@ -46,13 +50,20 @@ export default function VorlagenSets() {
       };
       if (selected) {
         await updateMut.mutateAsync({ id: selected.id, ...payload });
-        toast({ title: "Vorlage aktualisiert" });
+        toast({ title: "Wäscheset aktualisiert" });
       } else {
         const created = await createMut.mutateAsync(payload);
-        toast({ title: "Vorlage erstellt", description: "Jetzt Artikel hinzufügen." });
-        // re-open in edit mode so user can add articles
-        setSelected({ ...(created as VorlageSet), artikelCount: 0, gesamtpreis: null });
-        return;
+        if (pendingArtikel && pendingArtikel.length > 0) {
+          for (const p of pendingArtikel) {
+            await addArtikelMut.mutateAsync({
+              vorlage_id: created.id,
+              artikel_id: p.artikel_id,
+              menge: p.menge,
+              berechnungsart: p.berechnungsart,
+            });
+          }
+        }
+        toast({ title: "Wäscheset erstellt" });
       }
       setDialogOpen(false);
     } catch {
