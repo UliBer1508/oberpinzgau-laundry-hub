@@ -689,31 +689,38 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
                             </Button>
                           </div>
 
-                          <Button
-                            type="button"
-                            variant={rowBerech === "pro_gast" ? "default" : "outline"}
-                            size="sm"
-                            className="gap-1.5 shrink-0 h-7"
-                            onClick={() =>
-                              setRowBerechnung((p) => ({
-                                ...p,
-                                [a.id]: rowBerech === "pro_buchung" ? "pro_gast" : "pro_buchung",
-                              }))
-                            }
-                            disabled={isUsed}
-                          >
-                            {rowBerech === "pro_gast" ? (
-                              <>
-                                <User className="h-3.5 w-3.5" />
-                                Pro Gast
-                              </>
-                            ) : (
-                              <>
-                                <Calendar className="h-3.5 w-3.5" />
-                                Pro Buchung
-                              </>
-                            )}
-                          </Button>
+                          <div className="inline-flex rounded-md border bg-background p-0.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setRowBerechnung((p) => ({ ...p, [a.id]: "pro_buchung" }))}
+                              disabled={isUsed}
+                              className={cn(
+                                "flex items-center gap-1 px-2 h-6 rounded text-xs font-medium transition-colors",
+                                rowBerech === "pro_buchung"
+                                  ? "bg-primary text-primary-foreground"
+                                  : "text-muted-foreground hover:text-foreground",
+                                isUsed && "cursor-not-allowed opacity-60",
+                              )}
+                            >
+                              <Calendar className="h-3 w-3" />
+                              Pro Buchung
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setRowBerechnung((p) => ({ ...p, [a.id]: "pro_gast" }))}
+                              disabled={isUsed}
+                              className={cn(
+                                "flex items-center gap-1 px-2 h-6 rounded text-xs font-medium transition-colors",
+                                rowBerech === "pro_gast"
+                                  ? "bg-primary text-primary-foreground"
+                                  : "text-muted-foreground hover:text-foreground",
+                                isUsed && "cursor-not-allowed opacity-60",
+                              )}
+                            >
+                              <User className="h-3 w-3" />
+                              Pro Gast
+                            </button>
+                          </div>
 
                           {isUsed ? (
                             <div className="h-8 w-8 flex items-center justify-center text-emerald-600 shrink-0">
