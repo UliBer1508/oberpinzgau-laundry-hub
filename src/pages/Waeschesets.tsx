@@ -116,7 +116,7 @@ export default function Waeschesets() {
     try {
       if (selectedSet) {
         await updateSet.mutateAsync({ id: selectedSet.id, ...data });
-        toast({ title: "Wäscheset aktualisiert" });
+        toast({ title: "Kunden-Wäscheset aktualisiert" });
       } else {
         // Create new set
         const newSet = await createSet.mutateAsync(data);
@@ -132,7 +132,7 @@ export default function Waeschesets() {
             });
           }
         }
-        toast({ title: "Wäscheset erstellt" });
+        toast({ title: "Kunden-Wäscheset erstellt" });
       }
       setFormDialogOpen(false);
     } catch {

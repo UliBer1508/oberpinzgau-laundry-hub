@@ -17,19 +17,19 @@ export function WaeschesetsStats({
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
-        title="Gesamt Sets"
+        title="Gesamt Kunden-Sets"
         value={total}
         icon={Layers}
         variant="info"
       />
       <StatCard
-        title="Aktive Sets"
+        title="Aktive Kunden-Sets"
         value={aktiv}
         icon={CheckCircle}
         variant="success"
       />
       <StatCard
-        title="Objekte mit Sets"
+        title="Objekte mit Kunden-Sets"
         value={objekteMitSets}
         icon={Building2}
         variant="primary"
