@@ -132,10 +132,10 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
           : { name: "", kategorie: "", beschreibung: "", bild_url: "", aktiv: true },
       );
       setPendingArtikel([]);
-      setSelectedArtikel("");
-      setMenge(1);
-      setBerechnungsart("pro_buchung");
-      setArtikelPopoverOpen(false);
+      setArtikelSuche("");
+      setArtikelKategorieFilter("alle");
+      setRowMengen({});
+      setRowBerechnung({});
     }
   }, [open, vorlage, form]);
 
