@@ -219,10 +219,10 @@ export function KundeFormDialog({ open, onOpenChange, kunde, onSave }: KundeForm
                         <RadioGroupItem value="nur_sets" id="nur_sets" className="mt-1" />
                         <div className="space-y-1">
                           <Label htmlFor="nur_sets" className="font-medium cursor-pointer">
-                            Nur Wäscheset-Anzahl
+                            Nur Kunden-Wäscheset-Anzahl
                           </Label>
                           <p className="text-sm text-muted-foreground">
-                            Kunde bestellt direkt eine Anzahl von Wäschesets ohne Buchungsinformationen.
+                            Kunde bestellt direkt eine Anzahl von Kunden-Wäschesets ohne Buchungsinformationen.
                           </p>
                         </div>
                       </div>
