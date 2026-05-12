@@ -1,35 +1,25 @@
-## Ziel
-Im Dialog "Neues Wäscheset erstellen" (Vorlagen-Sets) die bisherige Suche-und-Hinzufügen-Combobox durch eine **scrollbare Artikelliste mit Inline-Steuerung** ersetzen. Pro Zeile: Bild, Art.-Nr., Name, Kategorie/Farbe, Mengen-Stepper, Toggle Pro Buchung / Pro Gast, Plus-Button.
+## Problem
+In jeder Zeile zeigt der aktuelle Toggle nur den **aktiven** Wert (z. B. „📅 Pro Buchung"). Dass dieser Button anklickbar ist und auf „Pro Gast" wechselt, ist nicht erkennbar – der User denkt, es gibt nur „Pro Buchung".
 
-## Änderungen in `src/components/vorlagen/VorlageFormDialog.tsx`
+## Lösung
+Ersetze den Single-Button durch ein **Segmented-Control mit beiden Optionen sichtbar**. Beide Knöpfe sind immer zu sehen, der aktive ist farblich hervorgehoben.
 
-**Entfernen** (Add-article-Sektion, ca. Zeile 567–670):
-- Popover/Combobox `artikelPopoverOpen`, `selectedArtikel`
-- Globale Eingabefelder `menge`, `berechnungsart` (RadioGroup unten)
-- "Hinzufügen"-Button am Footer der Sektion
+## Änderung in `src/components/vorlagen/VorlageFormDialog.tsx`
 
-**Neu** statt dessen: Block "Artikel auswählen" mit
-1. Header-Zeile mit
-   - Suchfeld (`Input` + Lucide `Search`-Icon), filtert nach `artikelnummer`, `name`, `bezeichnung`
-   - Kategorie-`Select` (Optionen: "Alle" + die 5 Standardkategorien aus `KATEGORIEN_ARTIKEL`)
-2. Scrollbare Liste (`max-h-[360px] overflow-y-auto`, gerahmt) mit einer Zeile je verfügbarem Artikel:
-   - links: Thumbnail (`bild_url` 40×40, Fallback Package-Icon)
-   - Art.-Nr. (mono) + Name + Kategorie-Badge + Farb-Punkt
-   - rechts: Mengen-Stepper (lokaler State `rowMengen[artikelId]`, Default 1) mit `–` / Input / `+`
-   - Toggle-Button (lokaler State `rowBerechnung[artikelId]`, Default `pro_buchung`) – gleicher Stil wie in der Set-Tabelle (Calendar/User Icon)
-   - Plus-Button "Hinzufügen" – ruft bestehende `handleAddArtikel`-Logik mit `(artikelId, menge, berechnungsart)` auf
-3. Bereits hinzugefügte Artikel werden in der Liste **ausgegraut** und der Plus-Button durch ein grünes Check-Icon ersetzt (Hinweis "Bereits im Set"). Liste filtert sie nicht raus, damit Position stabil bleibt.
+Im Artikel-Picker (innerhalb der Listen-Zeilen) den bisherigen Toggle-Button ersetzen durch einen kompakten Zwei-Tasten-Block:
 
-**Bestehend bleibt unverändert**:
-- Tabelle "Artikel im Set" oben (Mengen-Anpassung, Toggle, Trash dort wie bisher)
-- `pendingArtikel` / `existingArtikel` Logik, `useAddVorlageArtikel`, Submit-Flow
-- Bild-Upload, Name/Kategorie/Beschreibung-Felder
+```text
+┌─────────────────┬──────────────┐
+│ 📅 Pro Buchung  │  👤 Pro Gast │   ← aktiver Eintrag = primary, inaktiver = ghost
+└─────────────────┴──────────────┘
+```
 
-## Technisch
-- `verfuegbareArtikel` (bereits vorhanden) bleibt Quelle, aber **ohne** Filterung gegen "schon hinzugefügt" – ersetzt durch `alleArtikel`. Stattdessen Set aus aktuell vergebenen `artikel_id` für die Ausgrau-Logik.
-- `handleAddArtikel` wird angepasst, sodass Menge/Berechnungsart als Argumente übergeben werden statt aus globalem State zu lesen.
-- Neuer Imports: `Search` aus lucide-react. `RadioGroup`, `Popover`, `Command*`, `ChevronsUpDown` werden nicht mehr gebraucht und entfernt.
+Verhalten:
+- Klick auf einen der beiden Knöpfe setzt direkt `rowBerechnung[a.id]` auf den entsprechenden Wert (kein Toggle-Logik mehr nötig).
+- Aktive Seite: `bg-primary text-primary-foreground`, inaktive: transparent + Hover.
+- Container: `inline-flex rounded-md border bg-background p-0.5`, Höhe ~28 px, kompakt damit Layout passt.
+- Bei `disabled` (Artikel bereits im Set) bleiben beide sichtbar, aber nicht klickbar.
 
 ## Nicht geändert
-- `WaeschesetFormDialog` (Kundenportal) bleibt wie es ist.
-- Datenbank, Hooks, externe API.
+- Logik / State / Submit / Datenbank.
+- Toggle in der oberen „Artikel im Set"-Tabelle bleibt wie er ist (dort ist Kontext klar, eine Spalte).
