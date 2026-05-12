@@ -1,40 +1,61 @@
-## Plan: Einheitlicher „Zurück"-Button in allen Unterseiten
+## Plan: Teuni-Vorlagen-Sets + API für Wäscheartikel & Vorlagen-Sets
 
-Damit Benutzer nicht über die Sidebar zurücknavigieren müssen, bekommt jede Unterseite einen Zurück-Button im Header.
+### Konzept
 
-### Neue Komponente
+Zwei klar getrennte Ebenen:
+- **Kunden-Sets** (bestehend, `waeschesets`) – objektgebunden, vom Kunden für seine Häuser definiert.
+- **Teuni-Vorlagen-Sets** (neu) – zentral von Teuni gepflegte Standard-Sets, **objekt-unabhängig**, abrufbar per API und im Portal als „Vorlage übernehmen" nutzbar.
 
-**`src/components/layout/BackButton.tsx`** *(neu)*
-- Ghost-Button mit `ArrowLeft`-Icon und Label „Zurück".
-- Verhalten: `navigate(-1)` wenn Historie vorhanden (`window.history.length > 1`), sonst Fallback `navigate("/")` (z. B. bei Direktlink).
-- Styling konsistent zur Sidebar-Header-Leiste (`text-sidebar-foreground hover:bg-sidebar-accent`, `h-9`).
-- Mobile: nur Icon; ab `sm:` zusätzlich Label.
+### 1. Datenbank (neu)
 
-### Einbau
+**`waescheset_vorlagen`**
+- `id`, `name`, `beschreibung`, `kategorie` (z. B. „Apartment", „Chalet", „Wellness"), `aktiv`, `bild_url` (optional), `created_at`, `updated_at`.
 
-In jeder Unterseite den Button im sticky `<header>` direkt nach `SidebarTrigger` und vor dem Titelblock einfügen.
+**`waescheset_vorlage_artikel`**
+- `id`, `vorlage_id` → `waescheset_vorlagen`, `artikel_id` → `waescheartikel`, `menge`, `berechnungsart` (`pro_buchung` / `pro_gast`).
 
-Betroffene Seiten:
-- `src/pages/Bestellungen.tsx`
-- `src/pages/BestellungsManagement.tsx`
-- `src/pages/Kunden.tsx`
-- `src/pages/Objekte.tsx`
-- `src/pages/Liefertouren.tsx`
-- `src/pages/Rechnungen.tsx`
-- `src/pages/Rechnungseinstellungen.tsx`
-- `src/pages/Waescheartikel.tsx`
-- `src/pages/Waeschesets.tsx`
-- `src/pages/Waeschekraefte.tsx`
-- `src/pages/Benutzerverwaltung.tsx`
-- `src/pages/Integrationen.tsx`
-- `src/pages/Verwaltung.tsx`
+RLS aus (Dev-State konsistent), `updated_at`-Trigger.
 
-**Nicht betroffen:**
-- `src/pages/Index.tsx` (Dashboard / Startseite – kein Zurück nötig)
-- `src/pages/Auth.tsx`, `src/pages/NotFound.tsx`
+### 2. Verwaltung im Portal
 
-### Verhalten
+**Neue Seite `/vorlagen-sets`** (Sidebar-Eintrag „Vorlagen-Sets", Admin-Bereich):
+- Liste aller Teuni-Vorlagen mit Name, Kategorie, Anzahl Artikel, Aktiv-Toggle.
+- Anlegen/Bearbeiten-Dialog wie bestehender Set-Dialog (Artikel-Auswahl, Menge, Berechnungsart) – **ohne Objekt-Auswahl**.
+- Aktivierungs-Schalter und Löschen.
 
-- Klick → eine Seite zurück in der Browser-Historie.
-- Ohne Historie (Direkteinstieg, neuer Tab) → Dashboard `/`.
-- Mobile: nur Icon; Desktop: Icon + „Zurück".
+**Auf `/waeschesets`** zusätzlicher Button **„Vorlage übernehmen"**:
+- Öffnet Dialog mit Liste aller aktiven Teuni-Vorlagen.
+- Kunde wählt Vorlage + Zielobjekt → System legt eine Kopie als normales `waeschesets`-Set für dieses Objekt an (Artikel-Positionen werden mitkopiert, danach unabhängig editierbar).
+
+### 3. Neue Edge Functions
+
+**`external-articles`** (GET)
+- Auth: `Authorization: Bearer EXTERNAL_API_KEY` (gleiches Schema wie bestehende Endpoints).
+- Optional `?aktiv=true` (Default), `?kategorie=...`, `?search=...`.
+- Liefert: `artikelnummer`, `name`, `bezeichnung`, `kategorie`, `farbe`, `groesse`, `preis`, `bild_url`, `aktiv`.
+
+**`external-vorlagen-sets`** (GET)
+- Gleiche Auth.
+- Optional `?aktiv=true`, `?kategorie=...`.
+- Liefert pro Vorlage: `id`, `name`, `beschreibung`, `kategorie`, `bild_url`, `positionen[]` mit `artikelnummer`, `name`, `menge`, `berechnungsart`.
+- Antwortformat eignet sich direkt zum Anlegen/Übernehmen in der Hausverwaltung des Partners.
+
+Beide Endpoints: CORS, klare 401/400/500-Antworten, Logging in `partner_api_log`-Stil (über bestehende Konvention).
+
+### 4. Integrationen-Seite
+
+In `src/pages/Integrationen.tsx` zwei zusätzliche Endpoint-Karten + Doku-Snippets (cURL + JSON-Beispielantwort) für:
+- `GET /functions/v1/external-articles`
+- `GET /functions/v1/external-vorlagen-sets`
+
+### Was bleibt unverändert
+
+- Bestehende Endpoints (`external-order-import`, `external-order-status`, `external-invoices`).
+- Kunden-Set-Workflow (`waeschesets` an Objekt gebunden).
+- Bestellfluss & Berechnungslogik.
+
+### Offene Annahmen
+
+- Vorlagen-Sets sind **nur lesbar** über die API (keine Erstellung durch Partner).
+- Sidebar-Eintrag „Vorlagen-Sets" landet im Admin-Bereich (analog Wäscheartikel/Wäschesets).
+- Beim „Vorlage übernehmen" wird eine **Kopie** angelegt – Änderungen am Original wirken sich nicht rückwirkend aus.
