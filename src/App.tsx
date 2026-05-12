@@ -9,6 +9,7 @@ import Kunden from "./pages/Kunden";
 
 import Waescheartikel from "./pages/Waescheartikel";
 import Waeschesets from "./pages/Waeschesets";
+import VorlagenSets from "./pages/VorlagenSets";
 import Bestellungen from "./pages/Bestellungen";
 import BestellungsManagement from "./pages/BestellungsManagement";
 import Liefertouren from "./pages/Liefertouren";
