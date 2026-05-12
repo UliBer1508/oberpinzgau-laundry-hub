@@ -84,6 +84,33 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
   const [menge, setMenge] = useState<number>(1);
   const [berechnungsart, setBerechnungsart] = useState<Berechnungsart>("pro_buchung");
   const [artikelPopoverOpen, setArtikelPopoverOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingBild, setIsUploadingBild] = useState(false);
+  const uploadBildMut = useUploadArtikelBild();
+
+  const handleBildSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      toast({ title: "Ungültiges Format", description: "Nur JPG, PNG oder WEBP.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Datei zu groß", description: "Maximale Dateigröße ist 5MB.", variant: "destructive" });
+      return;
+    }
+    setIsUploadingBild(true);
+    try {
+      const url = await uploadBildMut.mutateAsync(file);
+      form.setValue("bild_url", url, { shouldDirty: true });
+    } catch (err) {
+      toast({ title: "Upload fehlgeschlagen", description: "Bild konnte nicht hochgeladen werden.", variant: "destructive" });
+    } finally {
+      setIsUploadingBild(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const { data: alleArtikel = [] } = useWaescheartikelForSelect();
   const { data: existingArtikel = [] } = useVorlageArtikel(vorlage?.id ?? null);
