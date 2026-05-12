@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { BackButton } from "@/components/layout/BackButton";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 
 import { ManagementStats } from "@/components/management/ManagementStats";
@@ -103,6 +104,7 @@ export default function BestellungsManagement() {
         <SidebarInset className="flex-1">
           <header className="flex h-14 items-center gap-3 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6">
             <SidebarTrigger className="hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
+            <BackButton />
             <div className="flex-1">
               <h1 className="text-lg font-semibold">Arbeitsaufträge</h1>
             </div>
