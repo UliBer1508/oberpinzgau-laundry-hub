@@ -20,6 +20,8 @@ import { WaeschesetsStats } from "@/components/waeschesets/WaeschesetsStats";
 import { WaeschesetsFilter } from "@/components/waeschesets/WaeschesetsFilter";
 import { WaeschesetsTable } from "@/components/waeschesets/WaeschesetsTable";
 import { WaeschesetFormDialog } from "@/components/waeschesets/WaeschesetFormDialog";
+import { VorlageUebernehmenDialog } from "@/components/vorlagen/VorlageUebernehmenDialog";
+import { ArrowDownToLine } from "lucide-react";
 
 interface PendingArtikel {
   id: string;
@@ -39,6 +41,7 @@ export default function Waeschesets() {
   const [showOnlyAktiv, setShowOnlyAktiv] = useState(false);
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [selectedSet, setSelectedSet] = useState<Waescheset | null>(null);
+  const [vorlageDialogOpen, setVorlageDialogOpen] = useState(false);
 
   const { data: sets = [], isLoading, error } = useWaeschesets();
   const { data: kunden = [] } = useKundenForWaeschesets();
@@ -179,10 +182,16 @@ export default function Waeschesets() {
                   </p>
                 </div>
               </div>
-              <Button onClick={handleAddSet}>
-                <Plus className="mr-2 h-4 w-4" />
-                Neues Set
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" onClick={() => setVorlageDialogOpen(true)}>
+                  <ArrowDownToLine className="mr-2 h-4 w-4" />
+                  Vorlage übernehmen
+                </Button>
+                <Button onClick={handleAddSet}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Neues Set
+                </Button>
+              </div>
             </div>
 
             {/* Stats */}
@@ -228,6 +237,11 @@ export default function Waeschesets() {
               objekte={[]}
               onSubmit={handleSaveSet}
               isLoading={createSet.isPending || updateSet.isPending}
+            />
+
+            <VorlageUebernehmenDialog
+              open={vorlageDialogOpen}
+              onOpenChange={setVorlageDialogOpen}
             />
           </div>
         </main>

@@ -9,6 +9,7 @@ import Kunden from "./pages/Kunden";
 
 import Waescheartikel from "./pages/Waescheartikel";
 import Waeschesets from "./pages/Waeschesets";
+import VorlagenSets from "./pages/VorlagenSets";
 import Bestellungen from "./pages/Bestellungen";
 import BestellungsManagement from "./pages/BestellungsManagement";
 import Liefertouren from "./pages/Liefertouren";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/objekte" element={<Navigate to="/kunden" replace />} />
             <Route path="/waescheartikel" element={<RequireAccess resource="waescheartikel"><Waescheartikel /></RequireAccess>} />
             <Route path="/waeschesets" element={<RequireAccess resource="waeschesets"><Waeschesets /></RequireAccess>} />
+            <Route path="/vorlagen-sets" element={<RequireAccess resource="waeschesets"><VorlagenSets /></RequireAccess>} />
             <Route path="/bestellungen" element={<RequireAccess resource="bestellungen"><Bestellungen /></RequireAccess>} />
             <Route path="/bestellungen/management" element={<RequireAccess resource="bestellungen_management"><BestellungsManagement /></RequireAccess>} />
             <Route path="/liefertouren" element={<RequireAccess resource="liefertouren"><Liefertouren /></RequireAccess>} />

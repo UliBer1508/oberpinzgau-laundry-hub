@@ -1053,6 +1053,78 @@ export type Database = {
           },
         ]
       }
+      waescheset_vorlage_artikel: {
+        Row: {
+          artikel_id: string
+          berechnungsart: Database["public"]["Enums"]["berechnungsart"]
+          id: string
+          menge: number
+          vorlage_id: string
+        }
+        Insert: {
+          artikel_id: string
+          berechnungsart?: Database["public"]["Enums"]["berechnungsart"]
+          id?: string
+          menge?: number
+          vorlage_id: string
+        }
+        Update: {
+          artikel_id?: string
+          berechnungsart?: Database["public"]["Enums"]["berechnungsart"]
+          id?: string
+          menge?: number
+          vorlage_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waescheset_vorlage_artikel_artikel_id_fkey"
+            columns: ["artikel_id"]
+            isOneToOne: false
+            referencedRelation: "waescheartikel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waescheset_vorlage_artikel_vorlage_id_fkey"
+            columns: ["vorlage_id"]
+            isOneToOne: false
+            referencedRelation: "waescheset_vorlagen"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waescheset_vorlagen: {
+        Row: {
+          aktiv: boolean
+          beschreibung: string | null
+          bild_url: string | null
+          created_at: string
+          id: string
+          kategorie: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          aktiv?: boolean
+          beschreibung?: string | null
+          bild_url?: string | null
+          created_at?: string
+          id?: string
+          kategorie?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          aktiv?: boolean
+          beschreibung?: string | null
+          bild_url?: string | null
+          created_at?: string
+          id?: string
+          kategorie?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       waeschesets: {
         Row: {
           aktiv: boolean | null

@@ -14,6 +14,8 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const ENDPOINT_URL = `${SUPABASE_URL}/functions/v1/external-order-import`;
 const STATUS_URL = `${SUPABASE_URL}/functions/v1/external-order-status`;
 const INVOICES_URL = `${SUPABASE_URL}/functions/v1/external-invoices`;
+const ARTICLES_URL = `${SUPABASE_URL}/functions/v1/external-articles`;
+const VORLAGEN_URL = `${SUPABASE_URL}/functions/v1/external-vorlagen-sets`;
 
 const STATUS_RESPONSE_EXAMPLE = `{
   "bestellnummer": "B0042",
@@ -163,6 +165,41 @@ export default function Integrationen() {
           </header>
 
           <div className="p-4 md:p-6 space-y-6 max-w-5xl">
+            {/* Stammdaten-Endpoints für Hausverwaltung */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plug className="h-5 w-5" />
+                  Stammdaten abrufen (Wäscheartikel & Vorlagen-Sets)
+                </CardTitle>
+                <CardDescription>
+                  Lese-Endpunkte für die Hausverwaltung. Damit kannst du Wäscheartikel und die von
+                  Teuni vordefinierten Vorlagen-Sets abfragen und auf Partnerseite als Set für
+                  einzelne Häuser übernehmen. Auth: <code>Authorization: Bearer EXTERNAL_API_KEY</code>.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="text-sm font-semibold mb-1">GET Wäscheartikel</div>
+                  <pre className="rounded bg-muted p-3 text-xs overflow-x-auto"><code>{`curl -H "Authorization: Bearer $EXTERNAL_API_KEY" \\
+  "${ARTICLES_URL}?aktiv=true&kategorie=Bettwäsche"`}</code></pre>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Optional: <code>aktiv</code> (default true), <code>kategorie</code>, <code>search</code>.
+                    Felder: artikelnummer, name, bezeichnung, kategorie, farbe, groesse, preis, bild_url, aktiv.
+                  </p>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold mb-1">GET Vorlagen-Sets</div>
+                  <pre className="rounded bg-muted p-3 text-xs overflow-x-auto"><code>{`curl -H "Authorization: Bearer $EXTERNAL_API_KEY" \\
+  "${VORLAGEN_URL}?aktiv=true"`}</code></pre>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Pro Vorlage: id, name, beschreibung, kategorie, bild_url + positionen
+                    (artikelnummer, name, menge, berechnungsart).
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Übersicht */}
             <Card>
               <CardHeader>
