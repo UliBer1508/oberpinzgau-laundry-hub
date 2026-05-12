@@ -80,10 +80,10 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
   });
 
   const [pendingArtikel, setPendingArtikel] = useState<PendingVorlageArtikel[]>([]);
-  const [selectedArtikel, setSelectedArtikel] = useState<string>("");
-  const [menge, setMenge] = useState<number>(1);
-  const [berechnungsart, setBerechnungsart] = useState<Berechnungsart>("pro_buchung");
-  const [artikelPopoverOpen, setArtikelPopoverOpen] = useState(false);
+  const [artikelSuche, setArtikelSuche] = useState("");
+  const [artikelKategorieFilter, setArtikelKategorieFilter] = useState<string>("alle");
+  const [rowMengen, setRowMengen] = useState<Record<string, number>>({});
+  const [rowBerechnung, setRowBerechnung] = useState<Record<string, Berechnungsart>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingBild, setIsUploadingBild] = useState(false);
   const uploadBildMut = useUploadArtikelBild();
