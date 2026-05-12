@@ -107,9 +107,7 @@ const Index = () => {
               </CollapsibleContent>
             </Collapsible>
 
-            <div className="grid gap-6">
-              <QuickActionsUpdated />
-            </div>
+            <QuickActionsUpdated />
           </div>
         </main>
       </div>
