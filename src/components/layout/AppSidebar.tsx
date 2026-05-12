@@ -54,7 +54,7 @@ const managementNavItems = [
   { title: "Wäschekräfte/Fahrer", url: "/waeschekraefte", icon: UserCheck, resource: "waeschekraefte" },
   { title: "Wäscheartikel", url: "/waescheartikel", icon: Package, resource: "waescheartikel" },
   { title: "Kunden-Wäschesets", url: "/waeschesets", icon: Layers, resource: "waeschesets" },
-  { title: "Unsere Wäschesets", url: "/vorlagen-sets", icon: Layers, resource: "waeschesets" },
+  { title: "Unsere-Wäschesets", url: "/vorlagen-sets", icon: Layers, resource: "waeschesets" },
   { title: "Rechnungseinstellungen", url: "/rechnungseinstellungen", icon: FileText, resource: "rechnungen" },
   { title: "Benutzerverwaltung", url: "/benutzer", icon: Settings, resource: "benutzer" },
   { title: "API & Integrationen", url: "/integrationen", icon: Plug, resource: "benutzer" },
