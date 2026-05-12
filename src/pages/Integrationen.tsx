@@ -170,11 +170,11 @@ export default function Integrationen() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Plug className="h-5 w-5" />
-                  Stammdaten abrufen (Wäscheartikel & Vorlagen-Sets)
+                  Stammdaten abrufen (Wäscheartikel & Unsere Wäschesets)
                 </CardTitle>
                 <CardDescription>
                   Lese-Endpunkte für die Hausverwaltung. Damit kannst du Wäscheartikel und die von
-                  Teuni vordefinierten Vorlagen-Sets abfragen und auf Partnerseite als Set für
+                  Teuni vordefinierten Wäschesets abfragen und auf Partnerseite als Set für
                   einzelne Häuser übernehmen. Auth: <code>Authorization: Bearer EXTERNAL_API_KEY</code>.
                 </CardDescription>
               </CardHeader>
@@ -189,7 +189,7 @@ export default function Integrationen() {
                   </p>
                 </div>
                 <div>
-                  <div className="text-sm font-semibold mb-1">GET Vorlagen-Sets</div>
+                  <div className="text-sm font-semibold mb-1">GET Unsere Wäschesets</div>
                   <pre className="rounded bg-muted p-3 text-xs overflow-x-auto"><code>{`curl -H "Authorization: Bearer $EXTERNAL_API_KEY" \\
   "${VORLAGEN_URL}?aktiv=true"`}</code></pre>
                   <p className="text-xs text-muted-foreground mt-1">

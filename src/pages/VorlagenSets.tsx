@@ -87,7 +87,7 @@ export default function VorlagenSets() {
           <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:hidden">
             <SidebarTrigger className="h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
             <BackButton />
-            <h1 className="text-base font-semibold">Vorlagen-Sets</h1>
+            <h1 className="text-base font-semibold">Unsere Wäschesets</h1>
           </header>
 
           <div className="container py-4 md:py-6">
@@ -97,7 +97,7 @@ export default function VorlagenSets() {
                   <Layers className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold">Vorlagen-Sets</h1>
+                  <h1 className="text-2xl font-bold">Unsere Wäschesets</h1>
                   <p className="text-sm text-muted-foreground">
                     Zentrale Standard-Sets von Teuni – Kunden können diese in eigene Objekte übernehmen
                   </p>
@@ -114,7 +114,7 @@ export default function VorlagenSets() {
             ) : vorlagen.length === 0 ? (
               <div className="rounded-lg border border-dashed p-12 text-center">
                 <Layers className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                <p className="mt-3 text-sm text-muted-foreground">Noch keine Vorlagen-Sets erstellt.</p>
+                <p className="mt-3 text-sm text-muted-foreground">Noch keine Wäschesets erstellt.</p>
                 <Button className="mt-4" onClick={handleNew}>
                   <Plus className="mr-2 h-4 w-4" />Erste Vorlage anlegen
                 </Button>
