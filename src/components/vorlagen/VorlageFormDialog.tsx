@@ -139,28 +139,37 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
     }
   }, [open, vorlage, form]);
 
-  const verfuegbareArtikel = useMemo(() => {
-    const usedIds = vorlage
+  const usedArtikelIds = useMemo(() => {
+    const ids = vorlage
       ? existingArtikel.map((a) => a.artikel_id)
       : pendingArtikel.map((a) => a.artikel_id);
-    return alleArtikel.filter((a) => !usedIds.includes(a.id));
-  }, [alleArtikel, vorlage, existingArtikel, pendingArtikel]);
+    return new Set(ids);
+  }, [vorlage, existingArtikel, pendingArtikel]);
 
-  const selectedArtikelDetails = useMemo(
-    () => alleArtikel.find((a) => a.id === selectedArtikel),
-    [alleArtikel, selectedArtikel],
-  );
+  const gefilterteArtikel = useMemo(() => {
+    const q = artikelSuche.trim().toLowerCase();
+    return alleArtikel.filter((a) => {
+      if (artikelKategorieFilter !== "alle" && a.kategorie !== artikelKategorieFilter) return false;
+      if (!q) return true;
+      return (
+        a.artikelnummer.toLowerCase().includes(q) ||
+        a.name.toLowerCase().includes(q) ||
+        (a.bezeichnung ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [alleArtikel, artikelSuche, artikelKategorieFilter]);
 
-  const handleAddArtikel = async () => {
-    if (!selectedArtikel) return;
-    const artikel = alleArtikel.find((a) => a.id === selectedArtikel);
+  const handleAddArtikelById = async (artikelId: string) => {
+    const artikel = alleArtikel.find((a) => a.id === artikelId);
     if (!artikel) return;
+    const menge = rowMengen[artikelId] ?? 1;
+    const berechnungsart = rowBerechnung[artikelId] ?? "pro_buchung";
 
     if (vorlage) {
       try {
         await addMut.mutateAsync({
           vorlage_id: vorlage.id,
-          artikel_id: selectedArtikel,
+          artikel_id: artikelId,
           menge,
           berechnungsart,
         });
@@ -173,8 +182,8 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
       setPendingArtikel((prev) => [
         ...prev,
         {
-          id: `temp-${Date.now()}`,
-          artikel_id: selectedArtikel,
+          id: `temp-${Date.now()}-${artikelId}`,
+          artikel_id: artikelId,
           artikelNummer: artikel.artikelnummer,
           artikelName: artikel.name,
           kategorie: artikel.kategorie,
@@ -186,10 +195,8 @@ export function VorlageFormDialog({ open, onOpenChange, vorlage, onSubmit, isLoa
         },
       ]);
     }
-
-    setSelectedArtikel("");
-    setMenge(1);
-    setBerechnungsart("pro_buchung");
+    setRowMengen((p) => ({ ...p, [artikelId]: 1 }));
+    setRowBerechnung((p) => ({ ...p, [artikelId]: "pro_buchung" }));
   };
 
   const handleRemoveArtikel = async (id: string, tempId?: string) => {
