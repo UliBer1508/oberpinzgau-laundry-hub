@@ -182,10 +182,16 @@ export default function Waeschesets() {
                   </p>
                 </div>
               </div>
-              <Button onClick={handleAddSet}>
-                <Plus className="mr-2 h-4 w-4" />
-                Neues Set
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" onClick={() => setVorlageDialogOpen(true)}>
+                  <ArrowDownToLine className="mr-2 h-4 w-4" />
+                  Vorlage übernehmen
+                </Button>
+                <Button onClick={handleAddSet}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Neues Set
+                </Button>
+              </div>
             </div>
 
             {/* Stats */}
