@@ -14,6 +14,8 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const ENDPOINT_URL = `${SUPABASE_URL}/functions/v1/external-order-import`;
 const STATUS_URL = `${SUPABASE_URL}/functions/v1/external-order-status`;
 const INVOICES_URL = `${SUPABASE_URL}/functions/v1/external-invoices`;
+const ARTICLES_URL = `${SUPABASE_URL}/functions/v1/external-articles`;
+const VORLAGEN_URL = `${SUPABASE_URL}/functions/v1/external-vorlagen-sets`;
 
 const STATUS_RESPONSE_EXAMPLE = `{
   "bestellnummer": "B0042",
