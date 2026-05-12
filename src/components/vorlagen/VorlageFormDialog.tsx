@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Package, Plus, Minus, Trash2, User, Calendar, ChevronsUpDown, Check } from "lucide-react";
+import { Package, Plus, Minus, Trash2, User, Calendar, ChevronsUpDown, Check, Upload, X, Image as ImageIcon } from "lucide-react";
+import { useUploadArtikelBild } from "@/hooks/useWaescheartikel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
