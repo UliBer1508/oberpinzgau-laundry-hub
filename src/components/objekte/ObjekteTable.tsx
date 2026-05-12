@@ -63,7 +63,7 @@ export function ObjekteTable({ objekte, onEdit, onManageSets, onToggleAktiv }: O
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onManageSets(objekt)}>
           <Layers className="mr-2 h-4 w-4" />
-          Wäschesets verwalten
+          Kunden-Wäschesets verwalten
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => onToggleAktiv(objekt)}>

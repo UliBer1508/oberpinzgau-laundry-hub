@@ -245,7 +245,7 @@ export function BestellungFormDialog({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Package className="h-4 w-4 text-muted-foreground" />
-                <Label htmlFor="waescheset">Wäscheset</Label>
+                <Label htmlFor="waescheset">Kunden-Wäscheset</Label>
               </div>
               <Select
                 value={formData.waescheset_id}
@@ -254,12 +254,12 @@ export function BestellungFormDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Wäscheset auswählen" />
+                  <SelectValue placeholder="Kunden-Wäscheset auswählen" />
                 </SelectTrigger>
                 <SelectContent>
                   {waeschesets.length === 0 ? (
                     <SelectItem value="_none" disabled>
-                      Keine Wäschesets für dieses Objekt
+                      Keine Kunden-Wäschesets für dieses Objekt
                     </SelectItem>
                   ) : (
                     waeschesets.map((set) => (

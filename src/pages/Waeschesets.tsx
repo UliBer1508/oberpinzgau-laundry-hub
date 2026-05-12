@@ -116,7 +116,7 @@ export default function Waeschesets() {
     try {
       if (selectedSet) {
         await updateSet.mutateAsync({ id: selectedSet.id, ...data });
-        toast({ title: "Wäscheset aktualisiert" });
+        toast({ title: "Kunden-Wäscheset aktualisiert" });
       } else {
         // Create new set
         const newSet = await createSet.mutateAsync(data);
@@ -132,7 +132,7 @@ export default function Waeschesets() {
             });
           }
         }
-        toast({ title: "Wäscheset erstellt" });
+        toast({ title: "Kunden-Wäscheset erstellt" });
       }
       setFormDialogOpen(false);
     } catch {
@@ -166,7 +166,7 @@ export default function Waeschesets() {
           <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:hidden">
             <SidebarTrigger className="h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
             <BackButton />
-            <h1 className="text-base font-semibold">Wäschesets</h1>
+            <h1 className="text-base font-semibold">Kunden-Wäschesets</h1>
           </header>
           <div className="container py-4 md:py-6">
             {/* Header */}
@@ -176,9 +176,9 @@ export default function Waeschesets() {
                   <Layers className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold">Wäschesets</h1>
+                  <h1 className="text-2xl font-bold">Kunden-Wäschesets</h1>
                   <p className="text-sm text-muted-foreground">
-                    Verwalten Sie Wäschesets für Ihre Objekte
+                    Verwalten Sie Kunden-Wäschesets für Ihre Objekte
                   </p>
                 </div>
               </div>
@@ -218,7 +218,7 @@ export default function Waeschesets() {
             {/* Table */}
             {isLoading ? (
               <div className="py-12 text-center text-muted-foreground">
-                Lade Wäschesets...
+                Lade Kunden-Wäschesets...
               </div>
             ) : (
               <WaeschesetsTable
