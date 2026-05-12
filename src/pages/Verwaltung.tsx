@@ -1,4 +1,5 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { BackButton } from "@/components/layout/BackButton";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +24,7 @@ export default function Verwaltung() {
         <main className="flex-1 overflow-x-hidden min-w-0">
           <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6">
             <SidebarTrigger className="hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0" />
+            <BackButton />
             <div className="min-w-0">
               <h1 className="text-xl font-semibold truncate">Verwaltung</h1>
               <p className="text-sm text-sidebar-foreground/80 truncate">Stammdaten und Einstellungen</p>

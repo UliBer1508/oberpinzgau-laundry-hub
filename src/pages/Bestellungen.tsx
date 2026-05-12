@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { BackButton } from "@/components/layout/BackButton";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Plus, Download } from "lucide-react";
@@ -205,6 +206,7 @@ export default function Bestellungen() {
         <main className="flex-1 overflow-x-hidden min-w-0">
           <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-sidebar-border bg-sidebar text-sidebar-foreground px-4 md:px-6 py-4">
             <SidebarTrigger className="hidden h-9 w-9 rounded-lg hover:bg-sidebar-accent shrink-0"/>
+            <BackButton />
             <div className="flex flex-1 flex-col gap-3 min-w-0 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <h1 className="text-2xl font-semibold">Bestellungen</h1>
