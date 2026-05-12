@@ -41,6 +41,7 @@ export default function Waeschesets() {
   const [showOnlyAktiv, setShowOnlyAktiv] = useState(false);
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [selectedSet, setSelectedSet] = useState<Waescheset | null>(null);
+  const [vorlageDialogOpen, setVorlageDialogOpen] = useState(false);
 
   const { data: sets = [], isLoading, error } = useWaeschesets();
   const { data: kunden = [] } = useKundenForWaeschesets();
