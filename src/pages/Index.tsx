@@ -66,7 +66,7 @@ const Index = () => {
                   <StatCard
                     title="Bestellungen"
                     value={stats?.bestellungen?.total ?? 0}
-                    subtitle={`${stats?.bestellungen?.neu ?? 0} neu`}
+                    subtitle={`${stats?.bestellungen?.neu ?? 0} neue Bestellung`}
                     icon={Package}
                     variant="info"
                     onClick={() => navigate("/bestellungen")}
