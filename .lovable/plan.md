@@ -1,51 +1,61 @@
-## Plan: Lovable-Prompt für Hausverwaltung-Integration
+# PWA-Installation reparieren
 
-Ich erstelle einen kopierfertigen Prompt, den du in einem **neuen Lovable-Projekt** (deine Hausverwaltung) einfügen kannst. Der Prompt baut die Anbindung an die Teuni-Schnittstelle, zeigt Wäscheartikel + Teuni-Wäschesets-Vorlagen an und erlaubt die Auswahl/Erstellung pro Haus. **Bestellfunktion ist explizit ausgeklammert.**
+## Gefundene Probleme
 
-### Inhalt des Prompts
+1. **Icons sind kaputt** (Hauptproblem – verhindert „Installieren"-Button auf Android/Chrome):
+   - `public/pwa-192x192.png` → tatsächlich **512×512 JPEG** (falscher Inhalt, falsches Format)
+   - `public/pwa-512x512.png` → tatsächlich **512×512 JPEG** (als PNG deklariert)
+   - Chrome/Android verlangen mindestens ein **echtes 192×192 PNG** und ein **512×512 PNG** mit korrektem MIME‑Type, sonst wird die App nicht als installierbar erkannt – auf iOS sieht das Home‑Screen‑Icon zudem kaputt/verzerrt aus.
 
-**1. Projektkontext**
-- Ziel: In bestehende Hausverwaltung-App eine „Wäsche"-Sektion ergänzen
-- Stack-Annahme: React + Tailwind + shadcn/ui + Lovable Cloud (Supabase)
+2. **Kein dediziertes maskable Icon**: Aktuell wird `pwa-512x512.png` doppelt verwendet (einmal `any`, einmal `any maskable`). Maskable Icons brauchen einen Sicherheitsbereich (Safe Zone), sonst wird das Icon auf Android am Rand abgeschnitten.
 
-**2. Verwendete Teuni-Endpoints** (read-only)
-- `GET /functions/v1/external-articles` → Liste Wäscheartikel (Filter: `aktiv`, `kategorie`, `search`)
-- `GET /functions/v1/external-vorlagen-sets` → Teuni-Vorlagen mit Positionen (Filter: `aktiv`, `kategorie`)
-- Base-URL: `https://pkpnowevagxmhyqlawng.supabase.co`
-- Auth: `Authorization: Bearer <EXTERNAL_API_KEY>` → Secret in Lovable Cloud anlegen lassen
-- Beispielresponses werden mitgegeben
+3. **Apple Touch Icon fehlt korrekt**: `index.html` referenziert `pwa-192x192.png` (das ist ein JPEG) – iOS zeigt dann ggf. gar kein Icon beim „Zum Home‑Bildschirm".
 
-**3. UI-Anforderungen**
-- Seite „Teuni-Katalog" mit zwei Tabs: **Artikel** und **Vorlagen-Sets**
-- Artikel: Tabelle/Karten mit Bild, Name, Kategorie, Größe, Farbe, Preis – Such- und Kategoriefilter
-- Vorlagen-Sets: Karten-Grid (Bild, Name, Kategorie, Anzahl Positionen, Preisaufstellung), klickbar für Detail-Dialog mit Positionsliste (`menge` + `berechnungsart` `pro_buchung`/`pro_gast`)
-- Auf Haus-Detailseite Sektion „Wäschesets": Liste der zugewiesenen Sets + Buttons:
-  - „Vorlage übernehmen" (öffnet Picker mit Teuni-Vorlagen → kopiert Positionen)
-  - „Eigenes Set erstellen" (Editor: Artikel aus Teuni-Katalog wählen, Menge + Berechnungsart pro Zeile)
-  - „Bearbeiten" / „Löschen"
+## Was sonst bereits gut ist (muss nicht geändert werden)
 
-**4. Datenmodell – zwei Varianten beschrieben**
+- `vite-plugin-pwa` ist korrekt konfiguriert (`registerType: autoUpdate`, `devOptions.enabled: false`, `NetworkFirst` für Supabase).
+- `main.tsx` unregistered den Service Worker im Lovable‑Preview/iframe – richtig.
+- `usePWAInstall` + `PWAInstallButton` mit iOS‑Anleitung sind sauber implementiert.
+- Manifest (`name`, `short_name`, `start_url`, `display: standalone`, `theme_color`) ist vollständig.
+- Meta‑Tags in `index.html` (theme‑color, apple‑mobile‑web‑app‑*) sind gesetzt.
 
-*Variante A: Lokale Speicherung (empfohlen, sofort einsatzbereit)*
-- Tabellen in eigener Lovable-Cloud-DB:
-  - `haus_waeschesets` (id, haus_id, name, vorlage_quelle_id nullable, beschreibung)
-  - `haus_waescheset_positionen` (id, set_id, artikelnummer, artikel_name_snapshot, menge, berechnungsart)
-- Vorlagen werden beim Übernehmen **kopiert** (Snapshot), künftige Änderungen bei Teuni schlagen nicht durch
-- Optional: Versions-/Resync-Button
+→ Sobald die Icons korrekt sind, sollte die Installation auf Android (Chrome), Desktop (Chrome/Edge) und iOS (Safari → Teilen → Zum Home‑Bildschirm) zuverlässig funktionieren.
 
-*Variante B: Sync zurück zu Teuni*
-- Erfordert zusätzliche Teuni-Endpoints (`POST/PUT/DELETE` für Kunden-Sets), die aktuell **nicht existieren**
-- Kurzer Hinweis im Prompt: bei Bedarf bei Teuni anfordern
+## Umsetzung
 
-**5. Implementierungs-Hints**
-- Edge Function Wrapper (`teuni-proxy`) in eigener App, der `EXTERNAL_API_KEY` server-seitig hält → nicht im Browser
-- React Query Hooks: `useTeuniArtikel()`, `useTeuniVorlagen()`
-- Caching 5 Min, Stale-While-Revalidate
-- Berechnungsart-Hinweis: `pro_buchung` = fixe Menge je Buchung, `pro_gast` = Menge × Anzahl Gäste (für spätere Bestellauslösung wichtig, hier nur anzeigen)
+### 1. Icons neu generieren
+Drei neue, korrekt dimensionierte PNGs mit dem Wäscheportal‑Branding (Paket‑Symbol, Primärfarbe `#1e3a5f`):
 
-**6. Explizit ausgeklammert**
-- Bestellung an Teuni senden (separater späterer Schritt via `external-order-import`)
-- Rechnungsabruf
+- `public/pwa-192x192.png` – echtes 192×192 PNG, „any"-Variante (Logo füllt den Großteil)
+- `public/pwa-512x512.png` – echtes 512×512 PNG, „any"-Variante
+- `public/pwa-512x512-maskable.png` – 512×512 PNG mit ~20% Safe‑Zone Padding, damit Android das Icon nicht abschneidet
+- `public/apple-touch-icon.png` – 180×180 PNG mit abgerundetem Look für iOS Home Screen
 
-### Lieferung
-Die fertige Prompt-Datei wird unter `/mnt/documents/teuni-hausverwaltung-prompt.md` als Download bereitgestellt – damit kannst du sie 1:1 in ein neues Lovable-Projekt einfügen.
+### 2. `vite.config.ts` Manifest anpassen
+Drei Icon‑Einträge statt zwei – das maskable Icon zeigt auf die neue Datei:
+
+```ts
+icons: [
+  { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
+  { src: "pwa-512x512.png", sizes: "512x512", type: "image/png" },
+  { src: "pwa-512x512-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+]
+```
+
+Außerdem `apple-touch-icon.png` in `includeAssets` aufnehmen.
+
+### 3. `index.html` Apple Touch Icon korrigieren
+```html
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+```
+
+### 4. Verifikation
+- Build laufen lassen und prüfen, dass Manifest + Icons korrekt ausgeliefert werden.
+- In der **publizierten** App (nicht im Lovable‑Preview, dort ist SW absichtlich deaktiviert) testen:
+  - Chrome Desktop: Installations‑Icon in der Adressleiste erscheint
+  - Android Chrome: „App installieren"‑Banner / Menüeintrag erscheint
+  - iOS Safari: Über Teilen → Zum Home‑Bildschirm erscheint korrektes Icon
+
+## Hinweis an dich
+
+Die Installation funktioniert **nur in der publizierten Version** (`oberpinzgau-laundry-hub.lovable.app` oder eigene Domain), nicht in der Lovable‑Vorschau. Das ist Absicht – im Editor‑Preview würde der Service Worker sonst alte Builds cachen. Nach dem Fix musst du also **„Publish → Update"** klicken und dann auf einem echten Gerät testen.
